@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journeya - Play. Travel. Belong.</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Navbar placeholder (filled by main.js) -->
+  <div id="navbar-j"></div>
+
+  <!-- ==============================================================
+       HOME
+  ============================================================== -->
+  <section id="view-home" class="view">
+    <header class="hero text-center">
+      <div class="container">
+        <span class="hero-badge mb-3"><i class="fas fa-users me-2"></i>Play. Travel. Belong.</span>
+        <h1 class="mb-3">Play games. Take trips.<br />Make real friends.</h1>
+        <p class="lead mx-auto mb-4" style="max-width: 640px;">
+          Journeya is your community for epic game nights and unforgettable weekend
+          getaways around Egypt. No memberships, no logins - just show up and have fun.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a href="#/events" class="btn btn-sun btn-lg"><i class="fas fa-dice me-2"></i>Browse Events</a>
+          <a href="#/trips" class="btn btn-j-outline btn-lg"><i class="fas fa-plane me-2"></i>Explore Trips</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="py-5 bg-tint">
+      <div class="container">
+        <div class="text-center mb-4">
+          <h2 class="section-title">Upcoming Activities</h2>
+          <p class="section-sub">Grab a spot before they fill up.</p>
+        </div>
+        <div id="highlightsRow" class="row g-4">
+          <div class="col-12 text-center text-muted">Loading highlights...</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-5 bg-soft">
+      <div class="container">
+        <div class="text-center mb-4">
+          <h2 class="section-title">Why Journeya?</h2>
+        </div>
+        <div class="row g-4 text-center">
+          <div class="col-md-4">
+            <div class="feature-icon mx-auto mb-3" style="background:var(--j-primary);"><i class="fas fa-gamepad"></i></div>
+            <h5 class="fw-bold">Fun Game Nights</h5>
+            <p class="text-muted">Board games, video games, trivia and more - all social, all welcome.</p>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-icon mx-auto mb-3" style="background:var(--j-accent);"><i class="fas fa-mountain-sun"></i></div>
+            <h5 class="fw-bold">Weekend Getaways</h5>
+            <p class="text-muted">El Sokhna, Nuweiba and beyond - trips designed for real connection.</p>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-icon mx-auto mb-3" style="background:var(--j-sun);"><i class="fas fa-hand-holding-heart"></i></div>
+            <h5 class="fw-bold">No Friction</h5>
+            <p class="text-muted">No accounts, no passwords. Book in seconds with just your name &amp; phone.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-5" style="background:linear-gradient(90deg,var(--j-primary),var(--j-accent));color:#fff;">
+      <div class="container text-center">
+        <h3 class="fw-bold mb-2">Ready for your next adventure?</h3>
+        <p class="mb-4">Join the community and never do Friday night alone again.</p>
+        <a href="#/contact" class="btn btn-sun btn-lg"><i class="fas fa-envelope me-2"></i>Get in Touch</a>
+      </div>
+    </section>
+  </section>
+
+  <!-- ==============================================================
+       EVENTS
+  ============================================================== -->
+  <section id="view-events" class="view" style="display:none;">
+    <header class="hero text-center pb-5">
+      <div class="container">
+        <span class="hero-badge mb-3"><i class="fas fa-calendar-week me-2"></i>Upcoming Events</span>
+        <h1 class="mb-3">Game Nights &amp; Social Gatherings</h1>
+        <p class="lead mx-auto mb-0" style="max-width: 620px;">
+          Meet new people over board games, video games, trivia and food.
+        </p>
+      </div>
+    </header>
+
+    <section class="py-5 bg-tint">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+          <div><h2 class="section-title mb-0">All Events</h2></div>
+          <div class="btn-group" role="group" aria-label="Filter">
+            <button class="btn btn-j-outline btn-sm filter-btn active" data-filter="all" style="border-color:var(--j-primary);color:var(--j-primary);">All</button>
+            <button class="btn btn-j-outline btn-sm filter-btn" data-filter="available" style="border-color:var(--j-primary);color:var(--j-primary);">Available</button>
+          </div>
+        </div>
+        <div id="eventsRow" class="row g-4">
+          <div class="col-12 text-center text-muted">Loading events...</div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ==============================================================
+       TRIPS
+  ============================================================== -->
+  <section id="view-trips" class="view" style="display:none;">
+    <header class="hero text-center pb-5">
+      <div class="container">
+        <span class="hero-badge mb-3"><i class="fas fa-paper-plane me-2"></i>Weekend Getaways</span>
+        <h1 class="mb-3">Escape the City with Journeya</h1>
+        <p class="lead mx-auto mb-0" style="max-width: 620px;">
+          From El Sokhna to Nuweiba - curated trips filled with adventure, food and great company.
+        </p>
+      </div>
+    </header>
+
+    <section class="py-5 bg-tint">
+      <div class="container">
+        <h2 class="section-title mb-4">Available Trips</h2>
+        <div id="tripsRow">
+          <div class="text-center text-muted py-5">Loading trips...</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-5 bg-soft">
+      <div class="container">
+        <div class="text-center mb-4">
+          <h2 class="section-title">Flexible Payments</h2>
+          <p class="section-sub">Whatever works for you.</p>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4"><div class="pay-card"><i class="fas fa-credit-card"></i><h6 class="fw-bold">Credit &amp; Debit Cards</h6><p class="text-muted mb-0">Visa, Mastercard &amp; more via secure checkout.</p></div></div>
+          <div class="col-md-4"><div class="pay-card"><i class="fas fa-mobile-alt"></i><h6 class="fw-bold">Mobile Wallets</h6><p class="text-muted mb-0">Pay with Instapay, Vodafone Cash or similar.</p></div></div>
+          <div class="col-md-4"><div class="pay-card"><i class="fas fa-hand-holding-usd"></i><h6 class="fw-bold">Cash Collection</h6><p class="text-muted mb-0">Pay in cash when your trip or event starts.</p></div></div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ==============================================================
+       ABOUT
+  ============================================================== -->
+  <section id="view-about" class="view" style="display:none;">
+    <header class="hero text-center pb-5">
+      <div class="container">
+        <span class="hero-badge mb-3"><i class="fas fa-heart me-2"></i>Our Story</span>
+        <h1 class="mb-3">Building a Real-World Community</h1>
+        <p class="lead mx-auto mb-0" style="max-width: 640px;">
+          We believe friendship is built face to face - over a board game, a shared meal, or a sunset by the sea.
+        </p>
+      </div>
+    </header>
+
+    <section class="py-5 bg-tint">
+      <div class="container">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-6">
+            <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=60" class="img-fluid rounded-4 shadow" alt="Community" />
+          </div>
+          <div class="col-lg-6">
+            <h2 class="section-title">Our Mission</h2>
+            <p class="text-muted">
+              Journeya exists to bring people together through two of the simplest joys in life:
+              playing and traveling. In a world that keeps us glued to screens, we create
+              real spaces where you can laugh, compete, share stories and make friends that stick.
+            </p>
+            <p class="text-muted">
+              Whether it's a casual game night in Cairo or a weekend escape to El Sokhna or
+              Nuweiba, every Journeya experience is designed around one thing: genuine connection.
+            </p>
+            <div class="d-flex gap-4 mt-4">
+              <div><h3 class="fw-bold" style="color:var(--j-primary);">100s</h3><p class="text-muted mb-0">Happy members</p></div>
+              <div><h3 class="fw-bold" style="color:var(--j-accent);">50+</h3><p class="text-muted mb-0">Events hosted</p></div>
+              <div><h3 class="fw-bold" style="color:var(--j-sun);">10+</h3><p class="text-muted mb-0">Destinations</p></div>
+            </div>
+            <a href="#/contact" class="btn btn-j mt-4"><i class="fas fa-envelope me-2"></i>Join the Community</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-5 bg-soft">
+      <div class="container">
+        <div class="text-center mb-4"><h2 class="section-title">What We Stand For</h2></div>
+        <div class="row g-4 text-center">
+          <div class="col-md-4">
+            <div class="feature-icon mx-auto mb-3" style="background:var(--j-primary);"><i class="fas fa-users"></i></div>
+            <h5 class="fw-bold">Community First</h5>
+            <p class="text-muted">Everyone is welcome, regardless of skill or experience.</p>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-icon mx-auto mb-3" style="background:var(--j-accent);"><i class="fas fa-face-smile"></i></div>
+            <h5 class="fw-bold">Fun Over Perfection</h5>
+            <p class="text-muted">It's about the people and the good times, not winning.</p>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-icon mx-auto mb-3" style="background:var(--j-sun);"><i class="fas fa-shield-heart"></i></div>
+            <h5 class="fw-bold">Safe &amp; Inclusive</h5>
+            <p class="text-muted">A respectful, comfortable space for everyone.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ==============================================================
+       CONTACT
+  ============================================================== -->
+  <section id="view-contact" class="view" style="display:none;">
+    <header class="hero text-center pb-5">
+      <div class="container">
+        <span class="hero-badge mb-3"><i class="fas fa-paper-plane me-2"></i>Say Hello</span>
+        <h1 class="mb-3">We'd Love to Hear From You</h1>
+        <p class="lead mx-auto mb-0" style="max-width: 620px;">
+          Questions, ideas, or ready to join? Reach out any way you like.
+        </p>
+      </div>
+    </header>
+
+    <section class="py-5 bg-tint">
+      <div class="container">
+        <div class="row g-5">
+          <div class="col-lg-5">
+            <h2 class="section-title mb-4">Get in Touch</h2>
+            <div class="mb-4">
+              <h6 class="fw-bold"><i class="fas fa-envelope me-2" style="color:var(--j-primary);"></i>Email</h6>
+              <p class="text-muted mb-0" id="contactEmail"></p>
+            </div>
+            <div class="mb-4">
+              <h6 class="fw-bold"><i class="fas fa-phone me-2" style="color:var(--j-primary);"></i>Phone / WhatsApp</h6>
+              <p class="text-muted mb-0" id="contactPhone"></p>
+            </div>
+            <div class="mb-4">
+              <h6 class="fw-bold"><i class="fas fa-share-nodes me-2" style="color:var(--j-primary);"></i>Social</h6>
+              <div id="contactSocial"></div>
+            </div>
+            <div class="pay-card mt-4" style="text-align:left;">
+              <h6 class="fw-bold"><i class="fas fa-wallet me-2" style="color:var(--j-primary);"></i>Flexible Payments</h6>
+              <p class="text-muted small mb-0">
+                We support credit/debit cards, mobile wallets (Instapay, Vodafone Cash) and
+                cash collection on the day. Easy and stress-free.
+              </p>
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <div class="card card-j p-4">
+              <h4 class="fw-bold mb-3">Send a Message</h4>
+              <form id="contactForm" novalidate>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Name *</label>
+                    <input type="text" class="form-control" id="cName" required placeholder="Your name" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Phone *</label>
+                    <input type="tel" class="form-control" id="cPhone" required placeholder="Your phone" />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="cEmail" required placeholder="you@example.com" />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Message *</label>
+                    <textarea class="form-control" id="cMsg" rows="5" required placeholder="How can we help?"></textarea>
+                  </div>
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-j"><i class="fas fa-paper-plane me-2"></i>Send Message</button>
+                  </div>
+                </div>
+              </form>
+              <div id="formAlert" class="mt-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ==============================================================
+       ADMIN (private route: #/admin)
+  ============================================================== -->
+  <section id="view-admin" class="view" style="display:none;">
+
+    <!-- Login screen (shown until authenticated) -->
+    <div id="loginScreen" class="py-5">
+      <div class="container admin-wrap">
+        <div class="card card-j p-4 text-center">
+          <i class="fas fa-lock mb-2" style="font-size:2.5rem;color:var(--j-primary);"></i>
+          <h4 class="fw-bold">Journeya Admin</h4>
+          <p class="text-muted">Enter your admin password to continue.</p>
+          <form id="loginForm" novalidate>
+            <div class="mb-3">
+              <input type="password" class="form-control form-control-lg" id="adminPass" placeholder="Password" required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn btn-j w-100"><i class="fas fa-sign-in-alt me-2"></i>Unlock</button>
+          </form>
+          <div id="loginMsg" class="mt-3"></div>
+          <p class="small text-muted mt-3 mb-0"><a href="#/home">Back to site</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard (hidden until authenticated) -->
+    <div id="dashboard" class="py-4" style="display:none;">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+          <div>
+            <h4 class="section-title mb-0">Admin Dashboard</h4>
+            <span class="badge bg-secondary" id="dbBadge"></span>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="trips">Trips</button>
+            <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="events">Events</button>
+            <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="bookings">Guest Lists</button>
+            <button class="btn btn-danger btn-sm" onclick="window.JourneyaAdmin.logout()"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
+          </div>
+        </div>
+
+        <!-- Trips section -->
+        <section id="sec-trips">
+          <div class="card card-j p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-plane me-2" style="color:var(--j-primary);"></i>Add / Edit Trip</h5>
+            <form id="tripForm" novalidate>
+              <input type="hidden" id="tripId" />
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Title *</label><input type="text" class="form-control" id="tTitle" required /></div>
+                <div class="col-md-6"><label class="form-label">Destination *</label><input type="text" class="form-control" id="tDest" required placeholder="e.g. Ain Sokhna" /></div>
+                <div class="col-md-3"><label class="form-label">Price (EGP) *</label><input type="number" class="form-control" id="tPrice" min="0" required /></div>
+                <div class="col-md-3"><label class="form-label">Start Date</label><input type="date" class="form-control" id="tStart" /></div>
+                <div class="col-md-3"><label class="form-label">End Date</label><input type="date" class="form-control" id="tEnd" /></div>
+                <div class="col-md-3"><label class="form-label">Available</label><select class="form-select" id="tAvail"><option value="true">Yes</option><option value="false">No</option></select></div>
+                <div class="col-12"><label class="form-label">Image URL</label><input type="url" class="form-control" id="tImage" placeholder="https://..."/></div>
+                <div class="col-12"><label class="form-label">Itinerary (one line per day)</label><textarea class="form-control" id="tItinerary" rows="3"></textarea></div>
+                <div class="col-12"><label class="form-label">Inclusions</label><textarea class="form-control" id="tIncl" rows="2"></textarea></div>
+                <div class="col-12 d-flex gap-2">
+                  <button type="submit" class="btn btn-j">Save Trip</button>
+                  <button type="button" class="btn btn-outline-secondary" id="tripReset">Reset</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="card card-j p-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-primary);"></i>Trips</h5>
+            <div class="table-responsive"><table class="table table-j align-middle">
+              <thead><tr><th>Title</th><th>Destination</th><th>Price</th><th>Dates</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="tripsTable"></tbody>
+            </table></div>
+          </div>
+        </section>
+
+        <!-- Events section -->
+        <section id="sec-events" style="display:none;">
+          <div class="card card-j p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-dice me-2" style="color:var(--j-accent);"></i>Add / Edit Event</h5>
+            <form id="eventForm" novalidate>
+              <input type="hidden" id="eventId" />
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Title *</label><input type="text" class="form-control" id="eTitle" required /></div>
+                <div class="col-md-6"><label class="form-label">Location *</label><input type="text" class="form-control" id="eLoc" required /></div>
+                <div class="col-md-4"><label class="form-label">Date *</label><input type="date" class="form-control" id="eDate" required /></div>
+                <div class="col-md-4"><label class="form-label">Time *</label><input type="time" class="form-control" id="eTime" required /></div>
+                <div class="col-md-4"><label class="form-label">Available</label><select class="form-select" id="eAvail"><option value="true">Yes</option><option value="false">No</option></select></div>
+                <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" id="eDesc" rows="2"></textarea></div>
+                <div class="col-12"><label class="form-label">Image URL</label><input type="url" class="form-control" id="eImage" placeholder="https://..."/></div>
+                <div class="col-12 d-flex gap-2">
+                  <button type="submit" class="btn btn-j">Save Event</button>
+                  <button type="button" class="btn btn-outline-secondary" id="eventReset">Reset</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="card card-j p-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-accent);"></i>Events</h5>
+            <div class="table-responsive"><table class="table table-j align-middle">
+              <thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="eventsTable"></tbody>
+            </table></div>
+          </div>
+        </section>
+
+        <!-- Bookings section -->
+        <section id="sec-bookings" style="display:none;">
+          <div class="card card-j p-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-users me-2" style="color:var(--j-sun);"></i>Guest Bookings (Names &amp; Phones)</h5>
+            <div class="mb-3">
+              <label class="form-label">Filter</label>
+              <select class="form-select" id="bookFilter" style="max-width:260px;">
+                <option value="all">All</option>
+                <option value="trip">Trips</option>
+                <option value="event">Events</option>
+              </select>
+            </div>
+            <div class="table-responsive"><table class="table table-j align-middle">
+              <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Booked For</th><th>Type</th><th>Date</th></tr></thead>
+              <tbody id="bookingsTable"></tbody>
+            </table></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer placeholder -->
+  <div id="footer-j"></div>
+
+  <!-- Booking modal host -->
+  <div id="bookingModalHost"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/main.js"></script>
+
+  <script>
+    (function () {
+      const CFG = window.JOURNEYA_CONFIG;
+      const api = window.JourneyaAPI;
+
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      /* ================= HOME ================= */
+      function renderHighlightCard(title, date, type, item, img) {
+        return (
+          '<div class="col-md-6 col-lg-4"><div class="card card-j">' +
+          '<img src="' + (img || "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60") +
+          '" class="card-img-top" alt="' + esc(title) + '">' +
+          '<div class="card-body d-flex flex-column">' +
+          '<span class="chip mb-2"><i class="fas fa-calendar-day"></i>' + esc(date) + "</span>" +
+          '<h5 class="card-title">' + esc(title) + "</h5>" +
+          '<span class="chip mb-3">' + (type === "event" ? "Event" : "Trip") + "</span>" +
+          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'' + type + '\',' + esc(JSON.stringify(item)) + ')">' +
+          '<i class="fas fa-ticket-alt me-2"></i>Book Now</button>' +
+          "</div></div></div>"
+        );
+      }
+
+      async function loadHighlights() {
+        const host = document.getElementById("highlightsRow");
+        if (!host) return;
+        try {
+          const events = await api.fetchEvents(true);
+          const trips = await api.fetchTrips(true);
+          const items = [];
+          events.slice(0, 2).forEach((ev) => items.push(renderHighlightCard(ev.title, ev.date, "event", ev, ev.image)));
+          trips.slice(0, 1).forEach((tr) => items.push(renderHighlightCard(tr.title, tr.start_date, "trip", tr, tr.image)));
+          host.innerHTML = items.length
+            ? items.join("")
+            : '<div class="col-12 text-center text-muted">No activities yet - check back soon!</div>';
+        } catch (e) {
+          host.innerHTML = '<div class="col-12 text-center text-danger">Could not load activities.</div>';
+          console.error(e);
+        }
+      }
+
+      /* ================= EVENTS ================= */
+      let currentFilter = "all";
+      let eventsFilterWired = false;
+
+      function eventCard(ev) {
+        return (
+          '<div class="col-md-6 col-lg-4"><div class="card card-j">' +
+          '<img src="' + (ev.image || "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60") + '" class="card-img-top" alt="' + esc(ev.title) + '">' +
+          '<div class="card-body d-flex flex-column">' +
+          '<div class="mb-2 d-flex flex-wrap gap-2">' +
+          '<span class="chip"><i class="fas fa-calendar-day"></i>' + esc(ev.date || "TBD") + "</span>" +
+          '<span class="chip"><i class="fas fa-clock"></i>' + esc(ev.time || "TBD") + "</span>" +
+          "</div>" +
+          '<span class="chip mb-2"><i class="fas fa-map-marker-alt"></i>' + esc(ev.location || "Location TBD") + "</span>" +
+          '<h5 class="card-title">' + esc(ev.title) + "</h5>" +
+          '<p class="text-muted flex-grow-1">' + esc(ev.description || "") + "</p>" +
+          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'event\',' + esc(JSON.stringify(ev)) + ')">' +
+          '<i class="fas fa-ticket-alt me-2"></i>Book Now (Guest)</button>' +
+          "</div></div></div>"
+        );
+      }
+
+      async function loadEvents() {
+        const host = document.getElementById("eventsRow");
+        if (!host) return;
+        host.innerHTML = '<div class="col-12 text-center text-muted">Loading...</div>';
+        try {
+          let events = await api.fetchEvents(currentFilter === "available");
+          host.innerHTML = events.length
+            ? events.map(eventCard).join("")
+            : '<div class="col-12 text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No events right now - check back soon!</p></div>';
+        } catch (e) {
+          host.innerHTML = '<div class="col-12 text-center text-danger">Could not load events.</div>';
+          console.error(e);
+        }
+      }
+
+      function initEvents() {
+        loadEvents();
+        if (eventsFilterWired) return;
+        eventsFilterWired = true;
+        document.querySelectorAll("#view-events .filter-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("#view-events .filter-btn").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentFilter = btn.dataset.filter;
+            loadEvents();
+          });
+        });
+      }
+
+      /* ================= TRIPS ================= */
+      function itineraryHtml(text) {
+        if (!text) return "";
+        const lines = String(text).split("\n").filter(Boolean);
+        return '<div class="itinerary">' + lines.map((l) => '<div><i class="fas fa-check-circle me-2" style="color:var(--j-sun);"></i>' + esc(l) + "</div>").join("") + "</div>";
+      }
+
+      function tripCard(t) {
+        const dates = (t.start_date || "") + (t.end_date && t.end_date !== t.start_date ? " - " + t.end_date : "");
+        return (
+          '<div class="card card-j mb-4">' +
+          '<div class="row g-0">' +
+          '<div class="col-md-5">' +
+          '<img src="' + (t.image || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=60") + '" class="w-100 h-100" style="object-fit:cover;min-height:260px;" alt="' + esc(t.title) + '">' +
+          "</div>" +
+          '<div class="col-md-7"><div class="card-body p-4">' +
+          '<div class="d-flex justify-content-between align-items-start flex-wrap mb-2">' +
+          '<h4 class="card-title fw-bold mb-0">' + esc(t.title) + "</h4>" +
+          '<span class="lead fw-bold" style="color:var(--j-primary);">EGP ' + esc(t.price) + '</span></div>' +
+          '<span class="chip mb-2"><i class="fas fa-map-marker-alt"></i>' + esc(t.destination) + "</span>" +
+          (dates ? '<span class="chip ms-1 mb-2"><i class="fas fa-calendar-day"></i>' + esc(dates) + "</span>" : "") +
+          "<h6 class=\"fw-bold mt-3\">Itinerary</h6>" +
+          itineraryHtml(t.itinerary) +
+          "<h6 class=\"fw-bold mt-3\">Inclusions</h6>" +
+          '<p class="text-muted">' + esc(t.inclusions || "Transport, accommodation, meals & guided activities.") + "</p>" +
+          '<button class="btn btn-j mt-2" onclick="window.JourneyaUI.openBooking(\'trip\',' + esc(JSON.stringify(t)) + ')">' +
+          '<i class="fas fa-shopping-bag me-2"></i>Book This Trip (Guest)</button>' +
+          "</div></div></div></div>"
+        );
+      }
+
+      async function loadTrips() {
+        const host = document.getElementById("tripsRow");
+        if (!host) return;
+        host.innerHTML = '<div class="text-center text-muted py-5">Loading trips...</div>';
+        try {
+          const trips = await api.fetchTrips(true);
+          host.innerHTML = trips.length
+            ? trips.map(tripCard).join("")
+            : '<div class="text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No trips right now - check back soon!</p></div>';
+        } catch (e) {
+          host.innerHTML = '<div class="text-center text-danger py-5">Could not load trips.</div>';
+          console.error(e);
+        }
+      }
+
+      /* ================= CONTACT ================= */
+      let contactWired = false;
+
+      function fillContact() {
+        const c = CFG.CONTACT;
+        document.getElementById("contactEmail").innerHTML =
+          '<a class="link-primary" href="mailto:' + esc(c.email) + '">' + esc(c.email) + "</a>";
+        document.getElementById("contactPhone").innerHTML =
+          '<a class="link-primary" href="tel:' + esc(c.phone) + '">' + esc(c.phone) +
+          '</a> &nbsp;|&nbsp; <a class="link-success" href="https://wa.me/' + esc(c.whatsapp) +
+          '" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>';
+        document.getElementById("contactSocial").innerHTML =
+          '<a class="btn btn-sm btn-j-outline me-1 mb-1" style="border-color:var(--j-primary);color:var(--j-primary);" href="' + esc(c.instagram) + '" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Instagram</a>' +
+          '<a class="btn btn-sm btn-j-outline me-1 mb-1" style="border-color:var(--j-primary);color:var(--j-primary);" href="' + esc(c.facebook) + '" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i> Facebook</a>' +
+          '<a class="btn btn-sm btn-j-outline mb-1" style="border-color:var(--j-primary);color:var(--j-primary);" href="' + esc(c.tiktok) + '" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i> TikTok</a>';
+      }
+
+      function wireContact() {
+        if (contactWired) return;
+        contactWired = true;
+        const form = document.getElementById("contactForm");
+        const alertBox = document.getElementById("formAlert");
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          if (!form.checkValidity()) {
+            form.classList.add("was-validated");
+            return;
+          }
+          const c = CFG.CONTACT;
+          const data = {
+            name: document.getElementById("cName").value,
+            phone: document.getElementById("cPhone").value,
+            email: document.getElementById("cEmail").value,
+          };
+          const msg = document.getElementById("cMsg").value;
+          const subject = encodeURIComponent("Journeya inquiry from " + data.name);
+          const body = encodeURIComponent(msg + "\n\nFrom: " + data.name + " | " + data.phone + " | " + data.email);
+          const mailto = "mailto:" + c.email + "?subject=" + subject + "&body=" + body;
+          alertBox.innerHTML = '<div class="alert alert-success">Thanks ' + esc(data.name.split(" ")[0]) + '! Opening your email app to send your message.</div><a class="btn btn-sm btn-j" href="' + mailto + '">Click here if it didn\'t open</a>';
+          form.reset();
+          form.classList.remove("was-validated");
+        });
+      }
+
+      function initContact() {
+        fillContact();
+        wireContact();
+      }
+
+      /* ================= ADMIN ================= */
+      const SESSION_KEY = "journeya_admin_auth";
+      let adminWired = false;
+      let adminSection = "trips";
+
+      async function sha256(text) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+        return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+      }
+
+      function tryRestore() {
+        try {
+          if (sessionStorage.getItem(SESSION_KEY)) enterDashboard();
+        } catch (e) {}
+      }
+
+      async function handleLogin(e) {
+        e.preventDefault();
+        const pass = document.getElementById("adminPass").value;
+        const msg = document.getElementById("loginMsg");
+        if (!CFG.ADMIN_PASSWORD_HASH) {
+          enterDashboard();
+          return;
+        }
+        const hash = await sha256(pass);
+        if (hash === CFG.ADMIN_PASSWORD_HASH) {
+          msg.innerHTML = "";
+          enterDashboard();
+        } else {
+          msg.innerHTML = '<div class="alert alert-danger py-2">Incorrect password. Try again.</div>';
+        }
+      }
+
+      function enterDashboard() {
+        try { sessionStorage.setItem(SESSION_KEY, "1"); } catch (e) {}
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("dashboard").style.display = "";
+        document.getElementById("dbBadge").textContent = api.isDemoMode()
+          ? "Demo mode (Supabase not configured)"
+          : "Connected to Supabase";
+        showAdminSection(adminSection);
+      }
+
+      function logout() {
+        try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+        document.getElementById("dashboard").style.display = "none";
+        document.getElementById("loginScreen").style.display = "";
+        document.getElementById("adminPass").value = "";
+        location.hash = "#/home";
+        location.reload();
+      }
+
+      function showAdminSection(name) {
+        adminSection = name;
+        ["trips", "events", "bookings"].forEach((s) => {
+          document.getElementById("sec-" + s).style.display = s === name ? "" : "none";
+        });
+        document.querySelectorAll(".adm-tab").forEach((b) => b.classList.toggle("active", b.dataset.sec === name));
+        if (name === "trips") loadTripsTable();
+        if (name === "events") loadEventsTable();
+        if (name === "bookings") loadBookings();
+      }
+
+      /* Admin trips */
+      function fillTripForm(t) {
+        document.getElementById("tripId").value = t && t.id ? t.id : "";
+        document.getElementById("tTitle").value = (t && t.title) || "";
+        document.getElementById("tDest").value = (t && t.destination) || "";
+        document.getElementById("tPrice").value = (t && t.price) || "";
+        document.getElementById("tStart").value = (t && t.start_date) || "";
+        document.getElementById("tEnd").value = (t && t.end_date) || "";
+        document.getElementById("tAvail").value = (t && t.available !== false) ? "true" : "false";
+        document.getElementById("tImage").value = (t && t.image) || "";
+        document.getElementById("tItinerary").value = (t && t.itinerary) || "";
+        document.getElementById("tIncl").value = (t && t.inclusions) || "";
+      }
+
+      async function loadTripsTable() {
+        const tbody = document.getElementById("tripsTable");
+        try {
+          const trips = await api.fetchTrips();
+          tbody.innerHTML = trips.length
+            ? trips.map((t) =>
+                "<tr>" +
+                "<td>" + esc(t.title) + "</td>" +
+                "<td>" + esc(t.destination) + "</td>" +
+                "<td>EGP " + esc(t.price) + "</td>" +
+                "<td>" + esc(t.start_date || "") + (t.end_date && t.end_date !== t.start_date ? " → " + esc(t.end_date) : "") + "</td>" +
+                '<td>' + (t.available === false ? '<span class="badge bg-secondary">Hidden</span>' : '<span class="badge bg-success">Live</span>') + "</td>" +
+                '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="window.JourneyaAdmin.editTrip(' + t.id + ')"><i class="fas fa-edit"></i></button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="window.JourneyaAdmin.deleteTrip(' + t.id + ')"><i class="fas fa-trash"></i></button></td></tr>'
+              ).join("")
+            : '<tr><td colspan="6" class="text-center text-muted">No trips yet.</td></tr>';
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
+          console.error(err);
+        }
+      }
+
+      async function saveTrip(e) {
+        e.preventDefault();
+        const form = e.target;
+        if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
+        const id = document.getElementById("tripId").value;
+        const data = {
+          title: document.getElementById("tTitle").value.trim(),
+          destination: document.getElementById("tDest").value.trim(),
+          price: Number(document.getElementById("tPrice").value),
+          start_date: document.getElementById("tStart").value || null,
+          end_date: document.getElementById("tEnd").value || null,
+          available: document.getElementById("tAvail").value === "true",
+          image: document.getElementById("tImage").value.trim() || null,
+          itinerary: document.getElementById("tItinerary").value.trim() || null,
+          inclusions: document.getElementById("tIncl").value.trim() || null,
+        };
+        try {
+          if (id) await api.updateTrip(id, data);
+          else await api.addTrip(data);
+          api.notifyChanged();
+          fillTripForm(null);
+          form.classList.remove("was-validated");
+          loadTripsTable();
+        } catch (err) { alert("Save failed: " + err.message); console.error(err); }
+      }
+
+      async function editTrip(id) {
+        const trips = await api.fetchTrips();
+        const t = trips.find((x) => x.id == id);
+        if (t) { showAdminSection("trips"); fillTripForm(t); window.scrollTo(0, 0); }
+      }
+
+      async function deleteTrip(id) {
+        if (!confirm("Delete this trip?")) return;
+        try { await api.deleteTrip(id); api.notifyChanged(); loadTripsTable(); } catch (err) { alert("Delete failed: " + err.message); }
+      }
+
+      /* Admin events */
+      function fillEventForm(ev) {
+        document.getElementById("eventId").value = ev && ev.id ? ev.id : "";
+        document.getElementById("eTitle").value = (ev && ev.title) || "";
+        document.getElementById("eLoc").value = (ev && ev.location) || "";
+        document.getElementById("eDate").value = (ev && ev.date) || "";
+        document.getElementById("eTime").value = (ev && ev.time) || "";
+        document.getElementById("eAvail").value = (ev && ev.available !== false) ? "true" : "false";
+        document.getElementById("eDesc").value = (ev && ev.description) || "";
+        document.getElementById("eImage").value = (ev && ev.image) || "";
+      }
+
+      async function loadEventsTable() {
+        const tbody = document.getElementById("eventsTable");
+        try {
+          const events = await api.fetchEvents();
+          tbody.innerHTML = events.length
+            ? events.map((ev) =>
+                "<tr>" +
+                "<td>" + esc(ev.title) + "</td>" +
+                "<td>" + esc(ev.date || "") + "</td>" +
+                "<td>" + esc(ev.time || "") + "</td>" +
+                "<td>" + esc(ev.location) + "</td>" +
+                '<td>' + (ev.available === false ? '<span class="badge bg-secondary">Hidden</span>' : '<span class="badge bg-success">Live</span>') + "</td>" +
+                '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="window.JourneyaAdmin.editEvent(' + ev.id + ')"><i class="fas fa-edit"></i></button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="window.JourneyaAdmin.deleteEvent(' + ev.id + ')"><i class="fas fa-trash"></i></button></td></tr>'
+              ).join("")
+            : '<tr><td colspan="6" class="text-center text-muted">No events yet.</td></tr>';
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
+          console.error(err);
+        }
+      }
+
+      async function saveEvent(e) {
+        e.preventDefault();
+        const form = e.target;
+        if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
+        const id = document.getElementById("eventId").value;
+        const data = {
+          title: document.getElementById("eTitle").value.trim(),
+          location: document.getElementById("eLoc").value.trim(),
+          date: document.getElementById("eDate").value || null,
+          time: document.getElementById("eTime").value || null,
+          available: document.getElementById("eAvail").value === "true",
+          description: document.getElementById("eDesc").value.trim() || null,
+          image: document.getElementById("eImage").value.trim() || null,
+        };
+        try {
+          if (id) await api.updateEvent(id, data);
+          else await api.addEvent(data);
+          api.notifyChanged();
+          fillEventForm(null);
+          form.classList.remove("was-validated");
+          loadEventsTable();
+        } catch (err) { alert("Save failed: " + err.message); console.error(err); }
+      }
+
+      async function editEvent(id) {
+        const events = await api.fetchEvents();
+        const ev = events.find((x) => x.id == id);
+        if (ev) { showAdminSection("events"); fillEventForm(ev); window.scrollTo(0, 0); }
+      }
+
+      async function deleteEvent(id) {
+        if (!confirm("Delete this event?")) return;
+        try { await api.deleteEvent(id); api.notifyChanged(); loadEventsTable(); } catch (err) { alert("Delete failed: " + err.message); }
+      }
+
+      /* Admin bookings */
+      async function loadBookings() {
+        const tbody = document.getElementById("bookingsTable");
+        const filter = document.getElementById("bookFilter").value;
+        try {
+          let bookings = await api.fetchBookings();
+          if (filter !== "all") bookings = bookings.filter((b) => b.type === filter);
+          tbody.innerHTML = bookings.length
+            ? bookings.map((b) =>
+                "<tr>" +
+                "<td><i class=\"fas fa-user me-1 text-muted\"></i>" + esc(b.name) + "</td>" +
+                '<td><a class="link-dark" href="tel:' + esc(b.phone) + '">' + esc(b.phone) + "</a></td>" +
+                "<td>" + esc(b.email) + "</td>" +
+                "<td>" + esc(b.item_title || "Item #" + b.item_id) + "</td>" +
+                "<td>" + (b.type === "trip" ? "Trip" : "Event") + "</td>" +
+                "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td></tr>"
+              ).join("")
+            : '<tr><td colspan="6" class="text-center text-muted">No bookings yet.</td></tr>';
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
+          console.error(err);
+        }
+      }
+
+      function wireAdmin() {
+        if (adminWired) return;
+        adminWired = true;
+        document.getElementById("loginForm").addEventListener("submit", handleLogin);
+        document.getElementById("tripForm").addEventListener("submit", saveTrip);
+        document.getElementById("eventForm").addEventListener("submit", saveEvent);
+        document.getElementById("tripReset").addEventListener("click", () => fillTripForm(null));
+        document.getElementById("eventReset").addEventListener("click", () => fillEventForm(null));
+        document.getElementById("bookFilter").addEventListener("change", loadBookings);
+        document.querySelectorAll("#view-admin .adm-tab").forEach((b) => {
+          b.addEventListener("click", () => showAdminSection(b.dataset.sec));
+        });
+      }
+
+      function initAdmin() {
+        wireAdmin();
+        tryRestore();
+      }
+
+      window.JourneyaAdmin = {
+        logout,
+        editTrip,
+        deleteTrip,
+        editEvent,
+        deleteEvent,
+      };
+
+      /* ================= Routing registration ================= */
+      window.JourneyaApp.register("home", loadHighlights);
+      window.JourneyaApp.register("events", initEvents);
+      window.JourneyaApp.register("trips", loadTrips);
+      window.JourneyaApp.register("about", function () {});
+      window.JourneyaApp.register("contact", initContact);
+      window.JourneyaApp.register("admin", initAdmin);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        window.addEventListener("journeya:changed", () => {
+          const v = window.JourneyaApp.current();
+          if (v === "home") loadHighlights();
+          if (v === "events") loadEvents();
+          if (v === "trips") loadTrips();
+          if (v === "admin") {
+            if (sessionStorage.getItem(SESSION_KEY)) {
+              if (adminSection === "trips") loadTripsTable();
+              if (adminSection === "events") loadEventsTable();
+              if (adminSection === "bookings") loadBookings();
+            }
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

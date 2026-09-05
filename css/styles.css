@@ -1,0 +1,246 @@
+/* ============================================================
+   JOURNEYA - Custom theme layered on top of Bootstrap
+   ============================================================ */
+
+:root {
+  --j-primary: #6c5ce7;
+  --j-primary-dark: #5638c8;
+  --j-accent: #fd79a8;
+  --j-sun: #fdcb6e;
+  --j-dark: #1e1e2e;
+  --j-dark-2: #2d2d44;
+  --j-light: #f7f6ff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  color: var(--j-dark);
+  background: var(--j-light);
+  padding-top: 72px;
+}
+
+/* ---------- Navbar ---------- */
+.navbar-j {
+  background: linear-gradient(90deg, var(--j-primary), var(--j-accent));
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+}
+.navbar-j .navbar-brand {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.navbar-j .nav-link {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+.navbar-j .nav-link:hover,
+.navbar-j .nav-link.active {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(108, 92, 231, 0.88), rgba(253, 121, 168, 0.82)),
+    url("https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=60")
+      center/cover no-repeat;
+  color: #fff;
+  padding: 100px 0;
+}
+.hero-badge {
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 40px;
+  padding: 6px 16px;
+  font-weight: 600;
+  display: inline-block;
+}
+.hero h1 {
+  font-weight: 800;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+}
+.hero p.lead {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+/* ---------- Buttons ---------- */
+.btn-j {
+  background: var(--j-primary);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 50px;
+  padding: 10px 24px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-j:hover {
+  background: var(--j-primary-dark);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(108, 92, 231, 0.35);
+}
+.btn-j-outline {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 50px;
+  padding: 8px 22px;
+}
+.btn-j-outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+.btn-sun {
+  background: var(--j-sun);
+  color: var(--j-dark);
+  border: none;
+  font-weight: 700;
+  border-radius: 50px;
+  padding: 10px 24px;
+}
+.btn-sun:hover {
+  filter: brightness(0.96);
+  color: var(--j-dark);
+}
+
+/* ---------- Sections ---------- */
+.section-title {
+  font-weight: 800;
+  color: var(--j-primary);
+}
+.section-sub {
+  color: #6b6b83;
+}
+
+.bg-soft {
+  background: #ffffff;
+}
+.bg-tint {
+  background: linear-gradient(180deg, #ffffff, #f1efff);
+}
+
+/* ---------- Cards ---------- */
+.card-j {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(30, 30, 46, 0.08);
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  height: 100%;
+}
+.card-j:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(108, 92, 231, 0.18);
+}
+.card-j .card-img-top {
+  height: 220px;
+  object-fit: cover;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1efff;
+  color: var(--j-primary-dark);
+  border-radius: 30px;
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ---------- Feature / benefit items ---------- */
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+/* ---------- Payments ---------- */
+.pay-card {
+  border: 1px solid #e6e3ff;
+  border-radius: 14px;
+  padding: 20px;
+  background: #fff;
+  text-align: center;
+}
+.pay-card i {
+  font-size: 1.8rem;
+  color: var(--j-primary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* ---------- Forms ---------- */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--j-primary);
+  box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.15);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  background: var(--j-dark);
+  color: #c9c8e0;
+}
+.footer a {
+  color: #c9c8e0;
+  text-decoration: none;
+}
+.footer a:hover {
+  color: #fff;
+}
+.footer .social a {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--j-dark-2);
+  margin-right: 8px;
+}
+.footer .social a:hover {
+  background: var(--j-primary);
+}
+
+/* ---------- Trip itinerary ---------- */
+.itinerary {
+  border-left: 3px solid var(--j-primary);
+  padding-left: 16px;
+  margin: 10px 0;
+}
+.itinerary div {
+  margin-bottom: 6px;
+}
+
+/* ---------- Admin ---------- */
+.admin-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.admin-table th {
+  background: var(--j-primary);
+  color: #fff;
+}
+.table-j thead th {
+  background: var(--j-primary);
+  color: #fff;
+}
+.tab-pill {
+  border-radius: 50px;
+  font-weight: 700;
+}
