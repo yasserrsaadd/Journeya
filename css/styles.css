@@ -1,15 +1,16 @@
 /* ============================================================
    JOURNEYA - Custom theme layered on top of Bootstrap
+   Dark red palette + polished friendly animations
    ============================================================ */
 
 :root {
-  --j-primary: #6c5ce7;
-  --j-primary-dark: #5638c8;
-  --j-accent: #fd79a8;
-  --j-sun: #fdcb6e;
-  --j-dark: #1e1e2e;
-  --j-dark-2: #2d2d44;
-  --j-light: #f7f6ff;
+  --j-primary: #8b2626;
+  --j-primary-dark: #6f1d1d;
+  --j-accent: #b03b3b;
+  --j-sun: #e9b44c;
+  --j-dark: #2b1414;
+  --j-dark-2: #4a2323;
+  --j-light: #fbf4f2;
 }
 
 html {
@@ -21,25 +22,65 @@ body {
   color: var(--j-dark);
   background: var(--j-light);
   padding-top: 72px;
+  overflow-x: hidden;
 }
 
 /* ---------- Navbar ---------- */
 .navbar-j {
-  background: linear-gradient(90deg, var(--j-primary), var(--j-accent));
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(139, 38, 38, 0.12);
+  padding: 0.8rem 0;
+  transition: padding 0.35s ease, box-shadow 0.35s ease;
+  animation: slideDown 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.navbar-j.scrolled {
+  padding: 0.35rem 0;
+  box-shadow: 0 6px 24px rgba(139, 38, 38, 0.24);
 }
 .navbar-j .navbar-brand {
   font-weight: 800;
   letter-spacing: 0.5px;
-  color: #fff;
+  color: var(--j-primary);
+  transition: transform 0.3s ease;
+}
+.navbar-j .navbar-brand:hover {
+  transform: scale(1.05);
+}
+.navbar-j .navbar-logo {
+  height: 44px;
+  width: auto;
+  vertical-align: middle;
+  margin-left: -8px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  transition: height 0.35s ease;
+}
+.navbar-j.scrolled .navbar-logo {
+  height: 34px;
+}
+.footer-logo {
+  height: 40px;
+  width: auto;
+  vertical-align: middle;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
 .navbar-j .nav-link {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--j-primary);
   font-weight: 600;
+  position: relative;
+  transition: color 0.2s ease, transform 0.2s ease, font-size 0.2s ease;
 }
-.navbar-j .nav-link:hover,
+.navbar-j.scrolled .nav-link {
+  font-size: 0.95rem;
+}
+.navbar-j .nav-link:hover {
+  color: var(--j-primary);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  transform: translateY(-2px);
+}
 .navbar-j .nav-link.active {
-  color: #fff;
+  color: var(--j-primary);
   text-decoration: underline;
   text-underline-offset: 6px;
 }
@@ -48,11 +89,13 @@ body {
 .hero {
   position: relative;
   background:
-    linear-gradient(135deg, rgba(108, 92, 231, 0.88), rgba(253, 121, 168, 0.82)),
+    linear-gradient(135deg, rgba(110, 22, 22, 0.9), rgba(176, 59, 59, 0.82)),
     url("https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=60")
       center/cover no-repeat;
+  background-size: 170% 170%;
   color: #fff;
   padding: 100px 0;
+  animation: kenBurns 22s ease-in-out infinite alternate;
 }
 .hero-badge {
   background: rgba(255, 255, 255, 0.22);
@@ -61,16 +104,47 @@ body {
   padding: 6px 16px;
   font-weight: 600;
   display: inline-block;
+  animation: floaty 5s ease-in-out infinite;
 }
 .hero h1 {
   font-weight: 800;
   font-size: clamp(2.2rem, 5vw, 3.8rem);
+  animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .hero p.lead {
   font-size: clamp(1rem, 2vw, 1.25rem);
+  animation: fadeUp 0.8s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.hero .btn {
+  animation: fadeUp 0.8s 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.hero .btn:nth-child(2) {
+  animation-delay: 0.32s;
 }
 
 /* ---------- Buttons ---------- */
+.btn-j,
+.btn-sun {
+  position: relative;
+  overflow: hidden;
+}
+.btn-j::after,
+.btn-sun::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -90%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+  pointer-events: none;
+}
+.btn-j:hover::after,
+.btn-sun:hover::after {
+  left: 140%;
+}
 .btn-j {
   background: var(--j-primary);
   border: none;
@@ -84,7 +158,7 @@ body {
   background: var(--j-primary-dark);
   color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(108, 92, 231, 0.35);
+  box-shadow: 0 8px 20px rgba(139, 38, 38, 0.45);
 }
 .btn-j-outline {
   background: transparent;
@@ -93,10 +167,12 @@ body {
   font-weight: 700;
   border-radius: 50px;
   padding: 8px 22px;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 .btn-j-outline:hover {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
+  transform: translateY(-2px);
 }
 .btn-sun {
   background: var(--j-sun);
@@ -105,10 +181,12 @@ body {
   font-weight: 700;
   border-radius: 50px;
   padding: 10px 24px;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 .btn-sun:hover {
   filter: brightness(0.96);
   color: var(--j-dark);
+  transform: translateY(-2px);
 }
 
 /* ---------- Sections ---------- */
@@ -117,28 +195,36 @@ body {
   color: var(--j-primary);
 }
 .section-sub {
-  color: #6b6b83;
+  color: #96634f;
 }
 
 .bg-soft {
   background: #ffffff;
 }
 .bg-tint {
-  background: linear-gradient(180deg, #ffffff, #f1efff);
+  background: linear-gradient(180deg, #ffffff, #fdf0ee);
 }
 
 /* ---------- Cards ---------- */
 .card-j {
   border: none;
   border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(30, 30, 46, 0.08);
+  box-shadow: 0 10px 30px rgba(70, 30, 30, 0.1);
   overflow: hidden;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
   height: 100%;
 }
 .card-j:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 36px rgba(108, 92, 231, 0.18);
+  box-shadow: 0 16px 36px rgba(139, 38, 38, 0.28);
+}
+.card-j .card-img-top,
+.card-j img {
+  transition: transform 0.6s ease;
+}
+.card-j:hover .card-img-top,
+.card-j:hover img {
+  transform: scale(1.06);
 }
 .card-j .card-img-top {
   height: 220px;
@@ -149,7 +235,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #f1efff;
+  background: #f7e7e0;
   color: var(--j-primary-dark);
   border-radius: 30px;
   padding: 4px 12px;
@@ -167,37 +253,51 @@ body {
   justify-content: center;
   font-size: 1.5rem;
   color: #fff;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+}
+.feature-icon:hover {
+  transform: translateY(-6px) scale(1.12) rotate(-6deg);
+  box-shadow: 0 12px 20px rgba(139, 38, 38, 0.3);
 }
 
 /* ---------- Payments ---------- */
 .pay-card {
-  border: 1px solid #e6e3ff;
+  border: 1px solid #ecd9d2;
   border-radius: 14px;
   padding: 20px;
   background: #fff;
   text-align: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.pay-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 26px rgba(139, 38, 38, 0.16);
 }
 .pay-card i {
   font-size: 1.8rem;
   color: var(--j-primary);
   display: block;
   margin-bottom: 8px;
+  transition: transform 0.3s ease;
+}
+.pay-card:hover i {
+  transform: translateY(-3px) scale(1.15);
 }
 
 /* ---------- Forms ---------- */
 .form-control:focus,
 .form-select:focus {
   border-color: var(--j-primary);
-  box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.15);
+  box-shadow: 0 0 0 0.2rem rgba(139, 38, 38, 0.22);
 }
 
 /* ---------- Footer ---------- */
 .footer {
   background: var(--j-dark);
-  color: #c9c8e0;
+  color: #dcb3a8;
 }
 .footer a {
-  color: #c9c8e0;
+  color: #dcb3a8;
   text-decoration: none;
 }
 .footer a:hover {
@@ -212,9 +312,11 @@ body {
   border-radius: 50%;
   background: var(--j-dark-2);
   margin-right: 8px;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 .footer .social a:hover {
   background: var(--j-primary);
+  transform: translateY(-4px) scale(1.1);
 }
 
 /* ---------- Trip itinerary ---------- */
@@ -240,7 +342,155 @@ body {
   background: var(--j-primary);
   color: #fff;
 }
+.table-j tbody tr {
+  transition: background 0.2s ease;
+}
+.table-j tbody tr:hover {
+  background: #f7e9e5;
+}
 .tab-pill {
   border-radius: 50px;
   font-weight: 700;
+}
+
+/* ---------- Modal ---------- */
+.modal-content {
+  animation: popIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.modal-content .fa-check-circle {
+  animation: pop 0.6s ease both;
+}
+
+/* ---------- Scroll reveal ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(44px) scale(0.96);
+  filter: blur(6px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.7s ease;
+  will-change: opacity, transform, filter;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+.reveal-left {
+  transform: translateX(-70px) scale(0.96);
+}
+.reveal-right {
+  transform: translateX(70px) scale(0.96);
+}
+.reveal-zoom {
+  transform: scale(0.75);
+}
+.reveal-rotate {
+  transform: translateY(44px) rotate(-4deg) scale(0.96);
+}
+.reveal-left.revealed,
+.reveal-right.revealed,
+.reveal-zoom.revealed,
+.reveal-rotate.revealed {
+  transform: none;
+}
+/* Cascade stagger for grid cards */
+.row > .reveal:nth-child(1) {
+  transition-delay: 0.05s;
+}
+.row > .reveal:nth-child(2) {
+  transition-delay: 0.12s;
+}
+.row > .reveal:nth-child(3) {
+  transition-delay: 0.19s;
+}
+.row > .reveal:nth-child(4) {
+  transition-delay: 0.26s;
+}
+.row > .reveal:nth-child(5) {
+  transition-delay: 0.33s;
+}
+.row > .reveal:nth-child(6) {
+  transition-delay: 0.4s;
+}
+.row > .reveal:nth-child(7) {
+  transition-delay: 0.47s;
+}
+.row > .reveal:nth-child(8) {
+  transition-delay: 0.54s;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes kenBurns {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 100%;
+  }
+}
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
 }

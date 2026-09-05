@@ -13,6 +13,7 @@
     register(name, showFn) {
       views[name] = showFn;
     },
+    setupReveal,
     navigate(name) {
       const target = document.getElementById("view-" + name);
       if (!target) name = "home";
@@ -24,6 +25,7 @@
       const foot = document.getElementById("footer-j");
       if (foot) foot.style.display = name === "admin" ? "none" : "";
       if (views[name]) views[name]();
+      setupReveal();
       window.scrollTo(0, 0);
     },
     current() {
@@ -35,6 +37,30 @@
   function currentViewName() {
     const h = (window.location.hash || "").replace(/^#\//, "");
     return h || "home";
+  }
+
+  /* ---- Scroll-reveal: fade elements in as they enter the viewport ---- */
+  function setupReveal() {
+    const els = document.querySelectorAll(".reveal:not(.observed)");
+    if (!("IntersectionObserver" in window)) {
+      els.forEach((el) => el.classList.add("revealed"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: "0px 0px -40px 0px" }
+    );
+    els.forEach((el) => {
+      el.classList.add("observed");
+      io.observe(el);
+    });
   }
 
   /* ---- Render shared navbar & footer into placeholders ---- */
@@ -52,7 +78,7 @@
     host.innerHTML =
       '<nav class="navbar navbar-expand-lg navbar-j fixed-top">' +
       '<div class="container">' +
-      '<a class="navbar-brand" href="#/home"><i class="fas fa-paper-plane me-2"></i>Journeya</a>' +
+      '<a class="navbar-brand" href="#/home"><img src="images/logo-cropped.png" alt="Journeya" class="navbar-logo" /></a>' +
       '<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">' +
       '<span class="navbar-toggler-icon"></span></button>' +
       '<div class="collapse navbar-collapse" id="navMain">' +
@@ -71,7 +97,7 @@
             "</a></li>"
         )
         .join("") +
-      '<li class="nav-item ms-lg-3"><a class="btn btn-sun btn-sm" href="#/trips">Book a Trip</a></li>' +
+      '<li class="nav-item ms-lg-3"><a class="btn btn-j btn-sm" href="#/trips">Book a trip/event</a></li>' +
       "</ul></div></div></nav>";
   }
 
@@ -80,11 +106,11 @@
     if (!host) return;
     const c = CFG.CONTACT;
     host.innerHTML =
-      '<footer class="footer pt-5 pb-4 mt-5">' +
+      '<footer class="footer pt-5 pb-4 mt-5 reveal">' +
       '<div class="container">' +
       '<div class="row">' +
       '<div class="col-md-4 mb-4">' +
-      '<h5 class="text-white fw-bold"><i class="fas fa-paper-plane me-2"></i>Journeya</h5>' +
+      '<h5 class="text-white fw-bold"><img src="images/logo-cropped.png" alt="Journeya" class="footer-logo" /></h5>' +
       '<p class="mb-2">Building a real-world community through games and travel.</p>' +
       "</div>" +
       '<div class="col-md-4 mb-4">' +
@@ -211,6 +237,28 @@
   document.addEventListener("DOMContentLoaded", () => {
     renderNavbar();
     renderFooter();
+
+    const navEl = document.querySelector(".navbar-j");
+    let ticking = false;
+    function onScroll() {
+      if (!navEl) return;
+      navEl.classList.toggle("scrolled", (window.scrollY || 0) > 50);
+    }
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            onScroll();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
+    onScroll();
+
     const go = () => window.JourneyaApp.navigate(window.JourneyaApp.current());
     window.addEventListener("hashchange", () => {
       const nav = document.getElementById("navMain");
