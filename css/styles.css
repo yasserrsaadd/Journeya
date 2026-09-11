@@ -552,3 +552,113 @@ body {
     filter: none !important;
   }
 }
+
+/* ============================================================
+   RESPONSIVE / MOBILE
+   Removes excessive spacing on small screens so the site stays
+   fully usable on phones (most clients browse from mobile)
+   ============================================================ */
+
+/* ---------- Phones (<576px) ---------- */
+@media (max-width: 575.98px) {
+  body {
+    padding-top: 60px;
+  }
+
+  /* Navbar stays compact on small screens */
+  .navbar-j {
+    padding: 0.45rem 0;
+  }
+  .navbar-j .navbar-logo {
+    height: 36px;
+  }
+  .navbar-j.scrolled .navbar-logo {
+    height: 30px;
+  }
+  .navbar-j .nav-link {
+    padding: 0.65rem 0;
+  }
+  .navbar-j .btn-j {
+    margin-left: 0;
+    margin-top: 0.75rem;
+  }
+
+  /* Hero: cut the tall fixed padding */
+  .hero {
+    padding: 60px 0;
+  }
+  .hero h1 {
+    font-size: 1.9rem;
+  }
+  .hero p.lead {
+    font-size: 0.98rem;
+  }
+  .hero .btn-lg {
+    padding: 9px 16px;
+    font-size: 0.92rem;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  /* Sections: tighten vertical rhythm */
+  .page-section.py-5 {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+  .section-title {
+    font-size: 1.6rem;
+  }
+  .section-sub {
+    font-size: 0.95rem;
+  }
+
+  /* Collapse the wide about/contact gutters */
+  .g-5 {
+    --bs-gutter-x: 1.25rem;
+    --bs-gutter-y: 1.5rem;
+  }
+  .mb-5 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Compact cards & forms */
+  .card-j .card-img-top {
+    height: 180px;
+  }
+  .pay-card {
+    padding: 18px 14px;
+  }
+  .card-j.p-4 {
+    padding: 1.25rem !important;
+  }
+
+  /* Swiper: rely on swipe + dots on touch, hide edge arrows */
+  .events-swiper .swiper-button-next,
+  .events-swiper .swiper-button-prev,
+  .trips-swiper .swiper-button-next,
+  .trips-swiper .swiper-button-prev {
+    display: none;
+  }
+  .events-swiper,
+  .trips-swiper {
+    padding-bottom: 48px;
+  }
+
+  /* Footer: remove the big top margin/padding */
+  .footer {
+    margin-top: 0 !important;
+    padding-top: 2.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+}
+
+/* ---------- Larger phones / small tablets (576-767px) ---------- */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .hero {
+    padding: 80px 0;
+  }
+  .page-section.py-5 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+}
