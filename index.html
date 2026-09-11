@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -20,7 +21,7 @@
   <!-- ==============================================================
        HOME
   ============================================================== -->
-  <section id="view-home" class="view">
+  <section id="home-section" class="page-section">
     <header class="hero text-center">
       <div class="container">
         <span class="hero-badge mb-3"><i class="fas fa-users me-2"></i>Play. Travel. Belong.</span>
@@ -30,263 +31,198 @@
           getaways around Egypt. No memberships, no logins - just show up and have fun.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
-          <a href="#/events" class="btn btn-sun btn-lg"><i class="fas fa-dice me-2"></i>Browse Events</a>
-          <a href="#/trips" class="btn btn-j-outline btn-lg"><i class="fas fa-plane me-2"></i>Explore Trips</a>
+          <a href="#events-section" class="btn btn-sun btn-lg"><i class="fas fa-dice me-2"></i>Browse Events</a>
+          <a href="#trips-section" class="btn btn-j-outline btn-lg"><i class="fas fa-plane me-2"></i>Explore Trips</a>
         </div>
       </div>
     </header>
 
-    <section class="py-5 bg-tint">
-      <div class="container reveal">
-        <div class="text-center mb-4">
-          <h2 class="section-title">Upcoming Activities</h2>
-          <p class="section-sub">Grab a spot before they fill up.</p>
-        </div>
-        <div id="highlightsRow" class="row g-4">
-          <div class="col-12 text-center text-muted">Loading highlights...</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="py-5 bg-soft">
-      <div class="container reveal">
-        <div class="text-center mb-4">
-          <h2 class="section-title">Why Journeya?</h2>
-        </div>
-        <div class="row g-4 text-center">
-          <div class="col-md-4 reveal reveal-d1">
-            <div class="feature-icon mx-auto mb-3" style="background:var(--j-primary);"><i class="fas fa-gamepad"></i></div>
-            <h5 class="fw-bold">Fun Game Nights</h5>
-            <p class="text-muted">Board games, video games, trivia and more - all social, all welcome.</p>
-          </div>
-          <div class="col-md-4 reveal reveal-d2">
-            <div class="feature-icon mx-auto mb-3" style="background:var(--j-accent);"><i class="fas fa-mountain-sun"></i></div>
-            <h5 class="fw-bold">Weekend Getaways</h5>
-            <p class="text-muted">El Sokhna, Nuweiba and beyond - trips designed for real connection.</p>
-          </div>
-          <div class="col-md-4 reveal reveal-d3">
-            <div class="feature-icon mx-auto mb-3" style="background:var(--j-sun);"><i class="fas fa-hand-holding-heart"></i></div>
-            <h5 class="fw-bold">No Friction</h5>
-            <p class="text-muted">No accounts, no passwords. Book in seconds with just your name &amp; phone.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="py-5" style="background:linear-gradient(90deg,var(--j-primary),var(--j-accent));color:#fff;">
-      <div class="container text-center reveal reveal-zoom">
-        <h3 class="fw-bold mb-2">Ready for your next adventure?</h3>
-        <p class="mb-4">Join the community and never do Friday night alone again.</p>
-        <a href="#/contact" class="btn btn-sun btn-lg"><i class="fas fa-envelope me-2"></i>Get in Touch</a>
-      </div>
-    </section>
   </section>
 
   <!-- ==============================================================
        EVENTS
   ============================================================== -->
-  <section id="view-events" class="view" style="display:none;">
-    <header class="hero text-center pb-5">
-      <div class="container">
-        <span class="hero-badge mb-3"><i class="fas fa-calendar-week me-2"></i>Upcoming Events</span>
-        <h1 class="mb-3">Game Nights &amp; Social Gatherings</h1>
-        <p class="lead mx-auto mb-0" style="max-width: 620px;">
-          Meet new people over board games, video games, trivia and food.
-        </p>
+  <section id="events-section" class="page-section py-5 bg-tint">
+    <div class="container">
+      <div class="text-center mb-4">
+        <h2 class="section-title">Upcoming Events</h2>
+        <p class="section-sub">Game nights &amp; social gatherings. Grab a spot before they fill up.</p>
       </div>
-    </header>
-
-    <section class="py-5 bg-tint">
-      <div class="container reveal">
-        <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
-          <div><h2 class="section-title mb-0">All Events</h2></div>
-          <div class="btn-group" role="group" aria-label="Filter">
-            <button class="btn btn-j-outline btn-sm filter-btn active" data-filter="all" style="border-color:var(--j-primary);color:var(--j-primary);">All</button>
-            <button class="btn btn-j-outline btn-sm filter-btn" data-filter="available" style="border-color:var(--j-primary);color:var(--j-primary);">Available</button>
-          </div>
-        </div>
-        <div id="eventsRow" class="row g-4">
-          <div class="col-12 text-center text-muted">Loading events...</div>
+      <div class="d-flex justify-content-center gap-2 mb-4">
+        <div class="btn-group" role="group" aria-label="Filter">
+          <button class="btn btn-j-outline btn-sm filter-btn active" data-filter="all" style="border-color:var(--j-primary);color:var(--j-primary);">All</button>
+          <button class="btn btn-j-outline btn-sm filter-btn" data-filter="available" style="border-color:var(--j-primary);color:var(--j-primary);">Available</button>
         </div>
       </div>
-    </section>
+      <div class="swiper events-swiper reveal">
+        <div class="swiper-wrapper" id="eventsRow"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
   </section>
 
   <!-- ==============================================================
        TRIPS
   ============================================================== -->
-  <section id="view-trips" class="view" style="display:none;">
-    <header class="hero text-center pb-5">
-      <div class="container">
-        <span class="hero-badge mb-3"><i class="fas fa-paper-plane me-2"></i>Weekend Getaways</span>
-        <h1 class="mb-3">Escape the City with Journeya</h1>
-        <p class="lead mx-auto mb-0" style="max-width: 620px;">
-          From El Sokhna to Nuweiba - curated trips filled with adventure, food and great company.
-        </p>
+  <section id="trips-section" class="page-section py-5 bg-soft">
+    <div class="container">
+      <div class="text-center mb-4">
+        <h2 class="section-title">Available Trips</h2>
+        <p class="section-sub">Escape the city with curated weekend getaways.</p>
       </div>
-    </header>
+      <div class="swiper trips-swiper reveal">
+        <div class="swiper-wrapper" id="tripsRow"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+  </section>
 
-    <section class="py-5 bg-tint">
-      <div class="container reveal">
-        <h2 class="section-title mb-4">Available Trips</h2>
-        <div id="tripsRow">
-          <div class="text-center text-muted py-5">Loading trips...</div>
-        </div>
+  <section class="page-section py-5 bg-tint">
+    <div class="container reveal">
+      <div class="text-center mb-4">
+        <h2 class="section-title">Flexible Payments</h2>
+        <p class="section-sub">Whatever works for you.</p>
       </div>
-    </section>
-
-    <section class="py-5 bg-soft">
-      <div class="container reveal">
-        <div class="text-center mb-4">
-          <h2 class="section-title">Flexible Payments</h2>
-          <p class="section-sub">Whatever works for you.</p>
-        </div>
-        <div class="row g-4">
-          <div class="col-md-4 reveal reveal-d1"><div class="pay-card"><i class="fas fa-credit-card"></i><h6 class="fw-bold">Credit &amp; Debit Cards</h6><p class="text-muted mb-0">Visa, Mastercard &amp; more via secure checkout.</p></div></div>
-          <div class="col-md-4 reveal reveal-d2"><div class="pay-card"><i class="fas fa-mobile-alt"></i><h6 class="fw-bold">Mobile Wallets</h6><p class="text-muted mb-0">Pay with Instapay, Vodafone Cash or similar.</p></div></div>
-          <div class="col-md-4 reveal reveal-d3"><div class="pay-card"><i class="fas fa-hand-holding-usd"></i><h6 class="fw-bold">Cash Collection</h6><p class="text-muted mb-0">Pay in cash when your trip or event starts.</p></div></div>
-        </div>
+      <div class="row g-4">
+        <div class="col-md-4 reveal reveal-d1"><div class="pay-card"><i class="fas fa-credit-card"></i><h6 class="fw-bold">Credit &amp; Debit Cards</h6><p class="text-muted mb-0">Visa, Mastercard &amp; more via secure checkout.</p></div></div>
+        <div class="col-md-4 reveal reveal-d2"><div class="pay-card"><i class="fas fa-mobile-alt"></i><h6 class="fw-bold">Mobile Wallets</h6><p class="text-muted mb-0">Pay with Instapay, Vodafone Cash or similar.</p></div></div>
+        <div class="col-md-4 reveal reveal-d3"><div class="pay-card"><i class="fas fa-hand-holding-usd"></i><h6 class="fw-bold">Cash Collection</h6><p class="text-muted mb-0">Pay in cash when your trip or event starts.</p></div></div>
       </div>
-    </section>
+    </div>
   </section>
 
   <!-- ==============================================================
        ABOUT
   ============================================================== -->
-  <section id="view-about" class="view" style="display:none;">
-    <header class="hero text-center pb-5">
-      <div class="container">
-        <span class="hero-badge mb-3"><i class="fas fa-heart me-2"></i>Our Story</span>
-        <h1 class="mb-3">Building a Real-World Community</h1>
-        <p class="lead mx-auto mb-0" style="max-width: 640px;">
+  <section id="about-section" class="page-section py-5 bg-tint">
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="hero-badge mb-3" style="color:var(--j-primary);border-color:var(--j-primary);"><i class="fas fa-heart me-2"></i>Our Story</span>
+        <h2 class="section-title mt-3">Building a Real-World Community</h2>
+        <p class="section-sub mx-auto" style="max-width:640px;">
           We believe friendship is built face to face - over a board game, a shared meal, or a sunset by the sea.
         </p>
       </div>
-    </header>
 
-    <section class="py-5 bg-tint">
-      <div class="container">
-        <div class="row align-items-center g-5">
-          <div class="col-lg-6 reveal">
-            <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=60" class="img-fluid rounded-4 shadow" alt="Community" />
+      <div class="row align-items-center g-5 mb-5">
+        <div class="col-lg-6 reveal">
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=60" class="img-fluid rounded-4 shadow" alt="Community" />
+        </div>
+        <div class="col-lg-6 reveal reveal-right">
+          <h3 class="section-title">Our Mission</h3>
+          <p class="text-muted">
+            Journeya exists to bring people together through two of the simplest joys in life:
+            playing and traveling. In a world that keeps us glued to screens, we create
+            real spaces where you can laugh, compete, share stories and make friends that stick.
+          </p>
+          <p class="text-muted">
+            Whether it's a casual game night in Cairo or a weekend escape to El Sokhna or
+            Nuweiba, every Journeya experience is designed around one thing: genuine connection.
+          </p>
+          <div class="d-flex gap-4 mt-4">
+            <div><h3 class="fw-bold" style="color:var(--j-primary);">100s</h3><p class="text-muted mb-0">Happy members</p></div>
+            <div><h3 class="fw-bold" style="color:var(--j-accent);">50+</h3><p class="text-muted mb-0">Events hosted</p></div>
+            <div><h3 class="fw-bold" style="color:var(--j-sun);">10+</h3><p class="text-muted mb-0">Destinations</p></div>
           </div>
-          <div class="col-lg-6 reveal reveal-right">
-            <h2 class="section-title">Our Mission</h2>
-            <p class="text-muted">
-              Journeya exists to bring people together through two of the simplest joys in life:
-              playing and traveling. In a world that keeps us glued to screens, we create
-              real spaces where you can laugh, compete, share stories and make friends that stick.
-            </p>
-            <p class="text-muted">
-              Whether it's a casual game night in Cairo or a weekend escape to El Sokhna or
-              Nuweiba, every Journeya experience is designed around one thing: genuine connection.
-            </p>
-            <div class="d-flex gap-4 mt-4">
-              <div><h3 class="fw-bold" style="color:var(--j-primary);">100s</h3><p class="text-muted mb-0">Happy members</p></div>
-              <div><h3 class="fw-bold" style="color:var(--j-accent);">50+</h3><p class="text-muted mb-0">Events hosted</p></div>
-              <div><h3 class="fw-bold" style="color:var(--j-sun);">10+</h3><p class="text-muted mb-0">Destinations</p></div>
-            </div>
-            <a href="#/contact" class="btn btn-j mt-4"><i class="fas fa-envelope me-2"></i>Join the Community</a>
-          </div>
+          <a href="#contact-section" class="btn btn-j mt-4"><i class="fas fa-envelope me-2"></i>Join the Community</a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="py-5 bg-soft">
-      <div class="container">
-        <div class="text-center mb-4"><h2 class="section-title">What We Stand For</h2></div>
-        <div class="row g-4 text-center">
-          <div class="col-md-4 reveal reveal-d1">
-            <div class="feature-icon mx-auto mb-3" style="background:var(--j-primary);"><i class="fas fa-users"></i></div>
-            <h5 class="fw-bold">Community First</h5>
-            <p class="text-muted">Everyone is welcome, regardless of skill or experience.</p>
-          </div>
-          <div class="col-md-4 reveal reveal-d2">
-            <div class="feature-icon mx-auto mb-3" style="background:var(--j-accent);"><i class="fas fa-face-smile"></i></div>
-            <h5 class="fw-bold">Fun Over Perfection</h5>
-            <p class="text-muted">It's about the people and the good times, not winning.</p>
-          </div>
-          <div class="col-md-4 reveal reveal-d3">
-            <div class="feature-icon mx-auto mb-3" style="background:var(--j-sun);"><i class="fas fa-shield-heart"></i></div>
-            <h5 class="fw-bold">Safe &amp; Inclusive</h5>
-            <p class="text-muted">A respectful, comfortable space for everyone.</p>
-          </div>
+  <section class="page-section py-5 bg-soft">
+    <div class="container">
+      <div class="text-center mb-4"><h2 class="section-title">What We Stand For</h2></div>
+      <div class="row g-4 text-center">
+        <div class="col-md-4 reveal reveal-d1">
+          <div class="feature-icon mx-auto mb-3" style="background:var(--j-primary);"><i class="fas fa-users"></i></div>
+          <h5 class="fw-bold">Community First</h5>
+          <p class="text-muted">Everyone is welcome, regardless of skill or experience.</p>
+        </div>
+        <div class="col-md-4 reveal reveal-d2">
+          <div class="feature-icon mx-auto mb-3" style="background:var(--j-accent);"><i class="fas fa-face-smile"></i></div>
+          <h5 class="fw-bold">Fun Over Perfection</h5>
+          <p class="text-muted">It's about the people and the good times, not winning.</p>
+        </div>
+        <div class="col-md-4 reveal reveal-d3">
+          <div class="feature-icon mx-auto mb-3" style="background:var(--j-sun);"><i class="fas fa-shield-heart"></i></div>
+          <h5 class="fw-bold">Safe &amp; Inclusive</h5>
+          <p class="text-muted">A respectful, comfortable space for everyone.</p>
         </div>
       </div>
-    </section>
+    </div>
   </section>
 
   <!-- ==============================================================
        CONTACT
   ============================================================== -->
-  <section id="view-contact" class="view" style="display:none;">
-    <header class="hero text-center pb-5">
-      <div class="container">
-        <span class="hero-badge mb-3"><i class="fas fa-paper-plane me-2"></i>Say Hello</span>
-        <h1 class="mb-3">We'd Love to Hear From You</h1>
-        <p class="lead mx-auto mb-0" style="max-width: 620px;">
+  <section id="contact-section" class="page-section py-5 bg-soft">
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="hero-badge mb-3" style="color:var(--j-primary);border-color:var(--j-primary);"><i class="fas fa-paper-plane me-2"></i>Say Hello</span>
+        <h2 class="section-title mt-3">We'd Love to Hear From You</h2>
+        <p class="section-sub mx-auto" style="max-width:620px;">
           Questions, ideas, or ready to join? Reach out any way you like.
         </p>
       </div>
-    </header>
-
-    <section class="py-5 bg-tint">
-      <div class="container">
-        <div class="row g-5">
-          <div class="col-lg-5 reveal">
-            <h2 class="section-title mb-4">Get in Touch</h2>
-            <div class="mb-4">
-              <h6 class="fw-bold"><i class="fas fa-envelope me-2" style="color:var(--j-primary);"></i>Email</h6>
-              <p class="text-muted mb-0" id="contactEmail"></p>
-            </div>
-            <div class="mb-4">
-              <h6 class="fw-bold"><i class="fas fa-phone me-2" style="color:var(--j-primary);"></i>Phone / WhatsApp</h6>
-              <p class="text-muted mb-0" id="contactPhone"></p>
-            </div>
-            <div class="mb-4">
-              <h6 class="fw-bold"><i class="fas fa-share-nodes me-2" style="color:var(--j-primary);"></i>Social</h6>
-              <div id="contactSocial"></div>
-            </div>
-            <div class="pay-card mt-4" style="text-align:left;">
-              <h6 class="fw-bold"><i class="fas fa-wallet me-2" style="color:var(--j-primary);"></i>Flexible Payments</h6>
-              <p class="text-muted small mb-0">
-                We support credit/debit cards, mobile wallets (Instapay, Vodafone Cash) and
-                cash collection on the day. Easy and stress-free.
-              </p>
-            </div>
+      <div class="row g-5">
+        <div class="col-lg-5 reveal">
+          <h3 class="section-title mb-4">Get in Touch</h3>
+          <div class="mb-4">
+            <h6 class="fw-bold"><i class="fas fa-envelope me-2" style="color:var(--j-primary);"></i>Email</h6>
+            <p class="text-muted mb-0" id="contactEmail"></p>
           </div>
-          <div class="col-lg-7">
-            <div class="card card-j p-4 reveal reveal-right">
-              <h4 class="fw-bold mb-3">Send a Message</h4>
-              <form id="contactForm" novalidate>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Name *</label>
-                    <input type="text" class="form-control" id="cName" required placeholder="Your name" />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Phone *</label>
-                    <input type="tel" class="form-control" id="cPhone" required placeholder="Your phone" />
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Email *</label>
-                    <input type="email" class="form-control" id="cEmail" required placeholder="you@example.com" />
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Message *</label>
-                    <textarea class="form-control" id="cMsg" rows="5" required placeholder="How can we help?"></textarea>
-                  </div>
-                  <div class="col-12">
-                    <button type="submit" class="btn btn-j"><i class="fas fa-paper-plane me-2"></i>Send Message</button>
-                  </div>
+          <div class="mb-4">
+            <h6 class="fw-bold"><i class="fas fa-phone me-2" style="color:var(--j-primary);"></i>Phone / WhatsApp</h6>
+            <p class="text-muted mb-0" id="contactPhone"></p>
+          </div>
+          <div class="mb-4">
+            <h6 class="fw-bold"><i class="fas fa-share-nodes me-2" style="color:var(--j-primary);"></i>Social</h6>
+            <div id="contactSocial"></div>
+          </div>
+          <div class="pay-card mt-4" style="text-align:left;">
+            <h6 class="fw-bold"><i class="fas fa-wallet me-2" style="color:var(--j-primary);"></i>Flexible Payments</h6>
+            <p class="text-muted small mb-0">
+              We support credit/debit cards, mobile wallets (Instapay, Vodafone Cash) and
+              cash collection on the day. Easy and stress-free.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="card card-j p-4 reveal reveal-right">
+            <h4 class="fw-bold mb-3">Send a Message</h4>
+            <form id="contactForm" novalidate>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Name *</label>
+                  <input type="text" class="form-control" id="cName" required placeholder="Your name" />
                 </div>
-              </form>
-              <div id="formAlert" class="mt-3"></div>
-            </div>
+                <div class="col-md-6">
+                  <label class="form-label">Phone *</label>
+                  <input type="tel" class="form-control" id="cPhone" required placeholder="Your phone" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Email *</label>
+                  <input type="email" class="form-control" id="cEmail" required placeholder="you@example.com" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Message *</label>
+                  <textarea class="form-control" id="cMsg" rows="5" required placeholder="How can we help?"></textarea>
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-j"><i class="fas fa-paper-plane me-2"></i>Send Message</button>
+                </div>
+              </div>
+            </form>
+            <div id="formAlert" class="mt-3"></div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   </section>
 
   <!-- ==============================================================
@@ -420,6 +356,7 @@
   <div id="bookingModalHost"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/supabase-client.js"></script>
@@ -434,48 +371,13 @@
         return String(s == null ? "" : s).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       }
 
-      /* ================= HOME ================= */
-      function renderHighlightCard(title, date, type, item, img) {
-        return (
-          '<div class="col-md-6 col-lg-4 reveal"><div class="card card-j">' +
-          '<img src="' + (img || "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60") +
-          '" class="card-img-top" alt="' + esc(title) + '">' +
-          '<div class="card-body d-flex flex-column">' +
-          '<span class="chip mb-2"><i class="fas fa-calendar-day"></i>' + esc(date) + "</span>" +
-          '<h5 class="card-title">' + esc(title) + "</h5>" +
-          '<span class="chip mb-3">' + (type === "event" ? "Event" : "Trip") + "</span>" +
-          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'' + type + '\',' + esc(JSON.stringify(item)) + ')">' +
-          '<i class="fas fa-ticket-alt me-2"></i>Book Now</button>' +
-          "</div></div></div>"
-        );
-      }
-
-      async function loadHighlights() {
-        const host = document.getElementById("highlightsRow");
-        if (!host) return;
-        try {
-          const events = await api.fetchEvents(true);
-          const trips = await api.fetchTrips(true);
-          const items = [];
-          events.slice(0, 2).forEach((ev) => items.push(renderHighlightCard(ev.title, ev.date, "event", ev, ev.image)));
-          trips.slice(0, 1).forEach((tr) => items.push(renderHighlightCard(tr.title, tr.start_date, "trip", tr, tr.image)));
-          host.innerHTML = items.length
-            ? items.join("")
-            : '<div class="col-12 text-center text-muted">No activities yet - check back soon!</div>';
-          window.JourneyaApp.setupReveal();
-        } catch (e) {
-          host.innerHTML = '<div class="col-12 text-center text-danger">Could not load activities.</div>';
-          console.error(e);
-        }
-      }
-
       /* ================= EVENTS ================= */
       let currentFilter = "all";
       let eventsFilterWired = false;
 
       function eventCard(ev) {
         return (
-          '<div class="col-md-6 col-lg-4 reveal"><div class="card card-j">' +
+          '<div class="swiper-slide h-auto reveal"><div class="card card-j h-100">' +
           '<img src="' + (ev.image || "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60") + '" class="card-img-top" alt="' + esc(ev.title) + '">' +
           '<div class="card-body d-flex flex-column">' +
           '<div class="mb-2 d-flex flex-wrap gap-2">' +
@@ -491,29 +393,55 @@
         );
       }
 
+      let eventsSwiper = null;
+      let tripsSwiper = null;
+
+      function initSwiper(selector, key) {
+        if (window[key]) window[key].destroy(true, true);
+        window[key] = new Swiper(selector, {
+          slidesPerView: 1,
+          spaceBetween: 24,
+          speed: 600,
+          grabCursor: true,
+          navigation: {
+            nextEl: selector + " .swiper-button-next",
+            prevEl: selector + " .swiper-button-prev",
+          },
+          pagination: {
+            el: selector + " .swiper-pagination",
+            clickable: true,
+          },
+          breakpoints: {
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+          },
+        });
+        window.JourneyaApp.setupReveal();
+      }
+
       async function loadEvents() {
         const host = document.getElementById("eventsRow");
         if (!host) return;
-        host.innerHTML = '<div class="col-12 text-center text-muted">Loading...</div>';
+        host.innerHTML = '<div class="swiper-slide text-center text-muted py-5">Loading...</div>';
         try {
           let events = await api.fetchEvents(currentFilter === "available");
           host.innerHTML = events.length
             ? events.map(eventCard).join("")
-            : '<div class="col-12 text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No events right now - check back soon!</p></div>';
-          window.JourneyaApp.setupReveal();
+            : '<div class="swiper-slide text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No events right now - check back soon!</p></div>';
         } catch (e) {
-          host.innerHTML = '<div class="col-12 text-center text-danger">Could not load events.</div>';
+          host.innerHTML = '<div class="swiper-slide text-center text-danger py-5">Could not load events.</div>';
           console.error(e);
         }
+        initSwiper(".events-swiper", "eventsSwiper");
       }
 
       function initEvents() {
         loadEvents();
         if (eventsFilterWired) return;
         eventsFilterWired = true;
-        document.querySelectorAll("#view-events .filter-btn").forEach((btn) => {
+        document.querySelectorAll("#events-section .filter-btn").forEach((btn) => {
           btn.addEventListener("click", () => {
-            document.querySelectorAll("#view-events .filter-btn").forEach((b) => b.classList.remove("active"));
+            document.querySelectorAll("#events-section .filter-btn").forEach((b) => b.classList.remove("active"));
             btn.classList.add("active");
             currentFilter = btn.dataset.filter;
             loadEvents();
@@ -531,41 +459,38 @@
       function tripCard(t) {
         const dates = (t.start_date || "") + (t.end_date && t.end_date !== t.start_date ? " - " + t.end_date : "");
         return (
-          '<div class="card card-j mb-4 reveal">' +
-          '<div class="row g-0">' +
-          '<div class="col-md-5">' +
-          '<img src="' + (t.image || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=60") + '" class="w-100 h-100" style="object-fit:cover;min-height:260px;" alt="' + esc(t.title) + '">' +
-          "</div>" +
-          '<div class="col-md-7"><div class="card-body p-4">' +
+          '<div class="swiper-slide h-auto reveal"><div class="card card-j h-100">' +
+          '<img src="' + (t.image || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=60") + '" class="card-img-top" alt="' + esc(t.title) + '">' +
+          '<div class="card-body d-flex flex-column">' +
           '<div class="d-flex justify-content-between align-items-start flex-wrap mb-2">' +
-          '<h4 class="card-title fw-bold mb-0">' + esc(t.title) + "</h4>" +
-          '<span class="lead fw-bold" style="color:var(--j-primary);">EGP ' + esc(t.price) + '</span></div>' +
-          '<span class="chip mb-2"><i class="fas fa-map-marker-alt"></i>' + esc(t.destination) + "</span>" +
-          (dates ? '<span class="chip ms-1 mb-2"><i class="fas fa-calendar-day"></i>' + esc(dates) + "</span>" : "") +
-          "<h6 class=\"fw-bold mt-3\">Itinerary</h6>" +
+          '<h5 class="card-title fw-bold mb-0">' + esc(t.title) + "</h5>" +
+          '<span class="lead fw-bold" style="color:var(--j-primary);">EGP ' + esc(t.price) + "</span></div>" +
+          '<div class="mb-2">' +
+          '<span class="chip"><i class="fas fa-map-marker-alt"></i>' + esc(t.destination) + "</span>" +
+          (dates ? '<span class="chip ms-1"><i class="fas fa-calendar-day"></i>' + esc(dates) + "</span>" : "") +
+          "</div>" +
           itineraryHtml(t.itinerary) +
-          "<h6 class=\"fw-bold mt-3\">Inclusions</h6>" +
-          '<p class="text-muted">' + esc(t.inclusions || "Transport, accommodation, meals & guided activities.") + "</p>" +
-          '<button class="btn btn-j mt-2" onclick="window.JourneyaUI.openBooking(\'trip\',' + esc(JSON.stringify(t)) + ')">' +
-          '<i class="fas fa-shopping-bag me-2"></i>Book This Trip (Guest)</button>' +
-          "</div></div></div></div>"
+          '<p class="text-muted mt-2 flex-grow-1">' + esc(t.inclusions || "Transport, accommodation, meals & guided activities.") + "</p>" +
+          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'trip\',' + esc(JSON.stringify(t)) + ')">' +
+          '<i class="fas fa-shopping-bag me-2"></i>Book This Trip</button>' +
+          "</div></div></div>"
         );
       }
 
       async function loadTrips() {
         const host = document.getElementById("tripsRow");
         if (!host) return;
-        host.innerHTML = '<div class="text-center text-muted py-5">Loading trips...</div>';
+        host.innerHTML = '<div class="swiper-slide text-center text-muted py-5">Loading trips...</div>';
         try {
           const trips = await api.fetchTrips(true);
           host.innerHTML = trips.length
             ? trips.map(tripCard).join("")
-            : '<div class="text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No trips right now - check back soon!</p></div>';
-          window.JourneyaApp.setupReveal();
+            : '<div class="swiper-slide text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No trips right now - check back soon!</p></div>';
         } catch (e) {
-          host.innerHTML = '<div class="text-center text-danger py-5">Could not load trips.</div>';
+          host.innerHTML = '<div class="swiper-slide text-center text-danger py-5">Could not load trips.</div>';
           console.error(e);
         }
+        initSwiper(".trips-swiper", "tripsSwiper");
       }
 
       /* ================= CONTACT ================= */
@@ -873,26 +798,28 @@
         deleteEvent,
       };
 
-      /* ================= Routing registration ================= */
-      window.JourneyaApp.register("home", loadHighlights);
-      window.JourneyaApp.register("events", initEvents);
-      window.JourneyaApp.register("trips", loadTrips);
-      window.JourneyaApp.register("about", function () {});
-      window.JourneyaApp.register("contact", initContact);
+      /* ================= Page init (single-page layout) ================= */
       window.JourneyaApp.register("admin", initAdmin);
 
       document.addEventListener("DOMContentLoaded", () => {
+        initEvents();
+        loadTrips();
+        initContact();
+        if (window.JourneyaApp.current() === "admin") initAdmin();
+        window.JourneyaApp.setupReveal();
+
         window.addEventListener("journeya:changed", () => {
           const v = window.JourneyaApp.current();
-          if (v === "home") loadHighlights();
-          if (v === "events") loadEvents();
-          if (v === "trips") loadTrips();
           if (v === "admin") {
             if (sessionStorage.getItem(SESSION_KEY)) {
               if (adminSection === "trips") loadTripsTable();
               if (adminSection === "events") loadEventsTable();
               if (adminSection === "bookings") loadBookings();
             }
+          } else {
+            loadEvents();
+            loadTrips();
+            window.JourneyaApp.setupReveal();
           }
         });
       });

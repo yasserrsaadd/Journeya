@@ -7,37 +7,53 @@
 (function () {
   const CFG = window.JOURNEYA_CONFIG;
 
-  /* ---- Tiny SPA router: shows/hides .view sections by hash ---- */
+  /* ---- Single-page navigation: all sections scroll; admin is the only routed view ---- */
   const views = {};
+  const routeMap = {
+    home: "home-section",
+    events: "events-section",
+    trips: "trips-section",
+    about: "about-section",
+    contact: "contact-section",
+  };
+  const NAV_OFFSET = 76;
+
   window.JourneyaApp = {
     register(name, showFn) {
       views[name] = showFn;
     },
     setupReveal,
     navigate(name) {
-      const target = document.getElementById("view-" + name);
-      if (!target) name = "home";
-      document.querySelectorAll(".view").forEach((v) => (v.style.display = "none"));
-      document.getElementById("view-" + name).style.display = "";
-      document.querySelectorAll(".nav-link[data-view]").forEach((a) => {
-        a.classList.toggle("active", a.dataset.view === name);
-      });
+      const s = String(name || "home");
+      const isAdmin = s === "admin";
+
+      document.querySelectorAll(".page-section").forEach((v) => (v.style.display = isAdmin ? "none" : ""));
+      const adminView = document.getElementById("view-admin");
+      if (adminView) adminView.style.display = isAdmin ? "" : "none";
       const foot = document.getElementById("footer-j");
-      if (foot) foot.style.display = name === "admin" ? "none" : "";
-      if (views[name]) views[name]();
+      if (foot) foot.style.display = isAdmin ? "none" : "";
+
+      if (isAdmin) {
+        if (views.admin) views.admin();
+        window.scrollTo(0, 0);
+        setupReveal();
+        return;
+      }
+
+      const targetId = routeMap[s] || s;
+      const target = targetId && targetId !== "home-section" ? document.getElementById(targetId) : null;
+      if (target) {
+        const top = target.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
+        window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
       setupReveal();
-      window.scrollTo(0, 0);
     },
     current() {
-      const h = (window.location.hash || "").replace(/^#\//, "");
-      return h || "home";
+      return (window.location.hash || "").replace(/^#\/?/, "") || "home";
     },
   };
-
-  function currentViewName() {
-    const h = (window.location.hash || "").replace(/^#\//, "");
-    return h || "home";
-  }
 
   /* ---- Scroll-reveal: fade elements in as they enter the viewport ---- */
   function setupReveal() {
@@ -68,17 +84,16 @@
     const host = document.getElementById("navbar-j");
     if (!host) return;
     const links = [
-      { href: "#/home", dataView: "home", label: "Home" },
-      { href: "#/events", dataView: "events", label: "Events" },
-      { href: "#/trips", dataView: "trips", label: "Trips" },
-      { href: "#/about", dataView: "about", label: "About" },
-      { href: "#/contact", dataView: "contact", label: "Contact" },
+      { href: "#home-section", dataSection: "home-section", label: "Home" },
+      { href: "#events-section", dataSection: "events-section", label: "Events" },
+      { href: "#trips-section", dataSection: "trips-section", label: "Trips" },
+      { href: "#about-section", dataSection: "about-section", label: "About" },
+      { href: "#contact-section", dataSection: "contact-section", label: "Contact" },
     ];
-    const current = currentViewName();
     host.innerHTML =
       '<nav class="navbar navbar-expand-lg navbar-j fixed-top">' +
       '<div class="container">' +
-      '<a class="navbar-brand" href="#/home"><img src="images/logo-cropped.png" alt="Journeya" class="navbar-logo" /></a>' +
+      '<a class="navbar-brand" href="#home-section"><img src="images/logo-cropped.png" alt="Journeya" class="navbar-logo" /></a>' +
       '<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">' +
       '<span class="navbar-toggler-icon"></span></button>' +
       '<div class="collapse navbar-collapse" id="navMain">' +
@@ -86,10 +101,8 @@
       links
         .map(
           (l) =>
-            '<li class="nav-item"><a class="nav-link ' +
-            (current === l.dataView ? "active" : "") +
-            '" data-view="' +
-            l.dataView +
+            '<li class="nav-item"><a class="nav-link" data-section="' +
+            l.dataSection +
             '" href="' +
             l.href +
             '">' +
@@ -97,7 +110,7 @@
             "</a></li>"
         )
         .join("") +
-      '<li class="nav-item ms-lg-3"><a class="btn btn-j btn-sm" href="#/trips">Book a trip/event</a></li>' +
+      '<li class="nav-item ms-lg-3"><a class="btn btn-j btn-sm" href="#trips-section">Book a trip/event</a></li>' +
       "</ul></div></div></nav>";
   }
 
@@ -116,10 +129,10 @@
       '<div class="col-md-4 mb-4">' +
       "<h6 class=\"text-white fw-bold\">Quick Links</h6>" +
       '<ul class="list-unstyled">' +
-      '<li><a href="#/events">Events</a></li>' +
-      '<li><a href="#/trips">Trips</a></li>' +
-      '<li><a href="#/about">About Us</a></li>' +
-      '<li><a href="#/contact">Contact</a></li>' +
+      '<li><a href="#events-section">Events</a></li>' +
+      '<li><a href="#trips-section">Trips</a></li>' +
+      '<li><a href="#about-section">About Us</a></li>' +
+      '<li><a href="#contact-section">Contact</a></li>' +
       '<li><a href="#/admin">Admin</a></li>' +
       "</ul></div>" +
       '<div class="col-md-4 mb-4">' +
@@ -234,9 +247,31 @@
     });
   }
 
+  /* ---- Scrollspy: highlight the nav link of the section in view ---- */
+  function setupScrollSpy() {
+    const links = Array.from(document.querySelectorAll(".nav-link[data-section]"));
+    if (!links.length || !("IntersectionObserver" in window)) return;
+    const map = {};
+    links.forEach((l) => (map[l.dataset.section] = l));
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            links.forEach((l) => l.classList.remove("active"));
+            const link = map[en.target.id];
+            if (link) link.classList.add("active");
+          }
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    document.querySelectorAll(".page-section[id]").forEach((s) => io.observe(s));
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     renderNavbar();
     renderFooter();
+    setupScrollSpy();
 
     const navEl = document.querySelector(".navbar-j");
     let ticking = false;
@@ -259,12 +294,25 @@
     );
     onScroll();
 
-    const go = () => window.JourneyaApp.navigate(window.JourneyaApp.current());
-    window.addEventListener("hashchange", () => {
+    // Smooth-scroll in-page anchors and collapse the mobile menu on click
+    document.addEventListener("click", (e) => {
+      const el = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+      if (!el) return;
+      const href = el.getAttribute("href");
+      if (!href || href === "#" || href === "#top") return;
+      e.preventDefault();
+      if (window.location.hash === href) {
+        window.JourneyaApp.navigate(href.slice(1));
+      } else {
+        window.location.hash = href;
+      }
       const nav = document.getElementById("navMain");
       if (nav) nav.classList.remove("show");
-      go();
     });
-    go();
+
+    window.addEventListener("hashchange", () => {
+      window.JourneyaApp.navigate(window.JourneyaApp.current());
+    });
+    window.JourneyaApp.navigate(window.JourneyaApp.current());
   });
 })();

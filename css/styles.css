@@ -329,6 +329,64 @@ body {
   margin-bottom: 6px;
 }
 
+/* ---------- Sliders (Swiper) ---------- */
+.events-swiper,
+.trips-swiper {
+  padding: 10px 4px 56px;
+}
+.events-swiper .swiper-slide,
+.trips-swiper .swiper-slide {
+  height: auto;
+}
+.events-swiper .swiper-slide .card-j,
+.trips-swiper .swiper-slide .card-j {
+  height: 100%;
+}
+.events-swiper .swiper-button-next,
+.trips-swiper .swiper-button-next,
+.events-swiper .swiper-button-prev,
+.trips-swiper .swiper-button-prev {
+  color: var(--j-primary);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(139, 38, 38, 0.08);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.events-swiper .swiper-button-next::after,
+.trips-swiper .swiper-button-next::after,
+.events-swiper .swiper-button-prev::after,
+.trips-swiper .swiper-button-prev::after {
+  font-size: 18px;
+  font-weight: 700;
+}
+.events-swiper .swiper-button-next:hover,
+.trips-swiper .swiper-button-next:hover,
+.events-swiper .swiper-button-prev:hover,
+.trips-swiper .swiper-button-prev:hover {
+  background: rgba(139, 38, 38, 0.16);
+  transform: scale(1.08);
+}
+.events-swiper .swiper-button-next,
+.trips-swiper .swiper-button-next {
+  right: 0;
+}
+.events-swiper .swiper-button-prev,
+.trips-swiper .swiper-button-prev {
+  left: 0;
+}
+.events-swiper .swiper-pagination-bullet,
+.trips-swiper .swiper-pagination-bullet {
+  background: var(--j-accent);
+  opacity: 0.35;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.events-swiper .swiper-pagination-bullet-active,
+.trips-swiper .swiper-pagination-bullet-active {
+  opacity: 1;
+  transform: scale(1.25);
+}
+
 /* ---------- Admin ---------- */
 .admin-wrap {
   max-width: 720px;
