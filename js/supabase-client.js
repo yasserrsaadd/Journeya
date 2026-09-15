@@ -180,6 +180,54 @@
     notifyChanged() {
       window.dispatchEvent(new CustomEvent("journeya:changed"));
     },
+
+    /* --- Auth (Supabase) --- */
+    async signIn(email, password) {
+      if (supabase) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        return data.user;
+      }
+      return { email };
+    },
+    async signOut() {
+      if (supabase) {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      }
+    },
+    async getSession() {
+      if (supabase) {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        return data.session;
+      }
+      return null;
+    },
+    currentUser() {
+      if (supabase) {
+        return supabase.auth.getUser().then(({ data, error }) => {
+          if (error) throw error;
+          return data.user;
+        });
+      }
+      return Promise.resolve(null);
+    },
+    onAuthStateChange(cb) {
+      if (supabase) {
+        return supabase.auth.onAuthStateChange(cb).data.subscription;
+      }
+      return null;
+    },
+    async resetPasswordForEmail(email) {
+      if (supabase) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        if (error) throw error;
+      }
+    },
   };
 
   window.JourneyaAPI = api;

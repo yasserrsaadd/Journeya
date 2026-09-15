@@ -12,10 +12,12 @@
  *  3. Go to Project Settings -> API.
  *  4. Copy your Project URL and anon/public key below.
  *
- *  HOW TO SET THE ADMIN PASSWORD:
- *  1. Choose a password you want for the admin portal.
- *  2. Generate its SHA-256 hash (see README.md for easy way).
- *  3. Paste the hash below as `ADMIN_PASSWORD_HASH`.
+ *  HOW TO SET UP ADMIN AUTH (Supabase email + password):
+ *  1. Open your Supabase project -> Authentication -> Users -> Add user.
+ *  2. Create the admin user (email + password).
+ *  3. Add that email to the `admin_emails` table (in the SQL editor):
+ *     insert into public.admin_emails (email) values ('admin@example.com');
+ *  4. Paste the email below in `ADMIN_EMAILS`.
  *
  *  Until you paste your real values the site still works,
  *  using sample/demo data so you can preview the design.
@@ -32,11 +34,11 @@ window.JOURNEYA_CONFIG = {
     bookings: "bookings",
   },
 
-  /* ---- Admin portal password ---- */
-  /* SHA-256 hash of the admin password. */
-  /* Leave empty to bypass for local demo mode (NOT for production). */
-  /* Once you set a hash, logins are checked against it. */
-  ADMIN_PASSWORD_HASH: "",
+  /* ---- Admin portal sign-in ---- */
+  /* Emails allowed to access the admin dashboard (Supabase Auth). */
+  /* Leave empty to let the DB (admin_emails table) be the only gate. */
+  /* In demo mode (Supabase not configured) login is always bypassed. */
+  ADMIN_EMAILS: [],
 
   /* ---- Site contact details ---- */
   CONTACT: {

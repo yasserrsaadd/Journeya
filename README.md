@@ -31,30 +31,39 @@ description, date, and guidelines** (one per line, rendered as a bullet list).
 
 That's it - the site now reads/writes your real tables. Guest bookings stored by type.
 
+> Guests book **without logging in** - booking forms are public, no account required.
+
 ### Managing content (adding/editing events)
 Visit the **Admin** section (link in the footer) or open the site and go to
-`index.html#/admin`, log in with the admin password, and use the built-in forms to
-**Add / Edit / Delete** events and view the **Guest Lists** (names & phones).
+`index.html#/admin`, sign in with your Supabase Auth admin account, and use the
+built-in forms to **Add / Edit / Delete** events and view the **Guest Lists**
+(names & phones). Only users whose email is in the `admin_emails` table can do this.
 
-## Setting the admin password
+## Setting up admin auth (Supabase Auth)
 
-The admin portal checks a **SHA-256 hash** of the password stored in `js/config.js`
-(`ADMIN_PASSWORD_HASH`). This keeps the plaintext password out of the source.
+The admin portal signs in with **Supabase Auth (email + password)**, and Row Level
+Security only lets confirmed admins write events or view guest lists.
 
-Generate the hash easily with your browser console:
+1. Open your Supabase project → **Authentication → Users → Add user**
+   and create an admin account (email + password).
+2. Run `supabase/schema.sql` again (it creates the `admin_emails` table and functions
+   and is safe to re-run). Then add the admin's email to the allow list:
+   ```sql
+   insert into public.admin_emails (email)
+   values ('admin@yourdomain.com')
+   on conflict (email) do nothing;
+   ```
+3. (Optional but recommended) Paste the same email into `ADMIN_EMAILS` in
+   `js/config.js`. This is only a UI gate so the wrong account is rejected up front;
+   the real enforcement is the `admin_emails` table + RLS.
 
-```js
-// paste in DevTools and press Enter
-crypto.subtle.digest("SHA-256", new TextEncoder().encode("YOUR_PASSWORD"))
-  .then(h => [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, "0")).join(""))
-  .then(hash => console.log(hash));
-```
+> **Demo mode:** until `SUPABASE_URL`/`SUPABASE_ANON_KEY` are configured, login is
+> bypassed automatically so you can preview the admin portal locally. Real security
+> only applies once a Supabase backend is connected.
 
-Then paste the printed hash into `ADMIN_PASSWORD_HASH` in `js/config.js`.
-
-> **Security note:** this is a client-side check, which is fine for controlling access
-> to a static site, but it is NOT cryptographic security. Anyone with the source can
-> edit the file. For a hardened setup, gate writes behind the service-role key instead.
+> **Security note:** the anon key is embedded in this static site, so admin access is
+> enforced by RLS on the database, not by the client. Never put the service-role key
+> in this repo - it stays server-side only.
 
 ## File Structure
 
@@ -64,8 +73,8 @@ Then paste the printed hash into `ADMIN_PASSWORD_HASH` in `js/config.js`.
 │                       #   Views switch via URL hashes: #/home #/events #/about #/contact #/admin
 ├── css/styles.css      # Journeya theme
 ├── js/
-│   ├── config.js       # <-- Paste your Supabase URL/key & admin hash here
-│   ├── supabase-client.js  # Supabase CDN client + demo-mode fallback
+│   ├── config.js       # <-- Paste your Supabase URL/key & admin emails here
+│   ├── supabase-client.js  # Supabase CDN client + auth helpers + demo-mode fallback
 │   └── main.js         # SPA router + shared navbar/footer/booking modal
 └── supabase/schema.sql # Database setup
 ```

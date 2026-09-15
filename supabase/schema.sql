@@ -37,36 +37,64 @@ create table if not exists public.bookings (
   created_at  timestamptz default now()
 );
 
+-- Admin users (Supabase Auth emails allowed to manage the site).
+-- Create the user in Authentication -> Users, then add their email here.
+create table if not exists public.admin_emails (
+  email       text primary key,
+  created_at  timestamptz default now()
+);
+
+-- Seed a placeholder admin (replace with your real admin email)
+insert into public.admin_emails (email) values ('admin@journeya.com')
+on conflict (email) do nothing;
+
+-- True if the current authenticated user's email is an allowed admin.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.admin_emails
+    where email = lower(coalesce(auth.jwt() ->> 'email', ''))
+  );
+$$;
+
 -- ============================================================
 --  ROW LEVEL SECURITY
---  Public can READ events and WRITE bookings (guest signup).
---  The admin portal (static site + password) writes events
---  through the same anon client, so public write policies are
---  granted here. Securing writes beyond this is documented in
---  the README (keep the password out of this static client).
+--  Public can READ events and WRITE bookings (guest checkout,
+--  no login required to book).
+--  Only authenticated admins (see admin_emails) can WRITE events
+--  or READ the guest lists.
 -- ============================================================
-alter table public.events  enable row level security;
-alter table public.bookings enable row level security;
+alter table public.events       enable row level security;
+alter table public.bookings     enable row level security;
+alter table public.admin_emails enable row level security;
 
 -- Anyone can read events
 drop policy if exists "public read events" on public.events;
 create policy "public read events" on public.events for select using (true);
 
--- Admin portal CRUD on events (static site, client-side auth)
+-- Admin-only CRUD on events
 drop policy if exists "admin insert events" on public.events;
-create policy "admin insert events" on public.events for insert with check (true);
+create policy "admin insert events" on public.events for insert with check (public.is_admin());
 drop policy if exists "admin update events" on public.events;
-create policy "admin update events" on public.events for update using (true);
+create policy "admin update events" on public.events for update using (public.is_admin());
 drop policy if exists "admin delete events" on public.events;
-create policy "admin delete events" on public.events for delete using (true);
+create policy "admin delete events" on public.events for delete using (public.is_admin());
 
--- Anyone can create a booking (guest checkout)
+-- Anyone can create a booking (guest checkout - no login needed)
 drop policy if exists "public insert bookings" on public.bookings;
 create policy "public insert bookings" on public.bookings for insert with check (true);
 
--- The admin portal (static site + password) reads bookings through the
--- same anon client, so guests' bookings must be publicly readable. This
--- exposes names/phones to anyone with the API key (documented caveat).
+-- Only admins can read the guest lists
 drop policy if exists "admin read bookings"  on public.bookings;
 drop policy if exists "public read bookings" on public.bookings;
-create policy "public read bookings" on public.bookings for select using (true);
+create policy "admin read bookings" on public.bookings for select using (public.is_admin());
+
+-- Admins can read the admin_emails table (used to check membership)
+drop policy if exists "admin read admin_emails" on public.admin_emails;
+create policy "admin read admin_emails" on public.admin_emails for select using (public.is_admin());
