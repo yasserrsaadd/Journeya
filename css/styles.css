@@ -14,7 +14,7 @@
 }
 
 html {
-  overflow-x: hidden;
+  overflow-x: clip; /* clips horizontal overflow without creating a nested scroll context */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* legacy Edge/IE */
 }
@@ -29,7 +29,6 @@ body {
   color: var(--j-dark);
   background: var(--j-light);
   padding-top: 72px;
-  overflow-x: hidden;
 }
 
 /* ---------- Navbar ---------- */
@@ -99,10 +98,9 @@ body {
     linear-gradient(135deg, rgba(110, 22, 22, 0.9), rgba(176, 59, 59, 0.82)),
     url("https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=60")
       center/cover no-repeat;
-  background-size: 170% 170%;
+  background-size: cover;
   color: #fff;
   padding: 100px 0;
-  animation: kenBurns 22s ease-in-out infinite alternate;
 }
 .hero-badge {
   background: rgba(255, 255, 255, 0.22);
@@ -494,14 +492,6 @@ body {
 }
 
 /* ---------- Keyframes ---------- */
-@keyframes kenBurns {
-  from {
-    background-position: 0% 0%;
-  }
-  to {
-    background-position: 100% 100%;
-  }
-}
 @keyframes floaty {
   0%,
   100% {
