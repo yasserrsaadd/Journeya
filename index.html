@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Journeya - Play. Travel. Belong.</title>
+  <title>Journeya - Play. Connect. Belong.</title>
   <link rel="icon" type="image/png" href="images/Logo.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,15 +24,14 @@
   <section id="home-section" class="page-section">
     <header class="hero text-center">
       <div class="container">
-        <span class="hero-badge mb-3"><i class="fas fa-users me-2"></i>Play. Travel. Belong.</span>
-        <h1 class="mb-3">Play games. Take trips.<br />Make real friends.</h1>
+        <span class="hero-badge mb-3"><i class="fas fa-users me-2"></i>Play. Connect. Belong.</span>
+        <h1 class="mb-3">Play games.<br />Make real friends.</h1>
         <p class="lead mx-auto mb-4" style="max-width: 640px;">
-          Journeya is your community for epic game nights and unforgettable weekend
-          getaways around Egypt. No memberships, no logins - just show up and have fun.
+          Journeya is your community for epic game nights and unforgettable social
+          events around Egypt. No memberships, no logins - just show up and have fun.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
           <a href="#events-section" class="btn btn-sun btn-lg"><i class="fas fa-dice me-2"></i>Browse Events</a>
-          <a href="#trips-section" class="btn btn-j-outline btn-lg"><i class="fas fa-plane me-2"></i>Explore Trips</a>
         </div>
       </div>
     </header>
@@ -54,7 +53,7 @@
           <button class="btn btn-j-outline btn-sm filter-btn" data-filter="available" style="border-color:var(--j-primary);color:var(--j-primary);">Available</button>
         </div>
       </div>
-      <div class="swiper events-swiper reveal">
+      <div class="swiper events-swiper">
         <div class="swiper-wrapper" id="eventsRow"></div>
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
@@ -63,25 +62,7 @@
     </div>
   </section>
 
-  <!-- ==============================================================
-       TRIPS
-  ============================================================== -->
-  <section id="trips-section" class="page-section py-5 bg-soft">
-    <div class="container">
-      <div class="text-center mb-4">
-        <h2 class="section-title">Available Trips</h2>
-        <p class="section-sub">Escape the city with curated weekend getaways.</p>
-      </div>
-      <div class="swiper trips-swiper reveal">
-        <div class="swiper-wrapper" id="tripsRow"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-pagination"></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="page-section py-5 bg-tint">
+  <section id="payments-section" class="page-section py-5 bg-soft">
     <div class="container reveal">
       <div class="text-center mb-4">
         <h2 class="section-title">Flexible Payments</h2>
@@ -90,7 +71,7 @@
       <div class="row g-4">
         <div class="col-md-4 reveal reveal-d1"><div class="pay-card"><i class="fas fa-credit-card"></i><h6 class="fw-bold">Credit &amp; Debit Cards</h6><p class="text-muted mb-0">Visa, Mastercard &amp; more via secure checkout.</p></div></div>
         <div class="col-md-4 reveal reveal-d2"><div class="pay-card"><i class="fas fa-mobile-alt"></i><h6 class="fw-bold">Mobile Wallets</h6><p class="text-muted mb-0">Pay with Instapay, Vodafone Cash or similar.</p></div></div>
-        <div class="col-md-4 reveal reveal-d3"><div class="pay-card"><i class="fas fa-hand-holding-usd"></i><h6 class="fw-bold">Cash Collection</h6><p class="text-muted mb-0">Pay in cash when your trip or event starts.</p></div></div>
+        <div class="col-md-4 reveal reveal-d3"><div class="pay-card"><i class="fas fa-hand-holding-usd"></i><h6 class="fw-bold">Cash Collection</h6><p class="text-muted mb-0">Pay in cash when your event starts.</p></div></div>
       </div>
     </div>
   </section>
@@ -115,18 +96,17 @@
         <div class="col-lg-6 reveal reveal-right">
           <h3 class="section-title">Our Mission</h3>
           <p class="text-muted">
-            Journeya exists to bring people together through two of the simplest joys in life:
-            playing and traveling. In a world that keeps us glued to screens, we create
+            Journeya exists to bring people together through one of the simplest joys in life:
+            playing. In a world that keeps us glued to screens, we create
             real spaces where you can laugh, compete, share stories and make friends that stick.
           </p>
           <p class="text-muted">
-            Whether it's a casual game night in Cairo or a weekend escape to El Sokhna or
-            Nuweiba, every Journeya experience is designed around one thing: genuine connection.
+            Whether it's a casual game night in Cairo or a themed social gathering,
+            every Journeya experience is designed around one thing: genuine connection.
           </p>
           <div class="d-flex gap-4 mt-4">
             <div><h3 class="fw-bold" style="color:var(--j-primary);">100s</h3><p class="text-muted mb-0">Happy members</p></div>
             <div><h3 class="fw-bold" style="color:var(--j-accent);">50+</h3><p class="text-muted mb-0">Events hosted</p></div>
-            <div><h3 class="fw-bold" style="color:var(--j-sun);">10+</h3><p class="text-muted mb-0">Destinations</p></div>
           </div>
           <a href="#contact-section" class="btn btn-j mt-4"><i class="fas fa-envelope me-2"></i>Join the Community</a>
         </div>
@@ -258,44 +238,11 @@
             <span class="badge bg-secondary" id="dbBadge"></span>
           </div>
           <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="trips">Trips</button>
             <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="events">Events</button>
             <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="bookings">Guest Lists</button>
             <button class="btn btn-danger btn-sm" onclick="window.JourneyaAdmin.logout()"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
           </div>
         </div>
-
-        <!-- Trips section -->
-        <section id="sec-trips">
-          <div class="card card-j p-4 mb-4">
-            <h5 class="fw-bold mb-3"><i class="fas fa-plane me-2" style="color:var(--j-primary);"></i>Add / Edit Trip</h5>
-            <form id="tripForm" novalidate>
-              <input type="hidden" id="tripId" />
-              <div class="row g-3">
-                <div class="col-md-6"><label class="form-label">Title *</label><input type="text" class="form-control" id="tTitle" required /></div>
-                <div class="col-md-6"><label class="form-label">Destination *</label><input type="text" class="form-control" id="tDest" required placeholder="e.g. Ain Sokhna" /></div>
-                <div class="col-md-3"><label class="form-label">Price (EGP) *</label><input type="number" class="form-control" id="tPrice" min="0" required /></div>
-                <div class="col-md-3"><label class="form-label">Start Date</label><input type="date" class="form-control" id="tStart" /></div>
-                <div class="col-md-3"><label class="form-label">End Date</label><input type="date" class="form-control" id="tEnd" /></div>
-                <div class="col-md-3"><label class="form-label">Available</label><select class="form-select" id="tAvail"><option value="true">Yes</option><option value="false">No</option></select></div>
-                <div class="col-12"><label class="form-label">Image URL</label><input type="url" class="form-control" id="tImage" placeholder="https://..."/></div>
-                <div class="col-12"><label class="form-label">Itinerary (one line per day)</label><textarea class="form-control" id="tItinerary" rows="3"></textarea></div>
-                <div class="col-12"><label class="form-label">Inclusions</label><textarea class="form-control" id="tIncl" rows="2"></textarea></div>
-                <div class="col-12 d-flex gap-2">
-                  <button type="submit" class="btn btn-j">Save Trip</button>
-                  <button type="button" class="btn btn-outline-secondary" id="tripReset">Reset</button>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="card card-j p-4">
-            <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-primary);"></i>Trips</h5>
-            <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Title</th><th>Destination</th><th>Price</th><th>Dates</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="tripsTable"></tbody>
-            </table></div>
-          </div>
-        </section>
 
         <!-- Events section -->
         <section id="sec-events" style="display:none;">
@@ -307,10 +254,12 @@
                 <div class="col-md-6"><label class="form-label">Title *</label><input type="text" class="form-control" id="eTitle" required /></div>
                 <div class="col-md-6"><label class="form-label">Location *</label><input type="text" class="form-control" id="eLoc" required /></div>
                 <div class="col-md-4"><label class="form-label">Date *</label><input type="date" class="form-control" id="eDate" required /></div>
-                <div class="col-md-4"><label class="form-label">Time *</label><input type="time" class="form-control" id="eTime" required /></div>
+                <div class="col-md-4"><label class="form-label">Time</label><input type="time" class="form-control" id="eTime" /></div>
+                <div class="col-md-4"><label class="form-label">Price (EGP) *</label><input type="number" class="form-control" id="ePrice" min="0" step="0.01" required /></div>
                 <div class="col-md-4"><label class="form-label">Available</label><select class="form-select" id="eAvail"><option value="true">Yes</option><option value="false">No</option></select></div>
-                <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" id="eDesc" rows="2"></textarea></div>
-                <div class="col-12"><label class="form-label">Image URL</label><input type="url" class="form-control" id="eImage" placeholder="https://..."/></div>
+                <div class="col-12"><label class="form-label">Description *</label><textarea class="form-control" id="eDesc" rows="2" required></textarea></div>
+                <div class="col-12"><label class="form-label">Image URL *</label><input type="url" class="form-control" id="eImage" placeholder="https://..." required /></div>
+                <div class="col-12"><label class="form-label">Guidelines (one per line) *</label><textarea class="form-control" id="eGuide" rows="3" required placeholder="e.g.&#10;Bring your own snacks&#10;Arrive 15 minutes early"></textarea></div>
                 <div class="col-12 d-flex gap-2">
                   <button type="submit" class="btn btn-j">Save Event</button>
                   <button type="button" class="btn btn-outline-secondary" id="eventReset">Reset</button>
@@ -321,7 +270,7 @@
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-accent);"></i>Events</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Location</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="eventsTable"></tbody>
             </table></div>
           </div>
@@ -331,16 +280,8 @@
         <section id="sec-bookings" style="display:none;">
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-users me-2" style="color:var(--j-sun);"></i>Guest Bookings (Names &amp; Phones)</h5>
-            <div class="mb-3">
-              <label class="form-label">Filter</label>
-              <select class="form-select" id="bookFilter" style="max-width:260px;">
-                <option value="all">All</option>
-                <option value="trip">Trips</option>
-                <option value="event">Events</option>
-              </select>
-            </div>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Booked For</th><th>Type</th><th>Date</th></tr></thead>
+              <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Booked For</th><th>Date</th></tr></thead>
               <tbody id="bookingsTable"></tbody>
             </table></div>
           </div>
@@ -375,18 +316,34 @@
       let currentFilter = "all";
       let eventsFilterWired = false;
 
-      function eventCard(ev) {
+      function guidelinesHtml(text) {
+        if (!text) return "";
+        const lines = String(text).split("\n").filter(Boolean);
         return (
-          '<div class="swiper-slide h-auto reveal"><div class="card card-j h-100">' +
-          '<img src="' + (ev.image || "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60") + '" class="card-img-top" alt="' + esc(ev.title) + '">' +
+          '<div class="guidelines">' +
+          '<h6 class="guidelines-title"><i class="fas fa-list-check me-2" style="color:var(--j-accent);"></i>Guidelines</h6>' +
+          lines.map((l) => '<div class="guideline-item"><i class="fas fa-circle-check me-2" style="color:var(--j-sun);"></i>' + esc(l) + "</div>").join("") +
+          "</div>"
+        );
+      }
+
+      function eventCard(ev) {
+        const price = ev.price != null && ev.price !== "" ? "EGP " + ev.price : "";
+        return (
+          '<div class="swiper-slide h-auto"><div class="card card-j h-100">' +
+          '<img src="' + (ev.image || "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60") + '" class="card-img-top" loading="lazy" decoding="async" alt="' + esc(ev.title) + '">' +
           '<div class="card-body d-flex flex-column">' +
           '<div class="mb-2 d-flex flex-wrap gap-2">' +
           '<span class="chip"><i class="fas fa-calendar-day"></i>' + esc(ev.date || "TBD") + "</span>" +
-          '<span class="chip"><i class="fas fa-clock"></i>' + esc(ev.time || "TBD") + "</span>" +
+          (ev.time ? '<span class="chip"><i class="fas fa-clock"></i>' + esc(ev.time) + "</span>" : "") +
           "</div>" +
           '<span class="chip mb-2"><i class="fas fa-map-marker-alt"></i>' + esc(ev.location || "Location TBD") + "</span>" +
-          '<h5 class="card-title">' + esc(ev.title) + "</h5>" +
-          '<p class="text-muted flex-grow-1">' + esc(ev.description || "") + "</p>" +
+          '<div class="d-flex justify-content-between align-items-start flex-wrap mb-1">' +
+          '<h5 class="card-title fw-bold mb-0">' + esc(ev.title) + "</h5>" +
+          (price ? '<span class="lead fw-bold" style="color:var(--j-primary);">' + esc(price) + "</span>" : "") +
+          "</div>" +
+          '<p class="text-muted">' + esc(ev.description || "") + "</p>" +
+          guidelinesHtml(ev.guidelines) +
           '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'event\',' + esc(JSON.stringify(ev)) + ')">' +
           '<i class="fas fa-ticket-alt me-2"></i>Book Now (Guest)</button>' +
           "</div></div></div>"
@@ -394,14 +351,13 @@
       }
 
       let eventsSwiper = null;
-      let tripsSwiper = null;
 
       function initSwiper(selector, key) {
         if (window[key]) window[key].destroy(true, true);
         window[key] = new Swiper(selector, {
           slidesPerView: 1,
           spaceBetween: 24,
-          speed: 600,
+          speed: 400,
           grabCursor: true,
           navigation: {
             nextEl: selector + " .swiper-button-next",
@@ -422,14 +378,14 @@
       async function loadEvents() {
         const host = document.getElementById("eventsRow");
         if (!host) return;
-        host.innerHTML = '<div class="swiper-slide text-center text-muted py-5">Loading...</div>';
+        host.innerHTML = '<div class="swiper-slide events-empty text-center text-muted py-5">Loading...</div>';
         try {
-          let events = await api.fetchEvents(currentFilter === "available");
+          let events = await api.fetchEvents(currentFilter === "available" ? true : undefined);
           host.innerHTML = events.length
             ? events.map(eventCard).join("")
-            : '<div class="swiper-slide text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No events right now - check back soon!</p></div>';
+            : '<div class="swiper-slide events-empty text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No events right now - check back soon!</p></div>';
         } catch (e) {
-          host.innerHTML = '<div class="swiper-slide text-center text-danger py-5">Could not load events.</div>';
+          host.innerHTML = '<div class="swiper-slide events-empty text-center text-danger py-5">Could not load events.</div>';
           console.error(e);
         }
         initSwiper(".events-swiper", "eventsSwiper");
@@ -447,50 +403,6 @@
             loadEvents();
           });
         });
-      }
-
-      /* ================= TRIPS ================= */
-      function itineraryHtml(text) {
-        if (!text) return "";
-        const lines = String(text).split("\n").filter(Boolean);
-        return '<div class="itinerary">' + lines.map((l) => '<div><i class="fas fa-check-circle me-2" style="color:var(--j-sun);"></i>' + esc(l) + "</div>").join("") + "</div>";
-      }
-
-      function tripCard(t) {
-        const dates = (t.start_date || "") + (t.end_date && t.end_date !== t.start_date ? " - " + t.end_date : "");
-        return (
-          '<div class="swiper-slide h-auto reveal"><div class="card card-j h-100">' +
-          '<img src="' + (t.image || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=60") + '" class="card-img-top" alt="' + esc(t.title) + '">' +
-          '<div class="card-body d-flex flex-column">' +
-          '<div class="d-flex justify-content-between align-items-start flex-wrap mb-2">' +
-          '<h5 class="card-title fw-bold mb-0">' + esc(t.title) + "</h5>" +
-          '<span class="lead fw-bold" style="color:var(--j-primary);">EGP ' + esc(t.price) + "</span></div>" +
-          '<div class="mb-2">' +
-          '<span class="chip"><i class="fas fa-map-marker-alt"></i>' + esc(t.destination) + "</span>" +
-          (dates ? '<span class="chip ms-1"><i class="fas fa-calendar-day"></i>' + esc(dates) + "</span>" : "") +
-          "</div>" +
-          itineraryHtml(t.itinerary) +
-          '<p class="text-muted mt-2 flex-grow-1">' + esc(t.inclusions || "Transport, accommodation, meals & guided activities.") + "</p>" +
-          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'trip\',' + esc(JSON.stringify(t)) + ')">' +
-          '<i class="fas fa-shopping-bag me-2"></i>Book This Trip</button>' +
-          "</div></div></div>"
-        );
-      }
-
-      async function loadTrips() {
-        const host = document.getElementById("tripsRow");
-        if (!host) return;
-        host.innerHTML = '<div class="swiper-slide text-center text-muted py-5">Loading trips...</div>';
-        try {
-          const trips = await api.fetchTrips(true);
-          host.innerHTML = trips.length
-            ? trips.map(tripCard).join("")
-            : '<div class="swiper-slide text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No trips right now - check back soon!</p></div>';
-        } catch (e) {
-          host.innerHTML = '<div class="swiper-slide text-center text-danger py-5">Could not load trips.</div>';
-          console.error(e);
-        }
-        initSwiper(".trips-swiper", "tripsSwiper");
       }
 
       /* ================= CONTACT ================= */
@@ -545,7 +457,7 @@
       /* ================= ADMIN ================= */
       const SESSION_KEY = "journeya_admin_auth";
       let adminWired = false;
-      let adminSection = "trips";
+      let adminSection = "events";
 
       async function sha256(text) {
         const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -596,86 +508,12 @@
 
       function showAdminSection(name) {
         adminSection = name;
-        ["trips", "events", "bookings"].forEach((s) => {
+        ["events", "bookings"].forEach((s) => {
           document.getElementById("sec-" + s).style.display = s === name ? "" : "none";
         });
         document.querySelectorAll(".adm-tab").forEach((b) => b.classList.toggle("active", b.dataset.sec === name));
-        if (name === "trips") loadTripsTable();
         if (name === "events") loadEventsTable();
         if (name === "bookings") loadBookings();
-      }
-
-      /* Admin trips */
-      function fillTripForm(t) {
-        document.getElementById("tripId").value = t && t.id ? t.id : "";
-        document.getElementById("tTitle").value = (t && t.title) || "";
-        document.getElementById("tDest").value = (t && t.destination) || "";
-        document.getElementById("tPrice").value = (t && t.price) || "";
-        document.getElementById("tStart").value = (t && t.start_date) || "";
-        document.getElementById("tEnd").value = (t && t.end_date) || "";
-        document.getElementById("tAvail").value = (t && t.available !== false) ? "true" : "false";
-        document.getElementById("tImage").value = (t && t.image) || "";
-        document.getElementById("tItinerary").value = (t && t.itinerary) || "";
-        document.getElementById("tIncl").value = (t && t.inclusions) || "";
-      }
-
-      async function loadTripsTable() {
-        const tbody = document.getElementById("tripsTable");
-        try {
-          const trips = await api.fetchTrips();
-          tbody.innerHTML = trips.length
-            ? trips.map((t) =>
-                "<tr>" +
-                "<td>" + esc(t.title) + "</td>" +
-                "<td>" + esc(t.destination) + "</td>" +
-                "<td>EGP " + esc(t.price) + "</td>" +
-                "<td>" + esc(t.start_date || "") + (t.end_date && t.end_date !== t.start_date ? " → " + esc(t.end_date) : "") + "</td>" +
-                '<td>' + (t.available === false ? '<span class="badge bg-secondary">Hidden</span>' : '<span class="badge bg-success">Live</span>') + "</td>" +
-                '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="window.JourneyaAdmin.editTrip(' + t.id + ')"><i class="fas fa-edit"></i></button>' +
-                '<button class="btn btn-sm btn-outline-danger" onclick="window.JourneyaAdmin.deleteTrip(' + t.id + ')"><i class="fas fa-trash"></i></button></td></tr>'
-              ).join("")
-            : '<tr><td colspan="6" class="text-center text-muted">No trips yet.</td></tr>';
-        } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
-          console.error(err);
-        }
-      }
-
-      async function saveTrip(e) {
-        e.preventDefault();
-        const form = e.target;
-        if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
-        const id = document.getElementById("tripId").value;
-        const data = {
-          title: document.getElementById("tTitle").value.trim(),
-          destination: document.getElementById("tDest").value.trim(),
-          price: Number(document.getElementById("tPrice").value),
-          start_date: document.getElementById("tStart").value || null,
-          end_date: document.getElementById("tEnd").value || null,
-          available: document.getElementById("tAvail").value === "true",
-          image: document.getElementById("tImage").value.trim() || null,
-          itinerary: document.getElementById("tItinerary").value.trim() || null,
-          inclusions: document.getElementById("tIncl").value.trim() || null,
-        };
-        try {
-          if (id) await api.updateTrip(id, data);
-          else await api.addTrip(data);
-          api.notifyChanged();
-          fillTripForm(null);
-          form.classList.remove("was-validated");
-          loadTripsTable();
-        } catch (err) { alert("Save failed: " + err.message); console.error(err); }
-      }
-
-      async function editTrip(id) {
-        const trips = await api.fetchTrips();
-        const t = trips.find((x) => x.id == id);
-        if (t) { showAdminSection("trips"); fillTripForm(t); window.scrollTo(0, 0); }
-      }
-
-      async function deleteTrip(id) {
-        if (!confirm("Delete this trip?")) return;
-        try { await api.deleteTrip(id); api.notifyChanged(); loadTripsTable(); } catch (err) { alert("Delete failed: " + err.message); }
       }
 
       /* Admin events */
@@ -688,6 +526,8 @@
         document.getElementById("eAvail").value = (ev && ev.available !== false) ? "true" : "false";
         document.getElementById("eDesc").value = (ev && ev.description) || "";
         document.getElementById("eImage").value = (ev && ev.image) || "";
+        document.getElementById("ePrice").value = (ev && ev.price != null) ? ev.price : "";
+        document.getElementById("eGuide").value = (ev && ev.guidelines) || "";
       }
 
       async function loadEventsTable() {
@@ -701,13 +541,14 @@
                 "<td>" + esc(ev.date || "") + "</td>" +
                 "<td>" + esc(ev.time || "") + "</td>" +
                 "<td>" + esc(ev.location) + "</td>" +
+                "<td>" + esc(ev.price != null ? "EGP " + ev.price : "") + "</td>" +
                 '<td>' + (ev.available === false ? '<span class="badge bg-secondary">Hidden</span>' : '<span class="badge bg-success">Live</span>') + "</td>" +
                 '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="window.JourneyaAdmin.editEvent(' + ev.id + ')"><i class="fas fa-edit"></i></button>' +
                 '<button class="btn btn-sm btn-outline-danger" onclick="window.JourneyaAdmin.deleteEvent(' + ev.id + ')"><i class="fas fa-trash"></i></button></td></tr>'
               ).join("")
-            : '<tr><td colspan="6" class="text-center text-muted">No events yet.</td></tr>';
+            : '<tr><td colspan="7" class="text-center text-muted">No events yet.</td></tr>';
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load.</td></tr>';
           console.error(err);
         }
       }
@@ -722,9 +563,11 @@
           location: document.getElementById("eLoc").value.trim(),
           date: document.getElementById("eDate").value || null,
           time: document.getElementById("eTime").value || null,
+          price: Number(document.getElementById("ePrice").value),
           available: document.getElementById("eAvail").value === "true",
           description: document.getElementById("eDesc").value.trim() || null,
           image: document.getElementById("eImage").value.trim() || null,
+          guidelines: document.getElementById("eGuide").value.trim() || null,
         };
         try {
           if (id) await api.updateEvent(id, data);
@@ -750,10 +593,9 @@
       /* Admin bookings */
       async function loadBookings() {
         const tbody = document.getElementById("bookingsTable");
-        const filter = document.getElementById("bookFilter").value;
         try {
           let bookings = await api.fetchBookings();
-          if (filter !== "all") bookings = bookings.filter((b) => b.type === filter);
+          bookings = bookings.filter((b) => b.type !== "trip");
           tbody.innerHTML = bookings.length
             ? bookings.map((b) =>
                 "<tr>" +
@@ -761,12 +603,11 @@
                 '<td><a class="link-dark" href="tel:' + esc(b.phone) + '">' + esc(b.phone) + "</a></td>" +
                 "<td>" + esc(b.email) + "</td>" +
                 "<td>" + esc(b.item_title || "Item #" + b.item_id) + "</td>" +
-                "<td>" + (b.type === "trip" ? "Trip" : "Event") + "</td>" +
                 "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td></tr>"
               ).join("")
-            : '<tr><td colspan="6" class="text-center text-muted">No bookings yet.</td></tr>';
+            : '<tr><td colspan="5" class="text-center text-muted">No bookings yet.</td></tr>';
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load.</td></tr>';
           console.error(err);
         }
       }
@@ -775,11 +616,8 @@
         if (adminWired) return;
         adminWired = true;
         document.getElementById("loginForm").addEventListener("submit", handleLogin);
-        document.getElementById("tripForm").addEventListener("submit", saveTrip);
         document.getElementById("eventForm").addEventListener("submit", saveEvent);
-        document.getElementById("tripReset").addEventListener("click", () => fillTripForm(null));
         document.getElementById("eventReset").addEventListener("click", () => fillEventForm(null));
-        document.getElementById("bookFilter").addEventListener("change", loadBookings);
         document.querySelectorAll("#view-admin .adm-tab").forEach((b) => {
           b.addEventListener("click", () => showAdminSection(b.dataset.sec));
         });
@@ -792,8 +630,6 @@
 
       window.JourneyaAdmin = {
         logout,
-        editTrip,
-        deleteTrip,
         editEvent,
         deleteEvent,
       };
@@ -803,7 +639,6 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         initEvents();
-        loadTrips();
         initContact();
         if (window.JourneyaApp.current() === "admin") initAdmin();
         window.JourneyaApp.setupReveal();
@@ -812,13 +647,18 @@
           const v = window.JourneyaApp.current();
           if (v === "admin") {
             if (sessionStorage.getItem(SESSION_KEY)) {
-              if (adminSection === "trips") loadTripsTable();
               if (adminSection === "events") loadEventsTable();
               if (adminSection === "bookings") loadBookings();
             }
           } else {
             loadEvents();
-            loadTrips();
+            window.JourneyaApp.setupReveal();
+          }
+        });
+
+        window.addEventListener("journeya:view", (e) => {
+          if (e.detail.name !== "admin") {
+            loadEvents();
             window.JourneyaApp.setupReveal();
           }
         });

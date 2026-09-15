@@ -23,12 +23,11 @@
  */
 window.JOURNEYA_CONFIG = {
   /* ---- Supabase credentials (replace these) ---- */
-  SUPABASE_URL: "", // e.g. "https://xxxxx.supabase.co"
-  SUPABASE_ANON_KEY: "", // your anon/public key
+  SUPABASE_URL: "https://yzndxfzitoliixwrzfzm.supabase.co", // e.g. "https://xxxxx.supabase.co"
+  SUPABASE_ANON_KEY: "sb_publishable_SQ8sexvH3dmUzt4Eo74LdQ_VjIEWDB1", // your anon/public key
 
   /* ---- Supabase table names (match schema.sql) ---- */
   TABLES: {
-    trips: "trips",
     events: "events",
     bookings: "bookings",
   },

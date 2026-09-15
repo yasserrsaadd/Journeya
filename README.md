@@ -1,7 +1,7 @@
 # Journeya - Community Website
 
 A modern, vibrant, static website for **Journeya**, an agency that organizes social
-events (game nights) and weekend trips (El Sokhna, Nuweiba, etc.).
+events (game nights) across Egypt.
 
 Built with plain HTML5/CSS3/JavaScript, **Bootstrap** and **Font Awesome** via CDN,
 and **Supabase** (via its JS client CDN) for storage.
@@ -20,16 +20,21 @@ make guest bookings, and try the admin portal immediately.
 
 1. Create a free project at https://supabase.com
 2. Open the **SQL Editor** and run the contents of `supabase/schema.sql`.
-   This creates the `trips`, `events` and `bookings` tables with Row Level Security.
+   This creates the `events` and `bookings` tables with Row Level Security.
+   The script is safe to re-run (it uses `if not exists` and `add column if not exists`),
+   so re-run it whenever the schema changes — e.g. to add new event fields.
+
+Every event carries the following fields: **title, price, picture (image URL), location,
+description, date, and guidelines** (one per line, rendered as a bullet list).
 3. Go to **Project Settings → API** and copy your **Project URL** and **anon/public key**.
 4. Open `js/config.js` and paste them into `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
 
 That's it - the site now reads/writes your real tables. Guest bookings stored by type.
 
-### Managing content (adding/editing trips & events)
+### Managing content (adding/editing events)
 Visit the **Admin** section (link in the footer) or open the site and go to
 `index.html#/admin`, log in with the admin password, and use the built-in forms to
-**Add / Edit / Delete** trips and events and view the **Guest Lists** (names & phones).
+**Add / Edit / Delete** events and view the **Guest Lists** (names & phones).
 
 ## Setting the admin password
 
@@ -55,8 +60,8 @@ Then paste the printed hash into `ADMIN_PASSWORD_HASH` in `js/config.js`.
 
 ```
 .
-├── index.html          # Single-file single-page site (Home, Events, Trips, About, Contact, Admin)
-│                       #   Views switch via URL hashes: #/home #/events #/trips #/about #/contact #/admin
+├── index.html          # Single-file single-page site (Home, Events, About, Contact, Admin)
+│                       #   Views switch via URL hashes: #/home #/events #/about #/contact #/admin
 ├── css/styles.css      # Journeya theme
 ├── js/
 │   ├── config.js       # <-- Paste your Supabase URL/key & admin hash here
@@ -68,4 +73,4 @@ Then paste the printed hash into `ADMIN_PASSWORD_HASH` in `js/config.js`.
 ## Payments
 
 The site showcases **flexible payments**: credit/debit cards, mobile wallets
-(Instapay, Vodafone Cash) and **cash collection** on the day of the event/trip.
+(Instapay, Vodafone Cash) and **cash collection** on the day of the event.

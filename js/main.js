@@ -12,7 +12,6 @@
   const routeMap = {
     home: "home-section",
     events: "events-section",
-    trips: "trips-section",
     about: "about-section",
     contact: "contact-section",
   };
@@ -37,6 +36,7 @@
         if (views.admin) views.admin();
         window.scrollTo(0, 0);
         setupReveal();
+        window.dispatchEvent(new CustomEvent("journeya:view", { detail: { name: s } }));
         return;
       }
 
@@ -49,6 +49,7 @@
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
       setupReveal();
+      window.dispatchEvent(new CustomEvent("journeya:view", { detail: { name: s } }));
     },
     current() {
       return (window.location.hash || "").replace(/^#\/?/, "") || "home";
@@ -86,7 +87,6 @@
     const links = [
       { href: "#home-section", dataSection: "home-section", label: "Home" },
       { href: "#events-section", dataSection: "events-section", label: "Events" },
-      { href: "#trips-section", dataSection: "trips-section", label: "Trips" },
       { href: "#about-section", dataSection: "about-section", label: "About" },
       { href: "#contact-section", dataSection: "contact-section", label: "Contact" },
     ];
@@ -110,7 +110,7 @@
             "</a></li>"
         )
         .join("") +
-      '<li class="nav-item ms-lg-3"><a class="btn btn-j btn-sm" href="#trips-section">Book a trip/event</a></li>' +
+      '<li class="nav-item ms-lg-3"><a class="btn btn-j btn-sm" href="#events-section">Book an event</a></li>' +
       "</ul></div></div></nav>";
   }
 
@@ -124,13 +124,12 @@
       '<div class="row">' +
       '<div class="col-md-4 mb-4">' +
       '<h5 class="text-white fw-bold"><img src="images/logo-cropped.png" alt="Journeya" class="footer-logo" /></h5>' +
-      '<p class="mb-2">Building a real-world community through games and travel.</p>' +
+      '<p class="mb-2">Building a real-world community through games and good times.</p>' +
       "</div>" +
       '<div class="col-md-4 mb-4">' +
       "<h6 class=\"text-white fw-bold\">Quick Links</h6>" +
       '<ul class="list-unstyled">' +
       '<li><a href="#events-section">Events</a></li>' +
-      '<li><a href="#trips-section">Trips</a></li>' +
       '<li><a href="#about-section">About Us</a></li>' +
       '<li><a href="#contact-section">Contact</a></li>' +
       '<li><a href="#/admin">Admin</a></li>' +
@@ -168,14 +167,13 @@
       "</div></footer>";
   }
 
-  /* ---- Guest booking modal (shared across Events & Trips) ---- */
+  /* ---- Guest booking modal (shared across events) ---- */
   window.JourneyaUI = {
     openBooking(type, item) {
       const host = document.getElementById("bookingModalHost");
       if (!host) return;
 
-      const isTrip = type === "trip";
-      const title = isTrip ? item.title : item.title;
+      const title = item.title;
 
       host.innerHTML =
         '<div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">' +
@@ -221,7 +219,7 @@
           return;
         }
         const booking = {
-          type: isTrip ? "trip" : "event",
+          type: "event",
           item_id: item.id,
           name: host.querySelector("#bkName").value.trim(),
           phone: host.querySelector("#bkPhone").value.trim(),
