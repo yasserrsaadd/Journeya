@@ -47,12 +47,6 @@
         <h2 class="section-title">Upcoming Events</h2>
         <p class="section-sub">Game nights &amp; social gatherings. Grab a spot before they fill up.</p>
       </div>
-      <div class="d-flex justify-content-center gap-2 mb-4">
-        <div class="btn-group" role="group" aria-label="Filter">
-          <button class="btn btn-j-outline btn-sm filter-btn active" data-filter="all" style="border-color:var(--j-primary);color:var(--j-primary);">All</button>
-          <button class="btn btn-j-outline btn-sm filter-btn" data-filter="available" style="border-color:var(--j-primary);color:var(--j-primary);">Available</button>
-        </div>
-      </div>
       <div class="swiper events-swiper">
         <div class="swiper-wrapper" id="eventsRow"></div>
         <div class="swiper-button-next"></div>
@@ -62,16 +56,52 @@
     </div>
   </section>
 
-  <section id="payments-section" class="page-section py-5 bg-soft">
-    <div class="container reveal">
-      <div class="text-center mb-4">
-        <h2 class="section-title">Flexible Payments</h2>
-        <p class="section-sub">Whatever works for you.</p>
+  <!-- ==============================================================
+       FAQ
+  ============================================================== -->
+  <section id="faq-section" class="page-section py-5 bg-soft">
+    <div class="container">
+      <div class="text-center mb-4 mb-md-5">
+        <span class="hero-badge mb-3" style="color:var(--j-primary);border-color:var(--j-primary);"><i class="fas fa-circle-question me-2"></i>FAQ</span>
+        <h2 class="section-title mt-3">Frequently Asked Questions</h2>
+        <p class="section-sub mx-auto" style="max-width:620px;">Everything you need to know before joining an event.</p>
       </div>
-      <div class="row g-4">
-        <div class="col-md-4 reveal reveal-d1"><div class="pay-card"><i class="fas fa-credit-card"></i><h6 class="fw-bold">Credit &amp; Debit Cards</h6><p class="text-muted mb-0">Visa, Mastercard &amp; more via secure checkout.</p></div></div>
-        <div class="col-md-4 reveal reveal-d2"><div class="pay-card"><i class="fas fa-mobile-alt"></i><h6 class="fw-bold">Mobile Wallets</h6><p class="text-muted mb-0">Pay with Instapay, Vodafone Cash or similar.</p></div></div>
-        <div class="col-md-4 reveal reveal-d3"><div class="pay-card"><i class="fas fa-hand-holding-usd"></i><h6 class="fw-bold">Cash Collection</h6><p class="text-muted mb-0">Pay in cash when your event starts.</p></div></div>
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          <div class="accordion faq-accordion" id="faqAccordion">
+            <!-- Duplicate this item to add a new question/answer -->
+            <div class="accordion-item reveal">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="true" aria-controls="faq1">
+                  <i class="fas fa-ticket-alt me-2"></i>Question goes here
+                </button>
+              </h2>
+              <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">Your answer goes here. Write a clear, friendly response to help visitors.</div>
+              </div>
+            </div>
+            <div class="accordion-item reveal">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                  <i class="fas fa-calendar-check me-2"></i>Question goes here
+                </button>
+              </h2>
+              <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">Your answer goes here. Write a clear, friendly response to help visitors.</div>
+              </div>
+            </div>
+            <div class="accordion-item reveal">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                  <i class="fas fa-location-dot me-2"></i>Question goes here
+                </button>
+              </h2>
+              <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">Your answer goes here. Write a clear, friendly response to help visitors.</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -239,7 +269,6 @@
                 <div class="col-md-4"><label class="form-label">Date *</label><input type="date" class="form-control" id="eDate" required /></div>
                 <div class="col-md-4"><label class="form-label">Time</label><input type="time" class="form-control" id="eTime" /></div>
                 <div class="col-md-4"><label class="form-label">Price (EGP) *</label><input type="number" class="form-control" id="ePrice" min="0" step="0.01" required /></div>
-                <div class="col-md-4"><label class="form-label">Available</label><select class="form-select" id="eAvail"><option value="true">Yes</option><option value="false">No</option></select></div>
                 <div class="col-12"><label class="form-label">Description *</label><textarea class="form-control" id="eDesc" rows="2" required></textarea></div>
                 <div class="col-12"><label class="form-label">Image URL *</label><input type="url" class="form-control" id="eImage" placeholder="https://..." required /></div>
                 <div class="col-12"><label class="form-label">Guidelines (one per line) *</label><textarea class="form-control" id="eGuide" rows="3" required placeholder="e.g.&#10;Bring your own snacks&#10;Arrive 15 minutes early"></textarea></div>
@@ -253,7 +282,7 @@
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-accent);"></i>Events</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Location</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Location</th><th>Price</th><th>Actions</th></tr></thead>
               <tbody id="eventsTable"></tbody>
             </table></div>
           </div>
@@ -296,9 +325,6 @@
       }
 
       /* ================= EVENTS ================= */
-      let currentFilter = "all";
-      let eventsFilterWired = false;
-
       function guidelinesHtml(text) {
         if (!text) return "";
         const lines = String(text).split("\n").filter(Boolean);
@@ -363,7 +389,7 @@
         if (!host) return;
         host.innerHTML = '<div class="swiper-slide events-empty text-center text-muted py-5">Loading...</div>';
         try {
-          let events = await api.fetchEvents(currentFilter === "available" ? true : undefined);
+          let events = await api.fetchEvents();
           host.innerHTML = events.length
             ? events.map(eventCard).join("")
             : '<div class="swiper-slide events-empty text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No events right now - check back soon!</p></div>';
@@ -376,16 +402,6 @@
 
       function initEvents() {
         loadEvents();
-        if (eventsFilterWired) return;
-        eventsFilterWired = true;
-        document.querySelectorAll("#events-section .filter-btn").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            document.querySelectorAll("#events-section .filter-btn").forEach((b) => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentFilter = btn.dataset.filter;
-            loadEvents();
-          });
-        });
       }
 
       /* ================= CONTACT ================= */
@@ -547,7 +563,6 @@
         document.getElementById("eLoc").value = (ev && ev.location) || "";
         document.getElementById("eDate").value = (ev && ev.date) || "";
         document.getElementById("eTime").value = (ev && ev.time) || "";
-        document.getElementById("eAvail").value = (ev && ev.available !== false) ? "true" : "false";
         document.getElementById("eDesc").value = (ev && ev.description) || "";
         document.getElementById("eImage").value = (ev && ev.image) || "";
         document.getElementById("ePrice").value = (ev && ev.price != null) ? ev.price : "";
@@ -566,13 +581,12 @@
                 "<td>" + esc(ev.time || "") + "</td>" +
                 "<td>" + esc(ev.location) + "</td>" +
                 "<td>" + esc(ev.price != null ? "EGP " + ev.price : "") + "</td>" +
-                '<td>' + (ev.available === false ? '<span class="badge bg-secondary">Hidden</span>' : '<span class="badge bg-success">Live</span>') + "</td>" +
                 '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="window.JourneyaAdmin.editEvent(' + ev.id + ')"><i class="fas fa-edit"></i></button>' +
                 '<button class="btn btn-sm btn-outline-danger" onclick="window.JourneyaAdmin.deleteEvent(' + ev.id + ')"><i class="fas fa-trash"></i></button></td></tr>'
               ).join("")
-            : '<tr><td colspan="7" class="text-center text-muted">No events yet.</td></tr>';
+            : '<tr><td colspan="6" class="text-center text-muted">No events yet.</td></tr>';
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
           console.error(err);
         }
       }
@@ -588,7 +602,6 @@
           date: document.getElementById("eDate").value || null,
           time: document.getElementById("eTime").value || null,
           price: Number(document.getElementById("ePrice").value),
-          available: document.getElementById("eAvail").value === "true",
           description: document.getElementById("eDesc").value.trim() || null,
           image: document.getElementById("eImage").value.trim() || null,
           guidelines: document.getElementById("eGuide").value.trim() || null,

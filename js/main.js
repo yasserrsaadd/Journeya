@@ -12,6 +12,7 @@
   const routeMap = {
     home: "home-section",
     events: "events-section",
+    faq: "faq-section",
     about: "about-section",
     contact: "contact-section",
   };
@@ -87,6 +88,7 @@
     const links = [
       { href: "#home-section", dataSection: "home-section", label: "Home" },
       { href: "#events-section", dataSection: "events-section", label: "Events" },
+      { href: "#faq-section", dataSection: "faq-section", label: "FAQ" },
       { href: "#about-section", dataSection: "about-section", label: "About" },
       { href: "#contact-section", dataSection: "contact-section", label: "Contact" },
     ];

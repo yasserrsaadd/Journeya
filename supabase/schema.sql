@@ -17,13 +17,13 @@ create table if not exists public.events (
   image       text,
   price       numeric,
   guidelines  text,
-  available   boolean default true,
   created_at  timestamptz default now()
 );
 
 -- Migrate existing projects (safe to re-run)
 alter table public.events add column if not exists price      numeric;
 alter table public.events add column if not exists guidelines text;
+alter table public.events drop column if exists available;
 
 -- Bookings (instant guest checkout - no accounts)
 create table if not exists public.bookings (

@@ -317,6 +317,58 @@ body {
   transform: translateY(-3px) scale(1.15);
 }
 
+/* ---------- FAQ (accordion) ---------- */
+.faq-accordion .accordion-item {
+  border: 1px solid #ecd9d2;
+  border-radius: 16px !important;
+  overflow: hidden;
+  margin-bottom: 14px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(70, 30, 30, 0.08);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.faq-accordion .accordion-item:not(:first-of-type) {
+  border-top: 1px solid #ecd9d2;
+  border-top-left-radius: 16px !important;
+  border-top-right-radius: 16px !important;
+}
+.faq-accordion .accordion-item:hover,
+.faq-accordion .accordion-item:has(.accordion-button:not(.collapsed)) {
+  box-shadow: 0 12px 26px rgba(139, 38, 38, 0.16);
+  transform: translateY(-2px);
+}
+.faq-accordion .accordion-button {
+  font-weight: 700;
+  color: var(--j-primary-dark);
+  background: #fff;
+  border-radius: 16px !important;
+  padding: 16px 20px;
+  box-shadow: none;
+}
+.faq-accordion .accordion-button i {
+  color: var(--j-accent);
+  transition: transform 0.3s ease;
+}
+.faq-accordion .accordion-button:not(.collapsed) {
+  background: linear-gradient(90deg, var(--j-primary), var(--j-accent));
+  color: #fff;
+  box-shadow: none;
+}
+.faq-accordion .accordion-button:not(.collapsed) i {
+  color: var(--j-sun);
+  transform: rotate(-8deg) scale(1.1);
+}
+.faq-accordion .accordion-button:not(.collapsed)::after {
+  filter: invert(1);
+}
+.faq-accordion .accordion-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(139, 38, 38, 0.18);
+}
+.faq-accordion .accordion-body {
+  color: #6b4a40;
+  padding: 6px 20px 18px;
+}
+
 /* ---------- Forms ---------- */
 .form-control:focus,
 .form-select:focus {

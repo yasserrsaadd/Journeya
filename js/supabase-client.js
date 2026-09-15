@@ -82,17 +82,13 @@
     isDemoMode: () => demoMode,
 
     /* --- Events --- */
-    async fetchEvents(active) {
+    async fetchEvents() {
       if (supabase) {
-        let q = supabase.from(CFG.TABLES.events).select("*").order("date");
-        if (typeof active === "boolean") q = q.eq("available", active);
-        const { data, error } = await q;
+        const { data, error } = await supabase.from(CFG.TABLES.events).select("*").order("date");
         if (error) throw error;
         return data || [];
       }
-      let rows = readDemo("events");
-      if (typeof active === "boolean") rows = rows.filter((e) => e.available === active);
-      return rows;
+      return readDemo("events");
     },
     async getEvents() {
       if (supabase) {
