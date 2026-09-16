@@ -44,11 +44,31 @@ create table if not exists public.admin_emails (
   created_at  timestamptz default now()
 );
 
--- Seed a placeholder admin (replace with your real admin email)
-insert into public.admin_emails (email) values ('admin@journeya.com')
+-- ============================================================
+--  ADMIN APPROVAL - IMPORTANT
+--  The email entered below MUST be the exact email you use to
+--  sign in to the admin portal.  is_admin() compares it
+--  case-insensitively (and trims spaces), but if it does not
+--  match your login, Supabase RLS will block you with:
+--   "new row violates row-level security policy for table events"
+-- ============================================================
+
+--  >>> If you have not added your email yet, this inserts it for you. <<<
+--  >>> And it will also fix any existing rows with wrong case/spaces.   <<<
+insert into public.admin_emails (email)
+values (lower(btrim('journeya006@gmail.com')))
 on conflict (email) do nothing;
 
+-- Normalize any existing admin emails (case/whitespace) so they always match
+update public.admin_emails set email = lower(btrim(email))
+where email <> lower(btrim(email));
+
+-- To see which emails are currently allowed after running this script:
+-- select email from public.admin_emails;
+
 -- True if the current authenticated user's email is an allowed admin.
+-- Comparison is case-insensitive and trims whitespace on BOTH sides, so a
+-- mismatch in case or an accidental space won't lock you out.
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -59,7 +79,7 @@ as $$
   select exists (
     select 1
     from public.admin_emails
-    where email = lower(coalesce(auth.jwt() ->> 'email', ''))
+    where lower(btrim(email)) = lower(coalesce(btrim(auth.jwt() ->> 'email'), ''))
   );
 $$;
 

@@ -24,7 +24,7 @@ make guest bookings, and try the admin portal immediately.
    The script is safe to re-run (it uses `if not exists` and `add column if not exists`),
    so re-run it whenever the schema changes — e.g. to add new event fields.
 
-Every event carries the following fields: **title, price, picture (image URL), location,
+Every event carries the following fields: **title, price, picture (Cloudinary URL), location,
 description, date, and guidelines** (one per line, rendered as a bullet list).
 3. Go to **Project Settings → API** and copy your **Project URL** and **anon/public key**.
 4. Open `js/config.js` and paste them into `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
@@ -32,6 +32,20 @@ description, date, and guidelines** (one per line, rendered as a bullet list).
 That's it - the site now reads/writes your real tables. Guest bookings stored by type.
 
 > Guests book **without logging in** - booking forms are public, no account required.
+
+### Storing event images (Cloudinary)
+
+Event images are hosted on **Cloudinary** (not Supabase Storage), so images never count against
+Supabase egress. The event's `image` field simply stores the Cloudinary URL of the picture.
+
+Workflow when adding/editing an event in the admin dashboard:
+
+1. Upload the photo at https://cloudinary.com → **Media Library** → **Upload** (or your Cloudinary dashboard).
+2. Open the uploaded image and copy its **Secure URL** (e.g. `https://res.cloudinary.com/<cloud>/image/upload/...`).
+3. Paste that URL into the **Image URL** field in the admin event form.
+
+The event card loads the image straight from Cloudinary's CDN. Nothing is uploaded from this
+site's code - Cloudinary is used purely as image hosting and the URL is saved in Supabase.
 
 ### Managing content (adding/editing events)
 Visit the **Admin** section (link in the footer) or open the site and go to
