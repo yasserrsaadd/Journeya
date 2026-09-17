@@ -211,11 +211,46 @@
     /* --- Bookings (instant guest checkout) --- */
     async createBooking(booking) {
       if (supabase) {
-        const { error } = await supabase
-          .from(CFG.TABLES.bookings)
-          .insert([booking]);
+        const { data, error } = await supabase.rpc("create_booking", {
+          p_type: booking.type || "event",
+          p_item_id: booking.item_id,
+          p_item_title: booking.item_title || null,
+          p_name: booking.name,
+          p_phone: booking.phone,
+          p_email: booking.email,
+          p_tier_id: booking.tier_id || null,
+          p_tier_name: booking.tier_name || null,
+          p_tier_price: booking.tier_price != null ? Number(booking.tier_price) : null,
+          p_custom_data: booking.custom_data || {},
+          p_seats: Math.max(1, Number(booking.seats) || 1),
+          p_total: booking.total != null ? Number(booking.total) : null,
+        });
         if (error) throw error;
-        return;
+        return Array.isArray(data) ? data[0] : data;
+      }
+      /* Demo mode: replicate the seat-number logic locally. */
+      const ev = readDemo("events").find((e) => String(e.id) === String(booking.item_id)) || null;
+      const cap = ev && ev.seats ? Number(ev.seats) : null;
+      if (cap) {
+        const used = [];
+        readDemo("bookings").forEach((b) => {
+          if (
+            b.type === "event" &&
+            String(b.item_id) === String(booking.item_id) &&
+            Array.isArray(b.seat_numbers)
+          ) {
+            used.push(...b.seat_numbers.map(Number));
+          }
+        });
+        const free = [];
+        for (let n = 1; n <= cap; n++) if (!used.includes(n)) free.push(n);
+        const qty = Math.max(1, Number(booking.seats) || 1);
+        if (free.length < qty) {
+          throw new Error("Not enough seats available for this event (only " + free.length + " of " + cap + " left).");
+        }
+        booking.seat_numbers = free.slice(0, qty);
+      } else {
+        booking.seat_numbers = null;
       }
       const rows = readDemo("bookings");
       booking.id = nextId("bookings");

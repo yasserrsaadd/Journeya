@@ -86,6 +86,7 @@ alter table public.bookings add column if not exists tier_price  numeric;
 alter table public.bookings add column if not exists custom_data jsonb default '{}';
 alter table public.bookings add column if not exists seats       int default 1;
 alter table public.bookings add column if not exists total       numeric;
+alter table public.bookings add column if not exists seat_numbers int[];
 
 -- ============================================================
 --  ADMIN USERS (Supabase Auth emails allowed to manage the site)
@@ -157,9 +158,90 @@ as $$
 $$;
 
 -- ============================================================
+--  CREATE BOOKING (guest checkout with seat-number assignment)
+--  For events that have a capacity (events.seats set by the admin),
+--  this assigns the next available seat numbers (1..capacity,
+--  lowest free first) and refuses to overbook. It is a single
+--  transaction, so two guests can never be handed the same seat.
+--  Being security definer, it can read existing bookings (RLS -
+--  admins only) and return the row to the guest who just booked.
+-- ============================================================
+create or replace function public.create_booking(
+  p_item_id     bigint,
+  p_name        text,
+  p_phone       text,
+  p_email       text,
+  p_type        text   default 'event',
+  p_item_title  text   default null,
+  p_tier_id     bigint  default null,
+  p_tier_name   text    default null,
+  p_tier_price  numeric default null,
+  p_custom_data jsonb   default '{}',
+  p_seats       int     default 1,
+  p_total       numeric default null
+)
+returns public.bookings
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_capacity     bigint;
+  v_used         int[] := '{}';
+  v_free         int[] := '{}';
+  v_seat_numbers int[];
+  v_booking      public.bookings;
+begin
+  -- Lock the event row so concurrent bookings for the same event
+  -- are serialized and cannot compute the same seat numbers.
+  select e.seats into v_capacity
+  from public.events e
+  where e.id = p_item_id
+  for update;
+
+  if v_capacity is not null then
+    -- Every already-assigned number for this event.
+    select coalesce(array_agg(s), '{}') into v_used
+    from (
+      select unnest(b.seat_numbers) as s
+      from public.bookings b
+      where b.type = 'event'
+        and b.item_id = p_item_id
+        and b.seat_numbers is not null
+    ) u;
+
+    -- Free numbers = 1..capacity minus whatever is taken.
+    select array_agg(n::int order by n) into v_free
+    from generate_series(1, v_capacity) n
+    where not (n = any(v_used));
+
+    if coalesce(cardinality(v_free), 0) < p_seats then
+      raise exception 'Not enough seats available for this event (only % of % left).',
+        coalesce(cardinality(v_free), 0), v_capacity;
+    end if;
+
+    -- Hand out the lowest available numbers first.
+    v_seat_numbers := v_free[1:p_seats];
+  end if;
+
+  insert into public.bookings (
+    type, item_id, item_title, name, phone, email,
+    tier_id, tier_name, tier_price, custom_data, seats, total, seat_numbers
+  ) values (
+    p_type, p_item_id, p_item_title, p_name, p_phone, p_email,
+    p_tier_id, p_tier_name, p_tier_price,
+    coalesce(p_custom_data, '{}'), p_seats, p_total, v_seat_numbers
+  )
+  returning * into v_booking;
+
+  return v_booking;
+end;
+$$;
+
+-- ============================================================
 --  ROW LEVEL SECURITY
---  Public can READ non-private events and WRITE bookings
---  (guest checkout - no login required to book).
+--  Public can READ non-private events and create bookings via
+--  the create_booking RPC (guest checkout - no login required).
 --  Only authenticated admins can create/update/delete events,
 --  manage tiers, or read the guest lists.
 -- ============================================================
@@ -197,9 +279,10 @@ create policy "admin update tiers" on public.ticket_tiers for update using (publ
 drop policy if exists "admin delete tiers" on public.ticket_tiers;
 create policy "admin delete tiers" on public.ticket_tiers for delete using (public.is_admin());
 
--- --- bookings: anyone can create (guest checkout), only admins read ---
+-- --- bookings: guests book through the create_booking RPC only
+--     (no direct inserts, so seat availability is always enforced
+--     server-side); only admins can read guest lists ---
 drop policy if exists "public insert bookings" on public.bookings;
-create policy "public insert bookings" on public.bookings for insert with check (true);
 
 drop policy if exists "admin read bookings"  on public.bookings;
 drop policy if exists "public read bookings" on public.bookings;

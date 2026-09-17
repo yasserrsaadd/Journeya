@@ -40,7 +40,19 @@ That's it - the site now reads/writes your real tables.
   refund policy, guidelines (one per line), private toggle + share token, custom fields.
 - **ticket_tiers** - per professional event: name + price (e.g. Regular, Standard).
 - **bookings** - instant guest checkout rows with name, phone, email, chosen tier,
-  custom-field answers, number of seats and the computed total.
+  custom-field answers, number of seats, the assigned `seat_numbers` and the computed total.
+
+### Seat numbers
+
+When an event has a **capacity** (the optional *Seats* field the admin sets), the system
+assigns each booking the next available seat numbers (1..capacity, lowest free first) and
+shows them to the guest on the confirmation. Capacity is enforced in the database, so an
+event can never be overbooked. Events without a capacity stay unlimited and get no seat
+numbers.
+
+All bookings are created through the `create_booking` database function (RPC), which
+assigns the seat numbers and inserts the row in a single transaction. Direct inserts into
+`bookings` are disabled, so availability cannot be bypassed.
 
 ### Public / Private events & unique share links
 
@@ -78,9 +90,9 @@ built-in forms to **Add / Edit / Delete** events. From there you can also:
 - Create **Professional** events with multiple ticket tiers and custom booking fields
   (e.g. Instagram account, job title) collected at checkout.
 - Toggle events **Public / Private** and copy their unique share links.
-- View **Guest Lists** (names, phones, tier, seats, totals).
+- View **Guest Lists** (names, phones, tier, seats &amp; seat numbers, totals).
 - Open **Reports & Analytics**:
-  - **Overview** - what is selling and what isn't (tickets, revenue, status).
+  - **Overview** - what is selling and what isn't (tickets / capacity, revenue, status).
   - **Day-of-the-Week Sales** breakdown per item (ticket volume by weekday).
   - **Customer Breakdown** - two lists separating **Frequent Customers** (2+ bookings)
     from **Non-Frequent Customers**, complete with names and phone numbers.

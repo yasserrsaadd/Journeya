@@ -294,6 +294,7 @@
         '<i class="fas fa-check-circle text-success" style="font-size:3rem;"></i>' +
         "<h5 class=\"mt-3 fw-bold\">You're booked!</h5>" +
         "<p class=\"text-muted\">We'll contact you shortly to confirm your spot.</p>" +
+        '<p class="fw-bold" id="bkSeatInfo" style="color:var(--j-primary);display:none;"></p>' +
         '<button type="button" class="btn btn-j" data-bs-dismiss="modal">Done</button>' +
         "</div></div></div>";
 
@@ -335,11 +336,28 @@
           total: total,
         };
         try {
-          await window.JourneyaAPI.createBooking(booking);
+          const created = await window.JourneyaAPI.createBooking(booking);
+          const assigned =
+            created && Array.isArray(created.seat_numbers) && created.seat_numbers.length
+              ? created.seat_numbers.map(Number)
+              : null;
+          const seatInfo = host.querySelector("#bkSeatInfo");
+          if (seatInfo) {
+            if (assigned && assigned.length) {
+              seatInfo.textContent =
+                assigned.length === 1
+                  ? "Your seat number: " + assigned[0]
+                  : "Your seat numbers: " + assigned.join(", ");
+              seatInfo.style.display = "";
+            } else {
+              seatInfo.style.display = "none";
+            }
+          }
           modal.hide();
           new bootstrap.Modal(host.querySelector("#bookingSuccess")).show();
         } catch (err) {
-          alert("Sorry, we couldn't complete your booking. Please try again.");
+          const serverMsg = err && err.message;
+          alert(/seat/i.test(serverMsg) ? serverMsg : "Sorry, we couldn't complete your booking. Please try again.");
           console.error(err);
         }
       });

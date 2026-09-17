@@ -357,7 +357,7 @@
           <div class="card card-j p-4 mb-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-chart-line me-2" style="color:var(--j-accent);"></i>Overview - What's Selling &amp; What Isn't</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Type</th><th>Title</th><th>Tickets</th><th>Revenue</th><th>Status</th></tr></thead>
+              <thead><tr><th>Type</th><th>Title</th><th>Tickets / Seats</th><th>Revenue</th><th>Status</th></tr></thead>
               <tbody id="reportsOverview"></tbody>
             </table></div>
           </div>
@@ -1133,9 +1133,14 @@
           total: totalStr === "" ? null : Number(totalStr),
         };
         try {
-          await api.createBooking(booking);
+          const created = await api.createBooking(booking);
           api.notifyChanged();
-          msg.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check me-1"></i>Booking created for <strong>' + esc(booking.name) + "</strong> (" + esc(booking.item_title) + ").</div>";
+          const assigned =
+            created && Array.isArray(created.seat_numbers) && created.seat_numbers.length
+              ? created.seat_numbers.map(Number)
+              : null;
+          const seatLine = assigned && assigned.length ? " &mdash; seat(s) #" + assigned.join(", #") : "";
+          msg.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check me-1"></i>Booking created for <strong>' + esc(booking.name) + "</strong> (" + esc(booking.item_title) + ")" + seatLine + ".</div>";
           form.reset();
           form.classList.remove("was-validated");
           document.getElementById("cbSeats").value = 1;
@@ -1168,7 +1173,7 @@
                 '<td><a class="link-dark" href="tel:' + esc(b.phone) + '">' + esc(b.phone) + "</a></td>" +
                 "<td>" + esc(b.item_title || "Item #" + b.item_id) + "</td>" +
                 "<td>" + esc(b.tier_name || "—") + "</td>" +
-                "<td>" + esc(b.seats || 1) + "</td>" +
+                "<td>" + esc(b.seats || 1) + (Array.isArray(b.seat_numbers) && b.seat_numbers.length ? ' <span class="text-muted small">(# ' + b.seat_numbers.join(", #") + ")</span>" : "") + "</td>" +
                 "<td>" + esc(b.total != null ? money(b.total) : "") + "</td>" +
                 "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td></tr>"
               ).join("")
@@ -1208,7 +1213,7 @@
                 "<tr>" +
                 "<td><span class=\"badge rounded-pill text-bg-secondary\">Event</span></td>" +
                 "<td>" + esc(o.it.title) + "</td>" +
-                "<td>" + o.tickets + "</td>" +
+                "<td>" + (o.it.seats != null ? o.tickets + " / " + o.it.seats : o.tickets) + "</td>" +
                 "<td>" + esc(money(o.revenue)) + "</td>" +
                 "<td class=\"" + o.cls + " fw-bold\">" + esc(o.status) + "</td></tr>"
               ).join("")
