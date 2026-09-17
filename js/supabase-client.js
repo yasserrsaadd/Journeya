@@ -3,7 +3,7 @@
  *  JOURNEYA - SUPABASE CLIENT + HELPERS
  * ============================================================
  *  Loads the Supabase JS client from CDN and exposes a small
- *  helper layer for CRUD on events/bookings.
+ *  helper layer for CRUD on events/ticket tiers/bookings.
  *
  *  If Supabase is not configured, all helpers fall back to
  *  reading/writing a local JSON store (localStorage) so the
@@ -17,11 +17,12 @@
   let supabase = null;
   let demoMode = false;
 
-  const DEMO_STORAGE_KEY = "journeya_demo_db_v2";
+  const DEMO_STORAGE_KEY = "journeya_demo_db_v3";
 
-  /* No sample data: the site starts empty until an admin adds events. */
+  /* No sample data: the site starts empty until an admin adds items. */
   const DEMO_DATA = {
     events: [],
+    ticket_tiers: [],
     bookings: [],
   };
 
@@ -77,29 +78,37 @@
     }
   }
 
+  function nextId(table) {
+    return readDemo(table).reduce((m, r) => Math.max(m, Number(r.id) || 0), 0) + 1;
+  }
+
+  /* For supabase.schema.sql, the select policy already hides private
+     items from the public while admins see everything. Demo mode emulates
+     that here. */
+  function publicRows(table, includePrivate) {
+    let rows = readDemo(table);
+    if (!includePrivate) rows = rows.filter((r) => !r.is_private);
+    return rows;
+  }
+
   /* ---- public API ---- */
   const api = {
     isDemoMode: () => demoMode,
 
     /* --- Events --- */
-    async fetchEvents() {
-      if (supabase) {
-        const { data, error } = await supabase.from(CFG.TABLES.events).select("*").order("date");
-        if (error) throw error;
-        return data || [];
-      }
-      return readDemo("events");
-    },
-    async getEvents() {
+    async fetchEvents(includePrivate) {
       if (supabase) {
         const { data, error } = await supabase
           .from(CFG.TABLES.events)
           .select("*")
-          .order("date", { ascending: true });
+          .order("date");
         if (error) throw error;
         return data || [];
       }
-      return readDemo("events");
+      return publicRows("events", includePrivate);
+    },
+    async getEvents() {
+      return this.fetchEvents(true);
     },
     async addEvent(ev) {
       if (supabase) {
@@ -111,7 +120,7 @@
         return data[0];
       }
       const rows = readDemo("events");
-      ev.id = Date.now();
+      ev.id = nextId("events");
       rows.push(ev);
       writeDemo("events", rows);
       return ev;
@@ -125,10 +134,9 @@
         if (error) throw error;
         return;
       }
-      const rows = readDemo("events");
       writeDemo(
         "events",
-        rows.map((e) => (e.id == id ? { ...e, ...ev } : e))
+        readDemo("events").map((e) => (e.id == id ? { ...e, ...ev } : e))
       );
     },
     async deleteEvent(id) {
@@ -141,9 +149,66 @@
         return;
       }
       writeDemo("events", readDemo("events").filter((e) => e.id != id));
+      writeDemo("ticket_tiers", readDemo("ticket_tiers").filter((t) => t.event_id != id));
+      writeDemo(
+        "bookings",
+        readDemo("bookings").filter((b) => !(b.type === "event" && String(b.item_id) === String(id)))
+      );
     },
 
-    /* --- Bookings --- */
+    /* --- Ticket tiers (professional events) --- */
+    async fetchTiers(eventId) {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from(CFG.TABLES.ticket_tiers)
+          .select("*")
+          .eq("event_id", eventId)
+          .order("price");
+        if (error) throw error;
+        return data || [];
+      }
+      return readDemo("ticket_tiers").filter((t) => t.event_id == eventId);
+    },
+    async deleteTiersForEvent(eventId) {
+      if (supabase) {
+        const { error } = await supabase
+          .from(CFG.TABLES.ticket_tiers)
+          .delete()
+          .eq("event_id", eventId);
+        if (error) throw error;
+        return;
+      }
+      writeDemo(
+        "ticket_tiers",
+        readDemo("ticket_tiers").filter((t) => t.event_id != eventId)
+      );
+    },
+    async saveTiers(eventId, tiers) {
+      await this.deleteTiersForEvent(eventId);
+      const list = (tiers || []).filter((t) => t.name && t.price != "" && t.price != null);
+      if (!list.length) return;
+      const rows = list.map((t) => ({
+        event_id: eventId,
+        name: String(t.name).trim(),
+        price: Number(t.price),
+      }));
+      if (supabase) {
+        const { error } = await supabase
+          .from(CFG.TABLES.ticket_tiers)
+          .insert(rows);
+        if (error) throw error;
+        return;
+      }
+      const all = readDemo("ticket_tiers");
+      let id = nextId("ticket_tiers");
+      rows.forEach((t) => {
+        t.id = id++;
+        all.push(t);
+      });
+      writeDemo("ticket_tiers", all);
+    },
+
+    /* --- Bookings (instant guest checkout) --- */
     async createBooking(booking) {
       if (supabase) {
         const { error } = await supabase
@@ -153,7 +218,7 @@
         return;
       }
       const rows = readDemo("bookings");
-      booking.id = Date.now();
+      booking.id = nextId("bookings");
       booking.created_at = new Date().toISOString();
       rows.push(booking);
       writeDemo("bookings", rows);
@@ -169,6 +234,32 @@
         return data || [];
       }
       return readDemo("bookings");
+    },
+
+    /* --- Private share links --- */
+    async getSharedEvent(token) {
+      if (!token) return null;
+      if (supabase) {
+        const { data, error } = await supabase
+          .rpc("get_shared_event", { p_token: token });
+        if (error) throw error;
+        return (data && data[0]) || null;
+      }
+      return (
+        readDemo("events").find((e) => e.share_token === token) || null
+      );
+    },
+    async getSharedTiers(token) {
+      if (!token) return [];
+      if (supabase) {
+        const { data, error } = await supabase
+          .rpc("get_shared_event_tiers", { p_token: token });
+        if (error) throw error;
+        return data || [];
+      }
+      const ev = readDemo("events").find((e) => e.share_token === token);
+      if (!ev) return [];
+      return readDemo("ticket_tiers").filter((t) => t.event_id === ev.id);
     },
 
     /* --- Storage for demo listener so admin updates reflect ----

@@ -11,7 +11,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -27,39 +26,46 @@
         <span class="hero-badge mb-3"><i class="fas fa-users me-2"></i>Play. Connect. Belong.</span>
         <h1 class="mb-3">Play games.<br />Make real friends.</h1>
         <p class="lead mx-auto mb-4" style="max-width: 640px;">
-          Journeya is your community for epic game nights and unforgettable social
-          events around Egypt. No memberships, no logins - just show up and have fun.
+          Journeya is your community for epic game nights and professional
+          social events around Egypt. No memberships, no logins -
+          just show up and have fun.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
           <a href="#events-section" class="btn btn-sun btn-lg"><i class="fas fa-dice me-2"></i>Browse Events</a>
+          <a href="#about-section" class="btn btn-j btn-lg"><i class="fas fa-circle-info me-2"></i>About Us</a>
         </div>
       </div>
     </header>
-
   </section>
 
   <!-- ==============================================================
-       EVENTS
+       EVENTS CATALOG (filterable grid)
   ============================================================== -->
   <section id="events-section" class="page-section py-5 bg-tint">
     <div class="container">
       <div class="text-center mb-4">
-        <h2 class="section-title">Upcoming Events</h2>
-        <p class="section-sub">Game nights &amp; social gatherings. Grab a spot before they fill up.</p>
+        <h2 class="section-title">Events</h2>
+        <p class="section-sub mx-auto" style="max-width:640px;">
+          Game nights &amp; social gatherings. Filter by date and grab a spot before they fill up.
+        </p>
       </div>
-      <div class="swiper events-swiper">
-        <div class="swiper-wrapper" id="eventsRow"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-pagination"></div>
+      <div class="catalog-filter mb-4">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+          <div class="input-group input-group-sm" style="max-width:300px;">
+            <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+            <input type="date" class="form-control" id="eventsFilterDate" aria-label="Filter events by date" />
+          </div>
+          <button type="button" class="btn btn-j-outline btn-sm" id="eventsFilterClear" style="border-color:var(--j-primary);color:var(--j-primary);"><i class="fas fa-times me-1"></i>All dates</button>
+        </div>
       </div>
+      <div class="row g-4" id="eventsGrid"></div>
     </div>
   </section>
 
   <!-- ==============================================================
        FAQ
   ============================================================== -->
-  <section id="faq-section" class="page-section py-5 bg-soft">
+  <section id="faq-section" class="page-section py-5 bg-tint">
     <div class="container">
       <div class="text-center mb-4 mb-md-5">
         <span class="hero-badge mb-3" style="color:var(--j-primary);border-color:var(--j-primary);"><i class="fas fa-circle-question me-2"></i>FAQ</span>
@@ -109,7 +115,7 @@
   <!-- ==============================================================
        ABOUT
   ============================================================== -->
-  <section id="about-section" class="page-section py-5 bg-tint">
+  <section id="about-section" class="page-section py-5 bg-soft">
     <div class="container">
       <div class="text-center mb-5">
         <span class="hero-badge mb-3" style="color:var(--j-primary);border-color:var(--j-primary);"><i class="fas fa-heart me-2"></i>Our Story</span>
@@ -131,7 +137,7 @@
             real spaces where you can laugh, compete, share stories and make friends that stick.
           </p>
           <p class="text-muted">
-            Whether it's a casual game night in Cairo or a themed social gathering,
+            Whether it's a casual game night in Cairo or a professional networking event,
             every Journeya experience is designed around one thing: genuine connection.
           </p>
           <div class="d-flex gap-4 mt-4">
@@ -147,7 +153,7 @@
   <!-- ==============================================================
        CONTACT
   ============================================================== -->
-  <section id="contact-section" class="page-section py-5 bg-soft">
+  <section id="contact-section" class="page-section py-5 bg-tint">
     <div class="container">
       <div class="text-center mb-5">
         <span class="hero-badge mb-3" style="color:var(--j-primary);border-color:var(--j-primary);"><i class="fas fa-paper-plane me-2"></i>Say Hello</span>
@@ -213,6 +219,15 @@
   </section>
 
   <!-- ==============================================================
+       SHARED PRIVATE LINK PAGE (#/event/:token)
+  ============================================================== -->
+  <section id="view-shared" class="view py-5" style="display:none;">
+    <div class="container">
+      <div id="sharedHost" class="row justify-content-center"></div>
+    </div>
+  </section>
+
+  <!-- ==============================================================
        ADMIN (private route: #/admin)
   ============================================================== -->
   <section id="view-admin" class="view" style="display:none;">
@@ -253,11 +268,13 @@
           <div class="d-flex gap-2 flex-wrap">
             <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="events">Events</button>
             <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="bookings">Guest Lists</button>
+            <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="reports">Reports</button>
+            <button class="btn btn-j-outline btn-sm adm-tab" style="border-color:var(--j-primary);color:var(--j-primary);" data-sec="create">Create Booking</button>
             <button class="btn btn-danger btn-sm" onclick="window.JourneyaAdmin.logout()"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
           </div>
         </div>
 
-        <!-- Events section -->
+        <!-- ================= EVENTS ================= -->
         <section id="sec-events" style="display:none;">
           <div class="card card-j p-4 mb-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-dice me-2" style="color:var(--j-accent);"></i>Add / Edit Event</h5>
@@ -265,37 +282,132 @@
               <input type="hidden" id="eventId" />
               <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">Title *</label><input type="text" class="form-control" id="eTitle" required /></div>
+                <div class="col-md-3"><label class="form-label">Event Type *</label>
+                  <select class="form-select" id="eEventType">
+                    <option value="regular">Regular</option>
+                    <option value="professional">Professional</option>
+                  </select>
+                </div>
+                <div class="col-md-3"><label class="form-label">Category</label><input type="text" class="form-control" id="eCategory" placeholder="e.g. Game Night" /></div>
                 <div class="col-md-6"><label class="form-label">Location *</label><input type="text" class="form-control" id="eLoc" required /></div>
-                <div class="col-md-4"><label class="form-label">Date *</label><input type="date" class="form-control" id="eDate" required /></div>
-                <div class="col-md-4"><label class="form-label">Time</label><input type="time" class="form-control" id="eTime" /></div>
-                <div class="col-md-4"><label class="form-label">Price (EGP) *</label><input type="number" class="form-control" id="ePrice" min="0" step="0.01" required /></div>
+                <div class="col-md-3"><label class="form-label">Date *</label><input type="date" class="form-control" id="eDate" required /></div>
+                <div class="col-md-3"><label class="form-label">Time</label><input type="time" class="form-control" id="eTime" /></div>
+                <div class="col-md-6" id="ePriceWrap"><label class="form-label">Price (EGP) * <span class="small text-muted">Regular events</span></label><input type="number" class="form-control" id="ePrice" min="0" step="0.01" /></div>
+                <div class="col-md-3"><label class="form-label">Seats (optional)</label><input type="number" class="form-control" id="eSeats" min="1" step="1" placeholder="Total seats if limited" /></div>
+                <div class="col-md-3"><label class="form-label">&nbsp;</label>
+                  <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" id="ePrivate" />
+                    <label class="form-check-label" for="ePrivate"><i class="fas fa-eye-slash me-1 text-muted"></i>Private (hidden, share link only)</label>
+                  </div>
+                </div>
+                <div class="col-12"><label class="form-label">Summary</label><input type="text" class="form-control" id="eSummary" placeholder="One-line teaser shown on the card" /></div>
                 <div class="col-12"><label class="form-label">Description *</label><textarea class="form-control" id="eDesc" rows="2" required></textarea></div>
-                <div class="col-12"><label class="form-label">Image URL *</label><input type="url" class="form-control" id="eImage" placeholder="Paste the Cloudinary image URL (https://res.cloudinary.com/...)" required /></div>
+                <div class="col-md-6"><label class="form-label">Image URL *</label><input type="url" class="form-control" id="eImage" placeholder="Paste a Cloudinary image URL (https://res.cloudinary.com/...)" /></div>
+                <div class="col-md-6"><label class="form-label">Video preview (optional)</label><input type="url" class="form-control" id="eVideo" placeholder="Paste a Cloudinary video URL" /></div>
+                <div class="col-12"><label class="form-label">Refund Policy</label><textarea class="form-control" id="eRefund" rows="2" placeholder="e.g. Full refund up to 48h before the event."></textarea></div>
                 <div class="col-12"><label class="form-label">Guidelines (one per line) *</label><textarea class="form-control" id="eGuide" rows="3" required placeholder="e.g.&#10;Bring your own snacks&#10;Arrive 15 minutes early"></textarea></div>
-                <div class="col-12 d-flex gap-2">
+
+                <!-- Professional only: ticket tiers + custom fields -->
+                <div class="col-12" id="profWrap" style="display:none;">
+                  <div class="border rounded-3 p-3 bg-light">
+                    <h6 class="fw-bold"><i class="fas fa-tags me-2" style="color:var(--j-accent);"></i>Ticket Tiers</h6>
+                    <div id="tiersHost"></div>
+                    <button type="button" class="btn btn-sm btn-j-outline" id="addTierRow" style="border-color:var(--j-primary);color:var(--j-primary);"><i class="fas fa-plus me-1"></i>Add tier</button>
+                  </div>
+                </div>
+                <div class="col-12" id="profWrap2" style="display:none;">
+                  <div class="border rounded-3 p-3 bg-light">
+                    <h6 class="fw-bold"><i class="fas fa-id-card me-2" style="color:var(--j-accent);"></i>Custom Booking Fields</h6>
+                    <p class="small text-muted mb-2">Collect extra details at booking time (e.g. Instagram account, job title).</p>
+                    <div id="customFieldsHost"></div>
+                    <button type="button" class="btn btn-sm btn-j-outline" id="addCustomFieldRow" style="border-color:var(--j-primary);color:var(--j-primary);"><i class="fas fa-plus me-1"></i>Add field</button>
+                  </div>
+                </div>
+
+                <div class="col-12 d-flex gap-2 flex-wrap">
                   <button type="submit" class="btn btn-j">Save Event</button>
                   <button type="button" class="btn btn-outline-secondary" id="eventReset">Reset</button>
                 </div>
               </div>
             </form>
+            <div id="eventShareBox" class="mt-3"></div>
           </div>
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-accent);"></i>Events</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Location</th><th>Price</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Title</th><th>Type</th><th>Date</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="eventsTable"></tbody>
             </table></div>
           </div>
         </section>
 
-        <!-- Bookings section -->
+        <!-- ================= GUEST LISTS ================= -->
         <section id="sec-bookings" style="display:none;">
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-users me-2" style="color:var(--j-sun);"></i>Guest Bookings (Names &amp; Phones)</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Booked For</th><th>Date</th></tr></thead>
+              <thead><tr><th>Type</th><th>Name</th><th>Phone</th><th>Booked For</th><th>Tier</th><th>Seats</th><th>Total</th><th>Booked At</th></tr></thead>
               <tbody id="bookingsTable"></tbody>
             </table></div>
+          </div>
+        </section>
+
+        <!-- ================= REPORTS & ANALYTICS ================= -->
+        <section id="sec-reports" style="display:none;">
+          <div class="card card-j p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-chart-line me-2" style="color:var(--j-accent);"></i>Overview - What's Selling &amp; What Isn't</h5>
+            <div class="table-responsive"><table class="table table-j align-middle">
+              <thead><tr><th>Type</th><th>Title</th><th>Tickets</th><th>Revenue</th><th>Status</th></tr></thead>
+              <tbody id="reportsOverview"></tbody>
+            </table></div>
+          </div>
+
+          <div class="card card-j p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-calendar-week me-2" style="color:var(--j-accent);"></i>Day-of-the-Week Sales Breakdown</h5>
+            <p class="small text-muted">Tickets sold per day of the week, based on when bookings were placed.</p>
+            <select id="reportsItemSelect" class="form-select mb-3" style="max-width:420px;"></select>
+            <div id="reportsDow"></div>
+          </div>
+
+          <div class="card card-j p-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-user-group me-2" style="color:var(--j-accent);"></i>Customer Breakdown</h5>
+            <h6 class="fw-bold mt-3"><i class="fas fa-star me-1 text-warning"></i>Frequent Customers <span class="badge bg-secondary" id="freqCount"></span></h6>
+            <p class="small text-muted">Guests with 2 or more bookings.</p>
+            <div class="table-responsive"><table class="table table-j align-middle">
+              <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Bookings</th><th>Tickets</th></tr></thead>
+              <tbody id="reportsFrequent"></tbody>
+            </table></div>
+            <h6 class="fw-bold mt-4"><i class="fas fa-user me-1 text-muted"></i>Non-Frequent Customers <span class="badge bg-secondary" id="nonFreqCount"></span></h6>
+            <p class="small text-muted">Guests with a single booking so far.</p>
+            <div class="table-responsive"><table class="table table-j align-middle">
+              <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Bookings</th><th>Tickets</th></tr></thead>
+              <tbody id="reportsNonFrequent"></tbody>
+            </table></div>
+          </div>
+        </section>
+
+        <!-- ================= CREATE BOOKING ================= -->
+        <section id="sec-create" style="display:none;">
+          <div class="card card-j p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-pen-to-square me-2" style="color:var(--j-accent);"></i>Create Manual Booking</h5>
+            <p class="text-muted small">Register a booking for any event by hand - handy for cash or in-person sign-ups.</p>
+            <form id="cbForm" novalidate>
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Event *</label><select class="form-select" id="cbEvent" required></select></div>
+                <div class="col-md-3"><label class="form-label">Number of Seats *</label><input type="number" class="form-control" id="cbSeats" value="1" min="1" step="1" required /></div>
+                <div class="col-md-3"><label class="form-label">Total (EGP)</label><input type="number" class="form-control" id="cbTotal" min="0" step="0.01" placeholder="Auto-calculated" /></div>
+                <div class="col-md-4"><label class="form-label">Full Name *</label><input type="text" class="form-control" id="cbName" required placeholder="Guest's name" /></div>
+                <div class="col-md-4"><label class="form-label">Phone *</label><input type="tel" class="form-control" id="cbPhone" required placeholder="e.g. 0100 000 0000" /></div>
+                <div class="col-md-4"><label class="form-label">Email *</label><input type="email" class="form-control" id="cbEmail" required placeholder="you@example.com" /></div>
+              </div>
+              <div id="cbTiersBox" class="mt-3"></div>
+              <div id="cbFieldsBox" class="mt-3"></div>
+              <div class="d-flex gap-2 flex-wrap mt-4">
+                <button type="submit" class="btn btn-j"><i class="fas fa-ticket-alt me-1"></i>Create Booking</button>
+                <button type="button" class="btn btn-outline-secondary" id="cbReset">Reset</button>
+              </div>
+            </form>
+            <div id="cbMsg" class="mt-3"></div>
           </div>
         </section>
       </div>
@@ -309,7 +421,6 @@
   <div id="bookingModalHost"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/supabase-client.js"></script>
@@ -323,8 +434,32 @@
       function esc(s) {
         return String(s == null ? "" : s).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       }
+      function safeJson(obj) {
+        return esc(JSON.stringify(obj)).replace(/'/g, "\\'");
+      }
+      function money(n) {
+        if (n == null || n === "") return "";
+        return "EGP " + Number(n).toLocaleString();
+      }
 
-      /* ================= EVENTS ================= */
+      const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60";
+
+      /* ================= SHARED CARD HELPERS ================= */
+      function itemChips(item) {
+        let chips = "";
+        if (item.date) chips += '<span class="chip"><i class="fas fa-calendar-day"></i>' + esc(item.date) + "</span>";
+        if (item.time) chips += '<span class="chip"><i class="fas fa-clock"></i>' + esc(item.time) + "</span>";
+        if (item.location) chips += '<span class="chip"><i class="fas fa-map-marker-alt"></i>' + esc(item.location) + "</span>";
+        return chips;
+      }
+      function priceLine(item, tiers) {
+        const isProf = item.event_type === "professional";
+        if (isProf) {
+          const minT = (tiers || []).reduce((m, t) => (!m || +t.price < +m.price ? t : m), null);
+          return minT ? "From " + money(minT.price) : "";
+        }
+        return item.price != null && item.price !== "" ? money(item.price) : "";
+      }
       function guidelinesHtml(text) {
         if (!text) return "";
         const lines = String(text).split("\n").filter(Boolean);
@@ -335,73 +470,86 @@
           "</div>"
         );
       }
-
-      function eventCard(ev) {
-        const price = ev.price != null && ev.price !== "" ? "EGP " + ev.price : "";
+      function refundHtml(text) {
+        if (!text) return "";
         return (
-          '<div class="swiper-slide h-auto"><div class="card card-j h-100">' +
-          '<img src="' + (ev.image || "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60") + '" class="card-img-top" loading="lazy" decoding="async" alt="' + esc(ev.title) + '">' +
+          '<div class="refund-box"><h6 class="fw-bold small mb-1"><i class="fas fa-rotate-left me-1" style="color:var(--j-primary);"></i>Refund Policy</h6>' +
+          "<p class=\"mb-0 small\">" + esc(text) + "</p></div>"
+        );
+      }
+      function typeBadge(item) {
+        let b = "";
+        if (item.event_type === "professional") b += '<span class="badge rounded-pill text-bg-primary me-1"><i class="fas fa-briefcase me-1"></i>Professional</span>';
+        if (item.event_type === "regular") b += '<span class="badge rounded-pill text-bg-secondary me-1">Regular</span>';
+        if (item.category) b += '<span class="badge rounded-pill text-bg-light border">' + esc(item.category) + "</span>";
+        return b;
+      }
+
+      function cardHtml(item, opts) {
+        const tiers = (opts && opts.tiers) || [];
+        const payload = Object.assign({}, item, { _tiers: tiers });
+        const img = item.image || PLACEHOLDER_IMG;
+        const price = priceLine(item, tiers);
+        const text = item.summary || item.description || "";
+        return (
+          '<div class="card card-j h-100">' +
+          '<img src="' + esc(img) + '" class="card-img-top" loading="lazy" decoding="async" alt="' + esc(item.title) + '">' +
           '<div class="card-body d-flex flex-column">' +
-          '<div class="mb-2 d-flex flex-wrap gap-2">' +
-          '<span class="chip"><i class="fas fa-calendar-day"></i>' + esc(ev.date || "TBD") + "</span>" +
-          (ev.time ? '<span class="chip"><i class="fas fa-clock"></i>' + esc(ev.time) + "</span>" : "") +
-          "</div>" +
-          '<span class="chip mb-2"><i class="fas fa-map-marker-alt"></i>' + esc(ev.location || "Location TBD") + "</span>" +
+          '<div class="mb-2 d-flex flex-wrap gap-2">' + itemChips(item) + "</div>" +
           '<div class="d-flex justify-content-between align-items-start flex-wrap mb-1">' +
-          '<h5 class="card-title fw-bold mb-0">' + esc(ev.title) + "</h5>" +
+          '<h5 class="card-title fw-bold mb-0">' + esc(item.title) + "</h5>" +
           (price ? '<span class="lead fw-bold" style="color:var(--j-primary);">' + esc(price) + "</span>" : "") +
           "</div>" +
-          '<p class="text-muted">' + esc(ev.description || "") + "</p>" +
-          guidelinesHtml(ev.guidelines) +
-          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'event\',' + esc(JSON.stringify(ev)) + ')">' +
+          '<div class="mb-2">' + typeBadge(item) + "</div>" +
+          '<p class="text-muted">' + esc(text) + "</p>" +
+          guidelinesHtml(item.guidelines) +
+          refundHtml(item.refund_policy) +
+          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'event\',' + safeJson(payload) + ')">' +
           '<i class="fas fa-ticket-alt me-2"></i>Book Now</button>' +
-          "</div></div></div>"
+          "</div></div>"
         );
       }
 
-      let eventsSwiper = null;
+      /* ================= EVENTS CATALOG ================= */
+      async function loadEvents() {
+        const host = document.getElementById("eventsGrid");
+        if (!host) return;
+        host.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading...</div>';
+        try {
+          let events = await api.fetchEvents(false);
+          const dateInp = document.getElementById("eventsFilterDate");
+          const f = dateInp ? dateInp.value : "";
+          if (f) events = events.filter((e) => e.date === f);
 
-      function initSwiper(selector, key) {
-        if (window[key]) window[key].destroy(true, true);
-        window[key] = new Swiper(selector, {
-          slidesPerView: 1,
-          spaceBetween: 24,
-          speed: 400,
-          grabCursor: true,
-          navigation: {
-            nextEl: selector + " .swiper-button-next",
-            prevEl: selector + " .swiper-button-prev",
-          },
-          pagination: {
-            el: selector + " .swiper-pagination",
-            clickable: true,
-          },
-          breakpoints: {
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          },
-        });
+          const enriched = await Promise.all(
+            events.map(async (ev) => {
+              let tiers = [];
+              if (ev.event_type === "professional") {
+                try { tiers = await api.fetchTiers(ev.id); } catch (e) {}
+              }
+              return { item: ev, tiers };
+            })
+          );
+
+          host.innerHTML = enriched.length
+            ? enriched.map((r) =>
+                '<div class="col-md-6 col-lg-4 reveal">' + cardHtml(r.item, { tiers: r.tiers }) + "</div>"
+              ).join("")
+            : '<div class="col-12 events-empty text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">' +
+              (f ? "No events on this date - try another day!" : "No events right now - check back soon!") +
+              "</p></div>";
+        } catch (e) {
+          host.innerHTML = '<div class="col-12 text-center text-danger py-5">Could not load events.</div>';
+          console.error(e);
+        }
         window.JourneyaApp.setupReveal();
       }
 
-      async function loadEvents() {
-        const host = document.getElementById("eventsRow");
-        if (!host) return;
-        host.innerHTML = '<div class="swiper-slide events-empty text-center text-muted py-5">Loading...</div>';
-        try {
-          let events = await api.fetchEvents();
-          host.innerHTML = events.length
-            ? events.map(eventCard).join("")
-            : '<div class="swiper-slide events-empty text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">No events right now - check back soon!</p></div>';
-        } catch (e) {
-          host.innerHTML = '<div class="swiper-slide events-empty text-center text-danger py-5">Could not load events.</div>';
-          console.error(e);
-        }
-        initSwiper(".events-swiper", "eventsSwiper");
-      }
-
-      function initEvents() {
-        loadEvents();
+      function wireFilters() {
+        const inp = document.getElementById("eventsFilterDate");
+        const clr = document.getElementById("eventsFilterClear");
+        if (inp) inp.addEventListener("change", loadEvents);
+        if (clr) clr.addEventListener("click", () => { if (inp) inp.value = ""; loadEvents(); });
       }
 
       /* ================= CONTACT ================= */
@@ -448,9 +596,65 @@
         });
       }
 
-      function initContact() {
-        fillContact();
-        wireContact();
+      /* ================= SHARED PRIVATE LINK PAGE ================= */
+      async function loadShared(token) {
+        const host = document.getElementById("sharedHost");
+        if (!host) return;
+        host.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="fas fa-circle-notch fa-spin fa-2x mb-3"></i></div>';
+        try {
+          const item = await api.getSharedEvent(token);
+          if (!item) {
+            host.innerHTML =
+              '<div class="col-lg-8 text-center"><div class="card card-j p-5"><i class="fas fa-link-slash fa-2x mb-3 text-muted"></i>' +
+              '<h4 class="fw-bold">Link not found</h4><p class="text-muted">This private link is invalid or has been closed.</p>' +
+              '<a href="#home-section" class="btn btn-j mx-auto mt-2" style="max-width:220px;">Back to Journeya</a></div></div>';
+            return;
+          }
+          let tiers = [];
+          if (item.event_type === "professional") {
+            try { tiers = await api.getSharedTiers(token); } catch (e) {}
+            if (!tiers || !tiers.length) {
+              try { tiers = await api.fetchTiers(item.id); } catch (e) {}
+            }
+          }
+          host.innerHTML = '<div class="col-lg-8 reveal">' + sharedCard(item, { tiers }) + "</div>";
+          window.JourneyaApp.setupReveal();
+        } catch (e) {
+          host.innerHTML =
+            '<div class="col-lg-8 text-center"><div class="card card-j p-5"><i class="fas fa-triangle-exclamation fa-2x mb-3 text-danger"></i>' +
+            "<h4 class=\"fw-bold\">Could not load this link</h4><p class=\"text-muted\">Please try opening it again.</p></div></div>";
+          console.error(e);
+        }
+      }
+
+      function sharedCard(item, opts) {
+        const tiers = (opts && opts.tiers) || [];
+        const payload = Object.assign({}, item, { _tiers: tiers });
+        const price = priceLine(item, tiers);
+        const video = item.video || "";
+        const iframe =
+          video && /^https?:\/\//i.test(video)
+            ? '<div class="ratio ratio-16x9 mb-3"><video src="' + esc(video) + '" controls preload="metadata" class="rounded-3 w-100" style="object-fit:cover;"></video></div>'
+            : "";
+        return (
+          '<div class="card card-j">' +
+          '<img src="' + esc(item.image || PLACEHOLDER_IMG) + '" class="card-img-top" alt="' + esc(item.title) + '" style="height:340px;">' +
+          '<div class="card-body p-4">' +
+          '<div class="mb-2">' + typeBadge(item) + "</div>" +
+          '<div class="d-flex justify-content-between align-items-start flex-wrap mb-2">' +
+          '<h3 class="fw-bold mb-0">' + esc(item.title) + "</h3>" +
+          (price ? '<span class="lead fw-bold" style="color:var(--j-primary);">' + esc(price) + "</span>" : "") +
+          "</div>" +
+          '<div class="mb-3 d-flex flex-wrap gap-2">' + itemChips(item) + "</div>" +
+          iframe +
+          (item.summary ? '<p class="text-muted mb-2">' + esc(item.summary) + "</p>" : "") +
+          (item.description ? '<p class="text-muted">' + esc(item.description) + "</p>" : "") +
+          guidelinesHtml(item.guidelines) +
+          refundHtml(item.refund_policy) +
+          '<button class="btn btn-j btn-lg mt-3" onclick="window.JourneyaUI.openBooking(\'event\',' + safeJson(payload) + ')">' +
+          '<i class="fas fa-ticket-alt me-2"></i>Book Now</button>' +
+          "</div></div>"
+        );
       }
 
       /* ================= ADMIN ================= */
@@ -462,7 +666,7 @@
         const list = (CFG.ADMIN_EMAILS || [])
           .map((e) => String(e).trim().toLowerCase())
           .filter(Boolean);
-        if (!list.length) return true; // empty whitelist -> DB (admin_emails) is the gate
+        if (!list.length) return true;
         return list.includes(String(email || "").trim().toLowerCase());
       }
 
@@ -548,42 +752,203 @@
 
       function showAdminSection(name) {
         adminSection = name;
-        ["events", "bookings"].forEach((s) => {
+        ["events", "bookings", "reports", "create"].forEach((s) => {
           document.getElementById("sec-" + s).style.display = s === name ? "" : "none";
         });
         document.querySelectorAll(".adm-tab").forEach((b) => b.classList.toggle("active", b.dataset.sec === name));
         if (name === "events") loadEventsTable();
         if (name === "bookings") loadBookings();
+        if (name === "reports") loadReports();
+        if (name === "create") loadCreateBooking();
       }
 
-      /* Admin events */
+      function generateToken() {
+        const pool = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let s = "";
+        if (window.crypto && crypto.getRandomValues) {
+          const a = new Uint32Array(12);
+          crypto.getRandomValues(a);
+          for (let i = 0; i < a.length; i++) s += pool[a[i] % pool.length];
+        } else {
+          for (let i = 0; i < 12; i++) s += pool[Math.floor(Math.random() * pool.length)];
+        }
+        return s;
+      }
+      function shareUrl(type, token) {
+        return location.origin + location.pathname + "#/" + type + "/" + token;
+      }
+      function copyText(txt) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(txt);
+        }
+        return new Promise((resolve, reject) => {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = txt;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            resolve();
+          } catch (e) { reject(e); }
+        });
+      }
+
+      /* --- Event tiers + custom fields editors --- */
+      let tiersDraft = [];
+      let customDraft = [];
+
+      function tierRowHtml(t, i) {
+        return (
+          '<div class="tier-row input-group mb-2">' +
+          '<input type="text" class="form-control tier-name" value="' + esc(t.name || "") + '" placeholder="Tier name (e.g. Standard)" />' +
+          '<input type="number" class="form-control tier-price" value="' + esc(t.price != null ? t.price : "") + '" placeholder="Price (EGP)" min="0" step="0.01" />' +
+          '<button type="button" class="btn btn-outline-danger tier-remove" data-i="' + i + '" aria-label="Remove tier"><i class="fas fa-times"></i></button>' +
+          "</div>"
+        );
+      }
+      function renderTiersEditor(rows) {
+        if (rows) tiersDraft = rows;
+        const host = document.getElementById("tiersHost");
+        if (!host) return;
+        if (!Array.isArray(tiersDraft)) tiersDraft = [];
+        host.innerHTML = tiersDraft.map(tierRowHtml).join("") || '<p class="small text-muted">No tiers yet - add at least one (e.g. Regular, Standard).</p>';
+        host.querySelectorAll(".tier-row").forEach((row, i) => {
+          row.querySelector(".tier-name").addEventListener("input", (e) => { tiersDraft[i].name = e.target.value; });
+          row.querySelector(".tier-price").addEventListener("input", (e) => { tiersDraft[i].price = e.target.value; });
+        });
+        host.querySelectorAll(".tier-remove").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            tiersDraft.splice(Number(btn.dataset.i), 1);
+            renderTiersEditor();
+          });
+        });
+      }
+      function collectTiers() {
+        return Array.from(document.querySelectorAll("#tiersHost .tier-row")).map((r) => ({
+          name: r.querySelector(".tier-name").value.trim(),
+          price: r.querySelector(".tier-price").value,
+        }));
+      }
+
+      function customRowHtml(f, i) {
+        return (
+          '<div class="cf-row input-group mb-2">' +
+          '<input type="text" class="form-control cf-label" value="' + esc(f.label || "") + '" placeholder="Field label (e.g. Instagram account)" />' +
+          '<span class="input-group-text"><input type="checkbox" class="form-check-input mt-0 cf-required"' + (f.required ? " checked" : "") + ' aria-label="Required" title="Required" /></span>' +
+          '<button type="button" class="btn btn-outline-danger cf-remove" data-i="' + i + '" aria-label="Remove field"><i class="fas fa-times"></i></button>' +
+          "</div>"
+        );
+      }
+      function renderCustomFieldsEditor(rows) {
+        if (rows) customDraft = rows;
+        const host = document.getElementById("customFieldsHost");
+        if (!host) return;
+        if (!Array.isArray(customDraft)) customDraft = [];
+        host.innerHTML = customDraft.map(customRowHtml).join("") || '<p class="small text-muted">No custom fields yet - add e.g. Instagram account or job title.</p>';
+        host.querySelectorAll(".cf-row").forEach((row, i) => {
+          row.querySelector(".cf-label").addEventListener("input", (e) => { customDraft[i].label = e.target.value; });
+          row.querySelector(".cf-required").addEventListener("change", (e) => { customDraft[i].required = e.target.checked; });
+        });
+        host.querySelectorAll(".cf-remove").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            customDraft.splice(Number(btn.dataset.i), 1);
+            renderCustomFieldsEditor();
+          });
+        });
+      }
+      function collectCustomFields() {
+        return Array.from(document.querySelectorAll("#customFieldsHost .cf-row")).map((r) => ({
+          label: r.querySelector(".cf-label").value.trim(),
+          required: r.querySelector(".cf-required").checked,
+        })).filter((f) => f.label);
+      }
+
+      function onEventTypeChange() {
+        const v = document.getElementById("eEventType").value;
+        const prof = v === "professional";
+        const priceWrap = document.getElementById("ePriceWrap");
+        const priceInput = document.getElementById("ePrice");
+        priceWrap.style.display = prof ? "none" : "";
+        priceInput.required = !prof;
+        document.getElementById("profWrap").style.display = prof ? "" : "none";
+        document.getElementById("profWrap2").style.display = prof ? "" : "none";
+      }
+
+      function showShareBox(boxEl, type, isPrivate, token) {
+        if (!boxEl) return;
+        if (!isPrivate || !token) { boxEl.innerHTML = ""; return; }
+        const url = shareUrl(type, token);
+        boxEl.innerHTML =
+          '<div class="alert alert-success d-flex flex-wrap align-items-center gap-2 mb-0">' +
+          "<div>" +
+          '<i class="fas fa-share-nodes me-1"></i><strong>Private share link ready:</strong><br>' +
+          '<a href="' + esc(url) + '" target="_blank" rel="noopener" class="text-break">' + esc(url) + "</a>" +
+          "</div>" +
+          '<button type="button" class="btn btn-sm btn-j ms-auto" onclick="window.JourneyaAdmin.copyShare(\'' + esc(url) + '\')"><i class="fas fa-copy me-1"></i>Copy</button>' +
+          "</div>";
+      }
+
+      /* --- Admin: events --- */
       function fillEventForm(ev) {
         document.getElementById("eventId").value = ev && ev.id ? ev.id : "";
         document.getElementById("eTitle").value = (ev && ev.title) || "";
+        document.getElementById("eEventType").value = (ev && ev.event_type) || "regular";
         document.getElementById("eLoc").value = (ev && ev.location) || "";
         document.getElementById("eDate").value = (ev && ev.date) || "";
         document.getElementById("eTime").value = (ev && ev.time) || "";
         document.getElementById("eDesc").value = (ev && ev.description) || "";
+        document.getElementById("eCategory").value = (ev && ev.category) || "";
+        document.getElementById("eSummary").value = (ev && ev.summary) || "";
         document.getElementById("eImage").value = (ev && ev.image) || "";
+        document.getElementById("eVideo").value = (ev && ev.video) || "";
         document.getElementById("ePrice").value = (ev && ev.price != null) ? ev.price : "";
+        document.getElementById("eSeats").value = (ev && ev.seats) ? ev.seats : "";
+        document.getElementById("eRefund").value = (ev && ev.refund_policy) || "";
         document.getElementById("eGuide").value = (ev && ev.guidelines) || "";
+        document.getElementById("ePrivate").checked = !!(ev && ev.is_private);
+        tiersDraft = [];
+        renderTiersEditor([]);
+        renderCustomFieldsEditor(
+          (ev && Array.isArray(ev.custom_fields))
+            ? ev.custom_fields.map((f) => ({ label: f.label || "", required: !!f.required }))
+            : []
+        );
+        onEventTypeChange();
+        if (ev && ev.id) {
+          api.fetchTiers(ev.id)
+            .then((tiers) => renderTiersEditor(tiers.map((t) => ({ name: t.name, price: t.price }))))
+            .catch(() => {});
+        }
+        showShareBox(document.getElementById("eventShareBox"), "event", ev && ev.is_private, ev && ev.share_token);
       }
 
       async function loadEventsTable() {
         const tbody = document.getElementById("eventsTable");
         try {
-          const events = await api.fetchEvents();
+          const events = await api.fetchEvents(true);
           tbody.innerHTML = events.length
-            ? events.map((ev) =>
-                "<tr>" +
-                "<td>" + esc(ev.title) + "</td>" +
-                "<td>" + esc(ev.date || "") + "</td>" +
-                "<td>" + esc(ev.time || "") + "</td>" +
-                "<td>" + esc(ev.location) + "</td>" +
-                "<td>" + esc(ev.price != null ? "EGP " + ev.price : "") + "</td>" +
-                '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="window.JourneyaAdmin.editEvent(' + ev.id + ')"><i class="fas fa-edit"></i></button>' +
-                '<button class="btn btn-sm btn-outline-danger" onclick="window.JourneyaAdmin.deleteEvent(' + ev.id + ')"><i class="fas fa-trash"></i></button></td></tr>'
-              ).join("")
+            ? events.map((ev) => {
+                const isProf = ev.event_type === "professional";
+                const price = isProf ? "" : (ev.price != null ? money(ev.price) : "");
+                return (
+                  "<tr>" +
+                  "<td>" + esc(ev.title) + "</td>" +
+                  "<td><span class=\"badge rounded-pill " + (isProf ? "text-bg-primary" : "text-bg-secondary") + "\">" + esc(isProf ? "Professional" : "Regular") + "</span></td>" +
+                  "<td>" + esc(ev.date || "") + "</td>" +
+                  "<td>" + (isProf ? '<span class="text-muted">Tiers</span>' : esc(price)) + "</td>" +
+                  "<td>" + (ev.is_private
+                    ? '<span class="badge text-bg-warning"><i class="fas fa-eye-slash me-1"></i>Private</span>'
+                    : '<span class="badge text-bg-success">Public</span>') + "</td>" +
+                  '<td class="text-nowrap">' +
+                  (ev.is_private ? '<button class="btn btn-sm btn-outline-warning me-1" title="Copy share link" onclick="window.JourneyaAdmin.copyShare(\'' + esc(shareUrl("event", ev.share_token)) + '\')"><i class="fas fa-share-nodes"></i></button>' : "") +
+                  '<button class="btn btn-sm btn-outline-primary me-1" onclick="window.JourneyaAdmin.editEvent(' + ev.id + ')"><i class="fas fa-edit"></i></button>' +
+                  '<button class="btn btn-sm btn-outline-danger" onclick="window.JourneyaAdmin.deleteEvent(' + ev.id + ')"><i class="fas fa-trash"></i></button></td>' +
+                  "</tr>"
+                );
+              }).join("")
             : '<tr><td colspan="6" class="text-center text-muted">No events yet.</td></tr>';
         } catch (err) {
           tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
@@ -596,65 +961,347 @@
         const form = e.target;
         if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
         const id = document.getElementById("eventId").value;
+        const isProf = document.getElementById("eEventType").value === "professional";
+        const isPrivate = document.getElementById("ePrivate").checked;
+        let existing = null;
+        if (id) {
+          try {
+            const all = await api.fetchEvents(true);
+            existing = all.find((x) => String(x.id) === String(id)) || null;
+          } catch (err) {}
+        }
+        let share_token = (existing && existing.share_token) || "";
+        if (isPrivate && !share_token) share_token = generateToken();
+        if (!isPrivate) share_token = null;
+
         const data = {
           title: document.getElementById("eTitle").value.trim(),
+          event_type: isProf ? "professional" : "regular",
+          category: document.getElementById("eCategory").value.trim() || null,
+          summary: document.getElementById("eSummary").value.trim() || null,
           location: document.getElementById("eLoc").value.trim(),
           date: document.getElementById("eDate").value || null,
           time: document.getElementById("eTime").value || null,
-          price: Number(document.getElementById("ePrice").value),
-          description: document.getElementById("eDesc").value.trim() || null,
+          price: isProf ? null : (document.getElementById("ePrice").value === "" ? null : Number(document.getElementById("ePrice").value)),
           image: document.getElementById("eImage").value.trim() || null,
+          video: document.getElementById("eVideo").value.trim() || null,
+          seats: document.getElementById("eSeats").value === "" ? null : Number(document.getElementById("eSeats").value),
+          refund_policy: document.getElementById("eRefund").value.trim() || null,
           guidelines: document.getElementById("eGuide").value.trim() || null,
+          is_private: isPrivate,
+          share_token: share_token,
+          custom_fields: isProf ? collectCustomFields() : [],
         };
         try {
-          if (id) await api.updateEvent(id, data);
-          else await api.addEvent(data);
+          let newId = id;
+          if (id) {
+            await api.updateEvent(id, data);
+          } else {
+            const created = await api.addEvent(data);
+            newId = created.id;
+          }
+          await api.saveTiers(newId, isProf ? collectTiers() : []);
           api.notifyChanged();
           fillEventForm(null);
           form.classList.remove("was-validated");
+          document.getElementById("eEventType").value = "regular";
+          onEventTypeChange();
+          showShareBox(document.getElementById("eventShareBox"), "event", isPrivate, data.share_token);
           loadEventsTable();
         } catch (err) { alert("Save failed: " + err.message); console.error(err); }
       }
 
       async function editEvent(id) {
-        const events = await api.fetchEvents();
-        const ev = events.find((x) => x.id == id);
+        const events = await api.fetchEvents(true);
+        const ev = events.find((x) => String(x.id) === String(id));
         if (ev) { showAdminSection("events"); fillEventForm(ev); window.scrollTo(0, 0); }
       }
 
       async function deleteEvent(id) {
-        if (!confirm("Delete this event?")) return;
+        if (!confirm("Delete this event? Its ticket tiers and bookings will also be removed.")) return;
         try { await api.deleteEvent(id); api.notifyChanged(); loadEventsTable(); } catch (err) { alert("Delete failed: " + err.message); }
       }
 
-      /* Admin bookings */
-      async function loadBookings() {
-        const tbody = document.getElementById("bookingsTable");
+      /* --- Admin: manual booking creation --- */
+      let cbEvents = [];
+      let cbTiers = [];
+      let cbFields = [];
+
+      async function loadCreateBooking() {
+        const sel = document.getElementById("cbEvent");
+        if (!sel) return;
         try {
-          let bookings = await api.fetchBookings();
-          bookings = bookings.filter((b) => b.type !== "trip");
-          tbody.innerHTML = bookings.length
-            ? bookings.map((b) =>
-                "<tr>" +
-                "<td><i class=\"fas fa-user me-1 text-muted\"></i>" + esc(b.name) + "</td>" +
-                '<td><a class="link-dark" href="tel:' + esc(b.phone) + '">' + esc(b.phone) + "</a></td>" +
-                "<td>" + esc(b.email) + "</td>" +
-                "<td>" + esc(b.item_title || "Item #" + b.item_id) + "</td>" +
-                "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td></tr>"
+          cbEvents = await api.fetchEvents(true);
+          sel.innerHTML = cbEvents.length
+            ? cbEvents.map((e) =>
+                '<option value="' + e.id + '">' + esc(e.title) +
+                (e.event_type === "professional" ? " (Professional)" : "") +
+                (e.is_private ? " [Private]" : "") +
+                "</option>"
               ).join("")
-            : '<tr><td colspan="5" class="text-center text-muted">No bookings yet.</td></tr>';
+            : '<option value="">No events yet</option>';
+          document.getElementById("cbMsg").innerHTML = "";
+          await onCreateEventChange();
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load.</td></tr>';
+          sel.innerHTML = '<option value="">Failed to load events</option>';
           console.error(err);
         }
       }
 
+      async function onCreateEventChange() {
+        const sel = document.getElementById("cbEvent");
+        const tiersBox = document.getElementById("cbTiersBox");
+        const fieldsBox = document.getElementById("cbFieldsBox");
+        if (!sel || !tiersBox || !fieldsBox) return;
+        cbTiers = [];
+        cbFields = [];
+        const ev = cbEvents.find((e) => String(e.id) === String(sel.value)) || null;
+        tiersBox.innerHTML = "";
+        fieldsBox.innerHTML = "";
+        if (!ev) { recalcCbTotal(); return; }
+
+        cbFields = (Array.isArray(ev.custom_fields) ? ev.custom_fields : []).filter((f) => (f.label || "").trim());
+        fieldsBox.innerHTML = cbFields.length
+          ? '<h6 class="fw-bold mb-2 small text-uppercase"><i class="fas fa-clipboard-list me-2" style="color:var(--j-accent);"></i>Custom Details</h6>' +
+            cbFields.map((f, i) =>
+              '<div class="mb-2" style="max-width:420px;"><label class="form-label small">' + esc(f.label) + (f.required ? " *" : "") + '</label>' +
+              '<input type="text" class="form-control cb-custom" data-i="' + i + '"></div>'
+            ).join("")
+          : "";
+
+        if (ev.event_type === "professional") {
+          try { cbTiers = await api.fetchTiers(ev.id); } catch (e) { cbTiers = []; }
+          tiersBox.innerHTML = cbTiers.length
+            ? '<h6 class="fw-bold mb-2 small text-uppercase"><i class="fas fa-layer-group me-2" style="color:var(--j-accent);"></i>Ticket Tier</h6>' +
+              '<select class="form-select cb-tier-select" style="max-width:420px;">' +
+              cbTiers.map((t) => '<option value="' + t.id + '" data-price="' + t.price + '">' + esc(t.name) + " - " + money(t.price) + "</option>").join("") +
+              "</select>"
+            : '<div class="alert alert-warning small py-2 mb-0">This professional event has no ticket tiers yet - the booking will be created without a tier.</div>';
+        }
+
+        const tierSel = tiersBox.querySelector(".cb-tier-select");
+        if (tierSel) tierSel.addEventListener("change", recalcCbTotal);
+        recalcCbTotal();
+      }
+
+      function recalcCbTotal() {
+        const totalInp = document.getElementById("cbTotal");
+        const sel = document.getElementById("cbEvent");
+        const seatsInp = document.getElementById("cbSeats");
+        if (!totalInp || !sel) return;
+        const ev = cbEvents.find((e) => String(e.id) === String(sel.value)) || null;
+        const seats = Math.max(1, Number(seatsInp ? seatsInp.value : 1) || 1);
+        const tierOpt = document.querySelector("#cbTiersBox .cb-tier-select option:checked");
+        let unit = null;
+        if (tierOpt && tierOpt.value !== "") unit = Number(tierOpt.dataset.price);
+        else if (ev && ev.price != null) unit = Number(ev.price);
+        totalInp.value = unit != null && !isNaN(unit) ? Math.round(unit * seats * 100) / 100 : "";
+      }
+
+      async function submitCreateBooking(e) {
+        e.preventDefault();
+        const form = e.target;
+        const msg = document.getElementById("cbMsg");
+        if (!msg) return;
+        if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
+        if (!document.getElementById("cbEvent").value) {
+          msg.innerHTML = '<div class="alert alert-warning py-2">Choose an event first.</div>';
+          return;
+        }
+        const ev = cbEvents.find((x) => String(x.id) === String(document.getElementById("cbEvent").value)) || null;
+        const tierOpt = form.querySelector("#cbTiersBox .cb-tier-select option:checked");
+        const tier = tierOpt ? cbTiers.find((t) => String(t.id) === String(tierOpt.value)) || null : null;
+        const customData = {};
+        cbFields.forEach((f, i) => {
+          const inp = form.querySelector('.cb-custom[data-i="' + i + '"]');
+          customData[f.label] = inp ? inp.value.trim() : "";
+        });
+        const seats = Math.max(1, Number(form.querySelector("#cbSeats").value) || 1);
+        const totalStr = form.querySelector("#cbTotal").value;
+        const booking = {
+          type: "event",
+          item_id: ev ? ev.id : null,
+          item_title: ev ? ev.title : "",
+          name: form.querySelector("#cbName").value.trim(),
+          phone: form.querySelector("#cbPhone").value.trim(),
+          email: form.querySelector("#cbEmail").value.trim(),
+          tier_id: tier ? tier.id : null,
+          tier_name: tier ? tier.name : null,
+          tier_price: tier ? Number(tier.price) : null,
+          custom_data: customData,
+          seats: seats,
+          total: totalStr === "" ? null : Number(totalStr),
+        };
+        try {
+          await api.createBooking(booking);
+          api.notifyChanged();
+          msg.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check me-1"></i>Booking created for <strong>' + esc(booking.name) + "</strong> (" + esc(booking.item_title) + ").</div>";
+          form.reset();
+          form.classList.remove("was-validated");
+          document.getElementById("cbSeats").value = 1;
+          await onCreateEventChange();
+        } catch (err) {
+          msg.innerHTML = '<div class="alert alert-danger py-2">Could not create booking: ' + esc(err.message) + "</div>";
+          console.error(err);
+        }
+      }
+
+      function resetCreateBooking() {
+        const form = document.getElementById("cbForm");
+        const msg = document.getElementById("cbMsg");
+        if (form) form.reset();
+        if (msg) msg.innerHTML = "";
+        document.getElementById("cbSeats").value = 1;
+        onCreateEventChange();
+      }
+
+      /* --- Admin: bookings --- */
+      async function loadBookings() {
+        const tbody = document.getElementById("bookingsTable");
+        try {
+          const bookings = await api.fetchBookings();
+          tbody.innerHTML = bookings.length
+            ? bookings.map((b) =>
+                "<tr>" +
+                "<td><span class=\"badge rounded-pill text-bg-secondary\">Event</span></td>" +
+                "<td><i class=\"fas fa-user me-1 text-muted\"></i>" + esc(b.name) + "</td>" +
+                '<td><a class="link-dark" href="tel:' + esc(b.phone) + '">' + esc(b.phone) + "</a></td>" +
+                "<td>" + esc(b.item_title || "Item #" + b.item_id) + "</td>" +
+                "<td>" + esc(b.tier_name || "—") + "</td>" +
+                "<td>" + esc(b.seats || 1) + "</td>" +
+                "<td>" + esc(b.total != null ? money(b.total) : "") + "</td>" +
+                "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td></tr>"
+              ).join("")
+            : '<tr><td colspan="8" class="text-center text-muted">No bookings yet.</td></tr>';
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Failed to load.</td></tr>';
+          console.error(err);
+        }
+      }
+
+      /* --- Admin: reports & analytics --- */
+      const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+      async function loadReports() {
+        try {
+          const events = await api.fetchEvents(true);
+          const bookings = await api.fetchBookings();
+
+          const items = events.map((e) => ({ type: "event", id: e.id, title: e.title, seats: e.seats, price: e.price }));
+
+          /* Overview */
+          const overview = items.map((it) => {
+            const bs = bookings.filter((b) => b.type === it.type && String(b.item_id) === String(it.id));
+            const tickets = bs.reduce((s, b) => s + (Number(b.seats) || 1), 0);
+            const revenue = bs.reduce((s, b) => s + (b.total != null && !isNaN(Number(b.total)) ? Number(b.total) : 0), 0);
+            let status, cls;
+            if (tickets === 0) { status = "No sales yet"; cls = "text-danger"; }
+            else if (tickets <= 4) { status = "Low sales"; cls = "text-warning"; }
+            else if (tickets <= 14) { status = "Selling"; cls = "text-success"; }
+            else { status = "Selling well"; cls = "text-success"; }
+            return { it, tickets, revenue, status, cls };
+          });
+
+          const ovHost = document.getElementById("reportsOverview");
+          ovHost.innerHTML = overview.length
+            ? overview.map((o) =>
+                "<tr>" +
+                "<td><span class=\"badge rounded-pill text-bg-secondary\">Event</span></td>" +
+                "<td>" + esc(o.it.title) + "</td>" +
+                "<td>" + o.tickets + "</td>" +
+                "<td>" + esc(money(o.revenue)) + "</td>" +
+                "<td class=\"" + o.cls + " fw-bold\">" + esc(o.status) + "</td></tr>"
+              ).join("")
+            : '<tr><td colspan="5" class="text-center text-muted">No events yet.</td></tr>';
+
+          /* Day-of-week breakdown */
+          const select = document.getElementById("reportsItemSelect");
+          const withBookings = items.filter((it) => bookings.some((b) => b.type === it.type && String(b.item_id) === String(it.id)));
+          const ordered = withBookings.length ? withBookings : items;
+          select.innerHTML = ordered.length
+            ? ordered.map((it) => '<option value="' + it.type + ':' + it.id + '">' + esc(it.title) + "</option>").join("")
+            : '<option value="">No events</option>';
+          if (ordered.length) renderDow(ordered[0], bookings);
+          else renderDow(null, bookings);
+          select.onchange = () => {
+            const [type, id] = select.value.split(":");
+            renderDow(items.find((it) => it.type === type && String(it.id) === String(id)), bookings);
+          };
+
+          /* Customers: frequent / non-frequent */
+          const byPhone = {};
+          bookings.forEach((b) => {
+            const key = String(b.phone || "").replace(/\D/g, "") + "|" + String(b.name || "").trim().toLowerCase();
+            if (!byPhone[key]) byPhone[key] = { name: b.name || "", phone: b.phone || "", count: 0, tickets: 0 };
+            byPhone[key].count++;
+            byPhone[key].tickets += (Number(b.seats) || 1);
+          });
+          const customers = Object.values(byPhone).sort((a, b) => b.count - a.count);
+          const frequent = customers.filter((c) => c.count >= 2);
+          const nonFrequent = customers.filter((c) => c.count < 2);
+
+          document.getElementById("freqCount").textContent = frequent.length;
+          document.getElementById("nonFreqCount").textContent = nonFrequent.length;
+
+          const freqRows = (list) =>
+            list.length
+              ? list.map((c, i) =>
+                  "<tr><td>" + (i + 1) + "</td><td>" + esc(c.name) + "</td>" +
+                  '<td><a class="link-dark" href="tel:' + esc(c.phone) + '">' + esc(c.phone) + "</a></td>" +
+                  "<td>" + c.count + "</td><td>" + c.tickets + "</td></tr>"
+                ).join("")
+              : '<tr><td colspan="5" class="text-center text-muted">None yet.</td></tr>';
+
+          document.getElementById("reportsFrequent").innerHTML = freqRows(frequent);
+          document.getElementById("reportsNonFrequent").innerHTML = freqRows(nonFrequent);
+        } catch (err) {
+          console.error(err);
+          document.getElementById("reportsOverview").innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load reports.</td></tr>';
+        }
+      }
+
+      function renderDow(item, bookings) {
+        const host = document.getElementById("reportsDow");
+        if (!item) { host.innerHTML = '<p class="text-muted small">No bookings to break down.</p>'; return; }
+        const bs = bookings.filter((b) => b.type === item.type && String(b.item_id) === String(item.id));
+        const totals = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday: 0 };
+        bs.forEach((b) => {
+          const date = b.created_at ? new Date(b.created_at) : null;
+          if (!date || isNaN(date)) return;
+          const day = date.toLocaleDateString("en-US", { weekday: "long" });
+          if (totals[day] !== undefined) totals[day] += (Number(b.seats) || 1);
+        });
+        const values = WEEKDAYS.map((d) => totals[d]);
+        const max = Math.max.apply(null, values.concat([1]));
+        host.innerHTML =
+          "<p class=\"small text-muted\">" + esc(item.title) + " - tickets booked per weekday</p>" +
+          WEEKDAYS.map((d, i) => {
+            const pct = Math.round((values[i] / max) * 100);
+            return (
+              '<div class="dow-row d-flex align-items-center gap-2 mb-2">' +
+              '<div class="dow-label text-nowrap" style="width:90px;">' + d + "</div>" +
+              '<div class="dow-bar-track flex-grow-1"><div class="dow-bar" style="width:' + pct + '%">' +
+              (values[i] ? '<span class="dow-val">' + values[i] + "</span>" : "") +
+              "</div></div></div>"
+            );
+          }).join("");
+      }
+
+      /* --- Admin wiring --- */
       function wireAdmin() {
         if (adminWired) return;
         adminWired = true;
         document.getElementById("loginForm").addEventListener("submit", handleLogin);
         document.getElementById("eventForm").addEventListener("submit", saveEvent);
-        document.getElementById("eventReset").addEventListener("click", () => fillEventForm(null));
+        document.getElementById("eventReset").addEventListener("click", () => { fillEventForm(null); showShareBox(document.getElementById("eventShareBox"), "event", false, null); });
+        document.getElementById("eEventType").addEventListener("change", onEventTypeChange);
+        document.getElementById("addTierRow").addEventListener("click", () => { renderTiersEditor(tiersDraft.concat([{ name: "", price: "" }])); });
+        document.getElementById("addCustomFieldRow").addEventListener("click", () => { renderCustomFieldsEditor(customDraft.concat([{ label: "", required: false }])); });
+        document.getElementById("cbForm").addEventListener("submit", submitCreateBooking);
+        document.getElementById("cbEvent").addEventListener("change", onCreateEventChange);
+        document.getElementById("cbSeats").addEventListener("input", recalcCbTotal);
+        document.getElementById("cbReset").addEventListener("click", resetCreateBooking);
+        onEventTypeChange();
         document.querySelectorAll("#view-admin .adm-tab").forEach((b) => {
           b.addEventListener("click", () => showAdminSection(b.dataset.sec));
         });
@@ -689,13 +1336,22 @@
         logout,
         editEvent,
         deleteEvent,
+        copyShare(url) {
+          copyText(url)
+            .then(() => { alert("Share link copied to clipboard."); })
+            .catch(() => { prompt("Copy this share link:", url); });
+        },
       };
 
       /* ================= Page init (single-page layout) ================= */
       window.JourneyaApp.register("admin", initAdmin);
+      window.JourneyaApp.register("shared", (d) => {
+        if (d && d.token) loadShared(d.token);
+      });
 
       document.addEventListener("DOMContentLoaded", () => {
-        initEvents();
+        loadEvents();
+        wireFilters();
         initContact();
         if (window.JourneyaApp.current() === "admin") initAdmin();
         window.JourneyaApp.setupReveal();
@@ -706,6 +1362,8 @@
             if (sessionStorage.getItem(SESSION_KEY)) {
               if (adminSection === "events") loadEventsTable();
               if (adminSection === "bookings") loadBookings();
+              if (adminSection === "reports") loadReports();
+              if (adminSection === "create") loadCreateBooking();
             }
           } else {
             loadEvents();
@@ -714,7 +1372,8 @@
         });
 
         window.addEventListener("journeya:view", (e) => {
-          if (e.detail.name !== "admin") {
+          const name = e.detail && e.detail.name;
+          if (name !== "shared" && name !== "admin") {
             loadEvents();
             window.JourneyaApp.setupReveal();
           }

@@ -543,6 +543,110 @@ body {
   transition-delay: 0.54s;
 }
 
+/* ---------- Refund policy box (cards / shared page) ---------- */
+.refund-box {
+  border: 1px dashed #e3c8bd;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 8px 0 12px;
+  background: #fffaf7;
+}
+
+/* ---------- Catalog filter bar ---------- */
+.catalog-filter {
+  background: #fff;
+  border: 1px solid #ecd9d2;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(70, 30, 30, 0.08);
+}
+.catalog-filter .input-group-text {
+  background: var(--j-primary);
+  color: #fff;
+  border-color: var(--j-primary);
+}
+.catalog-filter .form-control:focus {
+  border-color: var(--j-primary);
+}
+
+/* ---------- Empty state spans the full catalog grid ---------- */
+.events-empty {
+  width: 100%;
+  padding: 3rem 1rem;
+}
+
+/* ---------- Booking tiers in the modal ---------- */
+.tier-option {
+  border: 1px solid #ecd9d2;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: #fff;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.tier-option:hover {
+  border-color: var(--j-accent);
+  background: #fdf6f3;
+}
+.tier-option:has(.form-check-input:checked) {
+  border-color: var(--j-primary);
+  background: #fdf0ee;
+  box-shadow: 0 4px 12px rgba(139, 38, 38, 0.14);
+}
+.tier-option .form-check-input:checked {
+  background-color: var(--j-primary);
+  border-color: var(--j-primary);
+}
+
+/* ---------- Admin: tier / custom field editors ---------- */
+#tiersHost .input-group,
+#customFieldsHost .input-group {
+  box-shadow: 0 2px 8px rgba(70, 30, 30, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+}
+#tiersHost .input-group .form-control,
+#customFieldsHost .input-group .form-control {
+  border-color: #eed7cf;
+}
+#tiersHost .input-group:focus-within,
+#customFieldsHost .input-group:focus-within {
+  box-shadow: 0 0 0 0.2rem rgba(139, 38, 38, 0.16);
+}
+
+/* ---------- Reports: day-of-week bars ---------- */
+.dow-bar-track {
+  background: #f3e3dc;
+  border-radius: 8px;
+  height: 26px;
+  overflow: hidden;
+  position: relative;
+}
+.dow-bar {
+  background: linear-gradient(90deg, var(--j-primary), var(--j-accent));
+  height: 100%;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dow-val {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding-right: 10px;
+}
+.dow-row {
+  margin-bottom: 10px;
+}
+.dow-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--j-primary-dark);
+}
+
 /* ---------- Keyframes ---------- */
 @keyframes floaty {
   0%,

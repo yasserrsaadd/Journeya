@@ -31,7 +31,21 @@ window.JOURNEYA_CONFIG = {
   /* ---- Supabase table names (match schema.sql) ---- */
   TABLES: {
     events: "events",
+    ticket_tiers: "ticket_tiers",
     bookings: "bookings",
+  },
+
+  /* ---- Cloudinary (optional) ----
+     The site stores media URLs (photos / video previews) directly in the
+     image/video fields. Paste the Cloudinary "Secure URL" of an uploaded
+     asset into the admin form - nothing is uploaded from this site's code.
+
+     If you later want the Cloudinary Upload Widget inside the admin form,
+     add your cloud name + an unsigned upload preset below and the Upload
+     button will open the widget instead of asking for a URL. */
+  CLOUDINARY: {
+    cloud_name: "",
+    upload_preset: "", // must be an unsigned preset that accepts images+videos
   },
 
   /* ---- Admin portal sign-in ---- */

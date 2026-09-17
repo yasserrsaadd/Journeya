@@ -1,7 +1,7 @@
 # Journeya - Community Website
 
 A modern, vibrant, static website for **Journeya**, an agency that organizes social
-events (game nights) across Egypt.
+events and game nights across Egypt.
 
 Built with plain HTML5/CSS3/JavaScript, **Bootstrap** and **Font Awesome** via CDN,
 and **Supabase** (via its JS client CDN) for storage.
@@ -20,43 +20,75 @@ make guest bookings, and try the admin portal immediately.
 
 1. Create a free project at https://supabase.com
 2. Open the **SQL Editor** and run the contents of `supabase/schema.sql`.
-   This creates the `events` and `bookings` tables with Row Level Security.
-   The script is safe to re-run (it uses `if not exists` and `add column if not exists`),
-   so re-run it whenever the schema changes — e.g. to add new event fields.
-
-Every event carries the following fields: **title, price, picture (Cloudinary URL), location,
-description, date, and guidelines** (one per line, rendered as a bullet list).
+   This creates the `events`, `ticket_tiers` and `bookings` tables with
+   Row Level Security. The script is safe to re-run (it uses `if not exists` and
+   `add column if not exists`), so re-run it whenever the schema changes.
 3. Go to **Project Settings → API** and copy your **Project URL** and **anon/public key**.
 4. Open `js/config.js` and paste them into `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
 
-That's it - the site now reads/writes your real tables. Guest bookings stored by type.
+That's it - the site now reads/writes your real tables.
 
 > Guests book **without logging in** - booking forms are public, no account required.
+> There are no customer accounts or passwords on the public site.
 
-### Storing event images (Cloudinary)
+### Data model
 
-Event images are hosted on **Cloudinary** (not Supabase Storage), so images never count against
-Supabase egress. The event's `image` field simply stores the Cloudinary URL of the picture.
+- **events** - game nights / social gatherings. Both **Regular** (flat price) and
+  **Professional** (multi-tier tickets + custom booking fields) events.
+  Fields: title, event type, category, summary, description, date, time, location,
+  image (Cloudinary URL), video (optional Cloudinary preview), price, optional seats,
+  refund policy, guidelines (one per line), private toggle + share token, custom fields.
+- **ticket_tiers** - per professional event: name + price (e.g. Regular, Standard).
+- **bookings** - instant guest checkout rows with name, phone, email, chosen tier,
+  custom-field answers, number of seats and the computed total.
+
+### Public / Private events & unique share links
+
+Private events never appear in the public catalog. Save (or edit) an event with
+**Private** checked and Journeya auto-generates a unique share link
+(e.g. `index.html#/event/aBcDeFgHiJkL`). Anyone with that link can view the event and
+book directly; the link stops working if the event is flipped back to Public.
+Copy the link from the admin dashboard (share icon in the item list, or the alert
+after saving).
+
+### Storing media (Cloudinary)
+
+Event photos and optional video previews are hosted on **Cloudinary** (not
+Supabase Storage), so media never counts against Supabase egress. The `image`/`video`
+fields simply store the Cloudinary URLs.
 
 Workflow when adding/editing an event in the admin dashboard:
 
-1. Upload the photo at https://cloudinary.com → **Media Library** → **Upload** (or your Cloudinary dashboard).
-2. Open the uploaded image and copy its **Secure URL** (e.g. `https://res.cloudinary.com/<cloud>/image/upload/...`).
-3. Paste that URL into the **Image URL** field in the admin event form.
+1. Upload the photo/video at https://cloudinary.com → **Media Library** → **Upload**.
+2. Open the uploaded asset and copy its **Secure URL** (e.g.
+   `https://res.cloudinary.com/<cloud>/image/upload/...`).
+3. Paste that URL into the **Image URL** / **Video preview** field in the admin form.
 
-The event card loads the image straight from Cloudinary's CDN. Nothing is uploaded from this
-site's code - Cloudinary is used purely as image hosting and the URL is saved in Supabase.
+The card loads the media straight from Cloudinary's CDN. Nothing is uploaded from this
+site's code - Cloudinary is used purely as media hosting and the URL is saved in Supabase.
+(If you later want the in-form Cloudinary Upload Widget, uncomment the `CLOUDINARY`
+section in `js/config.js`.)
 
-### Managing content (adding/editing events)
+## Managing content (adding/editing events)
+
 Visit the **Admin** section (link in the footer) or open the site and go to
 `index.html#/admin`, sign in with your Supabase Auth admin account, and use the
-built-in forms to **Add / Edit / Delete** events and view the **Guest Lists**
-(names & phones). Only users whose email is in the `admin_emails` table can do this.
+built-in forms to **Add / Edit / Delete** events. From there you can also:
+
+- Create **Professional** events with multiple ticket tiers and custom booking fields
+  (e.g. Instagram account, job title) collected at checkout.
+- Toggle events **Public / Private** and copy their unique share links.
+- View **Guest Lists** (names, phones, tier, seats, totals).
+- Open **Reports & Analytics**:
+  - **Overview** - what is selling and what isn't (tickets, revenue, status).
+  - **Day-of-the-Week Sales** breakdown per item (ticket volume by weekday).
+  - **Customer Breakdown** - two lists separating **Frequent Customers** (2+ bookings)
+    from **Non-Frequent Customers**, complete with names and phone numbers.
 
 ## Setting up admin auth (Supabase Auth)
 
 The admin portal signs in with **Supabase Auth (email + password)**, and Row Level
-Security only lets confirmed admins write events or view guest lists.
+Security only lets confirmed admins write content or view guest lists.
 
 1. Open your Supabase project → **Authentication → Users → Add user**
    and create an admin account (email + password).
@@ -76,21 +108,24 @@ Security only lets confirmed admins write events or view guest lists.
 > only applies once a Supabase backend is connected.
 
 > **Security note:** the anon key is embedded in this static site, so admin access is
-> enforced by RLS on the database, not by the client. Never put the service-role key
-> in this repo - it stays server-side only.
+> enforced by RLS on the database, not by the client. Private events are read only
+> through the share-link RPC function `get_shared_event`.
+> Never put the service-role key in this repo - it stays server-side only.
 
 ## File Structure
 
 ```
 .
-├── index.html          # Single-file single-page site (Home, Events, About, Contact, Admin)
-│                       #   Views switch via URL hashes: #/home #/events #/about #/contact #/admin
+├── index.html          # Single-file single-page site (Home, Events, FAQ,
+│                       #   About, Contact, Admin + private share-link pages)
+│                       #   Routing via URL hashes: #/home #/events #/about
+│                       #   #/contact #/admin  and  #/event/:token
 ├── css/styles.css      # Journeya theme
 ├── js/
 │   ├── config.js       # <-- Paste your Supabase URL/key & admin emails here
 │   ├── supabase-client.js  # Supabase CDN client + auth helpers + demo-mode fallback
 │   └── main.js         # SPA router + shared navbar/footer/booking modal
-└── supabase/schema.sql # Database setup
+└── supabase/schema.sql # Database setup (events, ticket_tiers, bookings)
 ```
 
 ## Payments

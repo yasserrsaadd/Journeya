@@ -32,12 +32,28 @@
       if (adminView) adminView.style.display = isAdmin ? "" : "none";
       const foot = document.getElementById("footer-j");
       if (foot) foot.style.display = isAdmin ? "none" : "";
+      const sharedView = document.getElementById("view-shared");
+      if (sharedView) sharedView.style.display = "none";
 
       if (isAdmin) {
         if (views.admin) views.admin();
         window.scrollTo(0, 0);
         setupReveal();
         window.dispatchEvent(new CustomEvent("journeya:view", { detail: { name: s } }));
+        return;
+      }
+
+      /* Private share links: #/event/:token  (and legacy #/trip/:token,
+         which now reliably shows a "Link not found" page) */
+      const sharedMatch = s.match(/^(event|trip)\/(.+)$/i);
+      if (sharedMatch) {
+        document.querySelectorAll(".page-section").forEach((v) => (v.style.display = "none"));
+        if (sharedView) sharedView.style.display = "";
+        window.scrollTo(0, 0);
+        setupReveal();
+        const detail = { name: "shared", token: decodeURIComponent(sharedMatch[2]) };
+        if (views.shared) views.shared(detail);
+        window.dispatchEvent(new CustomEvent("journeya:view", { detail }));
         return;
       }
 
@@ -169,13 +185,81 @@
       "</div></footer>";
   }
 
-  /* ---- Guest booking modal (shared across events) ---- */
+  /* ---- Small helpers ---- */
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function money(n) {
+    if (n == null || n === "") return "";
+    return "EGP " + Number(n).toLocaleString();
+  }
+
+  /* ---- Guest booking modal (events & professional events) ---- */
   window.JourneyaUI = {
     openBooking(type, item) {
       const host = document.getElementById("bookingModalHost");
       if (!host) return;
 
-      const title = item.title;
+      if (typeof item === "string") {
+        try { item = JSON.parse(item); } catch (e) { item = {}; }
+      }
+      const tiers = Array.isArray(item._tiers) ? item._tiers : [];
+      delete item._tiers;
+
+      const title = item.title || (item.location || "Journeya experience");
+      const isProf = type === "event" && item.event_type === "professional";
+
+      /* Multi-tier selection for professional events */
+      const tiersHtml =
+        isProf && tiers.length
+          ? '<div class="mb-3"><label class="form-label">Ticket Tier *</label>' +
+            tiers
+              .map(
+                (t, i) =>
+                  '<div class="form-check tier-option"><input class="form-check-input tier-radio" type="radio" name="bkTier" value="' +
+                  i +
+                  '" id="tier' +
+                  i +
+                  '"' +
+                  (i === 0 ? " checked" : "") +
+                  '><label class="form-check-label" for="tier' +
+                  i +
+                  '">' +
+                  esc(t.name) +
+                  ' <span class="fw-bold" style="color:var(--j-primary);">' +
+                  money(t.price) +
+                  "</span></label></div>"
+              )
+              .join("") +
+            "</div>"
+          : '<input type="hidden" id="bkTierIdx" value="-1">';
+
+      /* Custom fields for professional events (IG account, job title, ...) */
+      const fields = isProf && Array.isArray(item.custom_fields) ? item.custom_fields.filter((f) => (f.label || "").trim()) : [];
+      const fieldsHtml = fields
+        .map(
+          (f, i) =>
+            '<div class="mb-3"><label class="form-label">' +
+            esc(f.label) +
+            (f.required ? " *" : "") +
+            '</label><input type="text" class="form-control bk-custom" data-i="' +
+            i +
+            '" placeholder="' +
+            esc(f.label) +
+            '"' +
+            (f.required ? " required" : "") +
+            "></div>"
+        )
+        .join("");
+
+      /* Optional seats (limited-capacity items) */
+      const seatsCap = item.seats ? Number(item.seats) : 0;
+      const seatsHtml = seatsCap
+        ? '<div class="mb-3"><label class="form-label">Number of Seats *</label>' +
+          '<input type="number" class="form-control" id="bkSeats" value="1" min="1" max="' +
+          seatsCap +
+          '" required></div>'
+        : '<input type="hidden" id="bkSeats" value="1">';
 
       host.innerHTML =
         '<div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">' +
@@ -187,7 +271,7 @@
         "</div>" +
         '<div class="modal-body">' +
         "<h6>Booking: " +
-        title +
+        esc(title) +
         "</h6>" +
         "<p class=\"text-muted small mb-3\">No account needed - just leave your details and you're booked.</p>" +
         '<form id="bookingForm" novalidate>' +
@@ -197,6 +281,9 @@
         '<input type="tel" class="form-control" id="bkPhone" required placeholder="e.g. 0100 000 0000"></div>' +
         '<div class="mb-3"><label class="form-label">Email *</label>' +
         '<input type="email" class="form-control" id="bkEmail" required placeholder="you@example.com"></div>' +
+        tiersHtml +
+        fieldsHtml +
+        seatsHtml +
         '<div class="mb-2 text-muted small"><i class="fas fa-credit-card me-1"></i>Pay by card, mobile wallet or cash on collection.</div>' +
         '<button type="submit" class="btn btn-j w-100">Confirm Booking</button>' +
         "</form></div></div></div></div>";
@@ -220,13 +307,32 @@
           form.classList.add("was-validated");
           return;
         }
+
+        const tierRadio = form.querySelector(".tier-radio:checked");
+        const tier = tierRadio ? tiers[Number(tierRadio.value)] : null;
+        const seats = Math.max(1, Number(form.querySelector("#bkSeats").value) || 1);
+        const unit = tier ? Number(tier.price) : item.price != null ? Number(item.price) : null;
+        const total = unit != null && !isNaN(unit) ? Math.round(unit * seats * 100) / 100 : null;
+
+        const customData = {};
+        fields.forEach((f, i) => {
+          const inp = form.querySelector('.bk-custom[data-i="' + i + '"]');
+          customData[f.label] = inp ? inp.value.trim() : "";
+        });
+
         const booking = {
-          type: "event",
+          type: type,
           item_id: item.id,
-          name: host.querySelector("#bkName").value.trim(),
-          phone: host.querySelector("#bkPhone").value.trim(),
-          email: host.querySelector("#bkEmail").value.trim(),
           item_title: title,
+          name: form.querySelector("#bkName").value.trim(),
+          phone: form.querySelector("#bkPhone").value.trim(),
+          email: form.querySelector("#bkEmail").value.trim(),
+          tier_id: tier ? tier.id : null,
+          tier_name: tier ? tier.name : null,
+          tier_price: tier ? Number(tier.price) : null,
+          custom_data: customData,
+          seats: seats,
+          total: total,
         };
         try {
           await window.JourneyaAPI.createBooking(booking);
