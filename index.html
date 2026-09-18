@@ -364,7 +364,7 @@
 
           <div class="card card-j p-4 mb-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-calendar-week me-2" style="color:var(--j-accent);"></i>Day-of-the-Week Sales Breakdown</h5>
-            <p class="small text-muted">Tickets sold per day of the week, based on when bookings were placed.</p>
+            <p class="small text-muted">Tickets sold per day of the week, based on the day of the week the event falls on.</p>
             <select id="reportsItemSelect" class="form-select mb-3" style="max-width:420px;"></select>
             <div id="reportsDow"></div>
           </div>
@@ -1192,7 +1192,7 @@
           const events = await api.fetchEvents(true);
           const bookings = await api.fetchBookings();
 
-          const items = events.map((e) => ({ type: "event", id: e.id, title: e.title, seats: e.seats, price: e.price }));
+          const items = events.map((e) => ({ type: "event", id: e.id, title: e.title, seats: e.seats, price: e.price, date: e.date }));
 
           /* Overview */
           const overview = items.map((it) => {
@@ -1270,16 +1270,14 @@
         if (!item) { host.innerHTML = '<p class="text-muted small">No bookings to break down.</p>'; return; }
         const bs = bookings.filter((b) => b.type === item.type && String(b.item_id) === String(item.id));
         const totals = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday: 0 };
-        bs.forEach((b) => {
-          const date = b.created_at ? new Date(b.created_at) : null;
-          if (!date || isNaN(date)) return;
-          const day = date.toLocaleDateString("en-US", { weekday: "long" });
-          if (totals[day] !== undefined) totals[day] += (Number(b.seats) || 1);
-        });
+        const eventDate = item.date ? new Date(String(item.date).slice(0, 10) + "T00:00:00") : null;
+        if (!eventDate || isNaN(eventDate)) { host.innerHTML = '<p class="text-muted small">This event has no date.</p>'; return; }
+        const day = eventDate.toLocaleDateString("en-US", { weekday: "long" });
+        if (totals[day] !== undefined) totals[day] = bs.reduce((s, b) => s + (Number(b.seats) || 1), 0);
         const values = WEEKDAYS.map((d) => totals[d]);
         const max = Math.max.apply(null, values.concat([1]));
         host.innerHTML =
-          "<p class=\"small text-muted\">" + esc(item.title) + " - tickets booked per weekday</p>" +
+          "<p class=\"small text-muted\">" + esc(item.title) + " - tickets sold per weekday of the event date</p>" +
           WEEKDAYS.map((d, i) => {
             const pct = Math.round((values[i] / max) * 100);
             return (
