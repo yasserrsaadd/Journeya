@@ -54,6 +54,10 @@ All bookings are created through the `create_booking` database function (RPC), w
 assigns the seat numbers and inserts the row in a single transaction. Direct inserts into
 `bookings` are disabled, so availability cannot be bypassed.
 
+The RPC also stores `event_date` - a snapshot of the event's date **at the time of
+booking**. If you later reschedule an event, sales made before the change stay counted
+on the original weekday in the reports instead of moving to the new date.
+
 ### Public / Private events & unique share links
 
 Private events never appear in the public catalog. Save (or edit) an event with
@@ -93,7 +97,8 @@ built-in forms to **Add / Edit / Delete** events. From there you can also:
 - View **Guest Lists** (names, phones, tier, seats &amp; seat numbers, totals).
 - Open **Reports & Analytics**:
   - **Overview** - what is selling and what isn't (tickets / capacity, revenue, status).
-  - **Day-of-the-Week Sales** breakdown per item (ticket volume by weekday).
+  - **Day-of-the-Week Sales** breakdown per item (ticket volume by weekday of the event
+    date each sale was booked under).
   - **Customer Breakdown** - two lists separating **Frequent Customers** (2+ bookings)
     from **Non-Frequent Customers**, complete with names and phone numbers.
 
@@ -118,6 +123,14 @@ Security only lets confirmed admins write content or view guest lists.
 > **Demo mode:** until `SUPABASE_URL`/`SUPABASE_ANON_KEY` are configured, login is
 > bypassed automatically so you can preview the admin portal locally. Real security
 > only applies once a Supabase backend is connected.
+
+> **Upgrading an existing project:** re-run `supabase/schema.sql` once. Older versions
+> left a fully permissive `public read events` policy on the database, which made
+> private events visible to everyone. The current schema drops every leftover read
+> policy before recreating them. Check with:
+> ```sql
+> select policyname, cmd, qual from pg_policies where tablename = 'events';
+> ```
 
 > **Security note:** the anon key is embedded in this static site, so admin access is
 > enforced by RLS on the database, not by the client. Private events are read only

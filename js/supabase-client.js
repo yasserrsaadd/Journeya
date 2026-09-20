@@ -98,10 +98,13 @@
     /* --- Events --- */
     async fetchEvents(includePrivate) {
       if (supabase) {
-        const { data, error } = await supabase
-          .from(CFG.TABLES.events)
-          .select("*")
-          .order("date");
+        /* The public site must never show private events, not even when
+           the visitor happens to be signed in as an admin (RLS lets
+           admins read everything). Filtering here as well as in the
+           RLS policies keeps the two in sync. */
+        let q = supabase.from(CFG.TABLES.events).select("*");
+        if (!includePrivate) q = q.eq("is_private", false);
+        const { data, error } = await q.order("date");
         if (error) throw error;
         return data || [];
       }
@@ -228,8 +231,10 @@
         if (error) throw error;
         return Array.isArray(data) ? data[0] : data;
       }
-      /* Demo mode: replicate the seat-number logic locally. */
+      /* Demo mode: replicate the seat-number logic locally.
+         (With Supabase the create_booking RPC stamps event_date itself.) */
       const ev = readDemo("events").find((e) => String(e.id) === String(booking.item_id)) || null;
+      booking.event_date = ev && ev.date ? ev.date : null;
       const cap = ev && ev.seats ? Number(ev.seats) : null;
       if (cap) {
         const used = [];

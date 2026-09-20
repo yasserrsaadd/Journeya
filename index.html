@@ -364,7 +364,7 @@
 
           <div class="card card-j p-4 mb-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-calendar-week me-2" style="color:var(--j-accent);"></i>Day-of-the-Week Sales Breakdown</h5>
-            <p class="small text-muted">Tickets sold per day of the week, based on the day of the week the event falls on.</p>
+            <p class="small text-muted">Tickets sold per day of the week, based on the day of the week the event fell on when each booking was made. Rescheduling an event keeps earlier sales on their original day.</p>
             <select id="reportsItemSelect" class="form-select mb-3" style="max-width:420px;"></select>
             <div id="reportsDow"></div>
           </div>
@@ -516,7 +516,7 @@
         if (!host) return;
         host.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading...</div>';
         try {
-          let events = await api.fetchEvents(false);
+          let events = (await api.fetchEvents(false)).filter((e) => !e.is_private);
           const dateInp = document.getElementById("eventsFilterDate");
           const f = dateInp ? dateInp.value : "";
           if (f) events = events.filter((e) => e.date === f);
@@ -594,6 +594,11 @@
           form.reset();
           form.classList.remove("was-validated");
         });
+      }
+
+      function initContact() {
+        fillContact();
+        wireContact();
       }
 
       /* ================= SHARED PRIVATE LINK PAGE ================= */
@@ -1269,15 +1274,30 @@
         const host = document.getElementById("reportsDow");
         if (!item) { host.innerHTML = '<p class="text-muted small">No bookings to break down.</p>'; return; }
         const bs = bookings.filter((b) => b.type === item.type && String(b.item_id) === String(item.id));
+        if (!bs.length) { host.innerHTML = '<p class="text-muted small">No bookings for this event yet.</p>'; return; }
+
+        /* Each sale is counted on the weekday of the event date it was booked
+           under (bookings.event_date), so rescheduling an event leaves the
+           sales made before the change on the old weekday. Rows created
+           before that snapshot existed fall back to the event's current date. */
         const totals = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday: 0 };
-        const eventDate = item.date ? new Date(String(item.date).slice(0, 10) + "T00:00:00") : null;
-        if (!eventDate || isNaN(eventDate)) { host.innerHTML = '<p class="text-muted small">This event has no date.</p>'; return; }
-        const day = eventDate.toLocaleDateString("en-US", { weekday: "long" });
-        if (totals[day] !== undefined) totals[day] = bs.reduce((s, b) => s + (Number(b.seats) || 1), 0);
+        let counted = 0;
+        bs.forEach((b) => {
+          const d = b.event_date || item.date;
+          if (!d) return;
+          const dt = new Date(String(d).slice(0, 10) + "T00:00:00");
+          if (isNaN(dt)) return;
+          const day = dt.toLocaleDateString("en-US", { weekday: "long" });
+          if (totals[day] === undefined) return;
+          totals[day] += Number(b.seats) || 1;
+          counted++;
+        });
+        if (!counted) { host.innerHTML = '<p class="text-muted small">This event has no date.</p>'; return; }
+
         const values = WEEKDAYS.map((d) => totals[d]);
         const max = Math.max.apply(null, values.concat([1]));
         host.innerHTML =
-          "<p class=\"small text-muted\">" + esc(item.title) + " - tickets sold per weekday of the event date</p>" +
+          "<p class=\"small text-muted\">" + esc(item.title) + " - tickets sold per weekday of the event date at the time of booking</p>" +
           WEEKDAYS.map((d, i) => {
             const pct = Math.round((values[i] / max) * 100);
             return (
