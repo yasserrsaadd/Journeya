@@ -36,8 +36,20 @@ That's it - the site now reads/writes your real tables.
 - **events** - game nights / social gatherings. Both **Regular** (flat price) and
   **Professional** (multi-tier tickets + custom booking fields) events.
   Fields: title, event type, category, summary, description, date, time, location,
-  image (Cloudinary URL), video (optional Cloudinary preview), price, optional seats,
-  refund policy, guidelines (one per line), private toggle + share token, custom fields.
+  image (Cloudinary URL, used as the cover photo), video (optional Cloudinary preview),
+  price, optional seats, refund policy, guidelines (one per line), private toggle +
+  share token, custom fields, and **images** (extra gallery photos).
+
+### Event photo galleries
+
+Each event can have **multiple photos**: the cover image plus any number of extra
+photos added with "Add photo" in the admin form (paste image URLs, e.g. Cloudinary).
+
+On the site the photos become a **slider** on the event card - arrows, dots and
+swipe on touch screens - and clicking a photo opens it in a **full-screen lightbox**
+with prev/next, a counter, and Escape/click-outside to close. Events with a single
+photo keep the plain image. Requires the `images` column from `supabase/schema.sql`
+(re-run the file; it is safe to re-run).
 - **ticket_tiers** - per professional event: name + price (e.g. Regular, Standard).
 - **bookings** - instant guest checkout rows with name, phone, email, chosen tier,
   custom-field answers, number of seats, the assigned `seat_numbers` and the computed total.
@@ -157,3 +169,21 @@ Security only lets confirmed admins write content or view guest lists.
 
 The site showcases **flexible payments**: credit/debit cards, mobile wallets
 (Instapay, Vodafone Cash) and **cash collection** on the day of the event.
+
+### InstaPay transfer flow (guest booking)
+
+When a guest taps **Book Now** the booking form shows:
+
+1. The **full price** to pay (unit price x seats, live-updated).
+2. Your **InstaPay address** with a **Copy** button next to it
+   (`CONTACT.instapay` in `js/config.js` — replace the placeholder).
+3. A **required upload** for the transfer screenshot (image, max 5MB).
+
+Screenshots go to the **private** `payment-proofs` Supabase Storage bucket:
+guests may upload, only admins may read. The admin dashboard's
+**Guest Bookings** tab has a **Payment Proof** column — "View proof" mints a
+short-lived signed URL and opens the screenshot, so nothing is public.
+
+After changing `supabase/schema.sql`, re-run it in the SQL editor (it is
+safe to re-run) so the `payment_proof_url` column, the updated
+`create_booking` RPC and the storage bucket + policies are created.

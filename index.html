@@ -22,12 +22,29 @@
   ============================================================== -->
   <section id="home-section" class="page-section">
     <header class="hero text-center">
+      <!-- ===== HERO BACKGROUND SLIDER ==============================
+           EDIT ME: add, remove or reorder the .hero-slide divs below.
+           Each one is a full-bleed background photo. Just replace the
+           url(...) with another Unsplash photo (or a local one like
+           url("images/my-photo.jpg")). Dots are generated automatically.
+      -->
+      <div class="hero-slider" id="heroSlider" aria-hidden="true">
+        <div class="hero-slide is-active" style="background-image:url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1600&q=70')"></div>
+        <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1600&q=70')"></div>
+        <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&w=1600&q=70')"></div>
+        <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=70')"></div>
+        <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=70')"></div>
+      </div>
+      <!-- Gradient tint that keeps the text readable over any photo -->
+      <div class="hero-overlay"></div>
+
       <div class="container">
         <span class="hero-badge mb-3"><i class="fas fa-users me-2"></i>Play. Connect. Belong.</span>
         <h1 class="mb-3">Play games.<br />Make real friends.</h1>
+        
         <p class="lead mx-auto mb-4" style="max-width: 640px;">
           Journeya is your community for epic game nights and professional
-          social events around Egypt. No memberships, no logins -
+          social events around Egypt. No pressure,
           just show up and have fun.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
@@ -35,6 +52,15 @@
           <a href="#about-section" class="btn btn-j btn-lg"><i class="fas fa-circle-info me-2"></i>About Us</a>
         </div>
       </div>
+
+      <!-- Slider controls -->
+      <button class="hero-nav hero-nav-prev" type="button" aria-label="Previous background photo">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="hero-nav hero-nav-next" type="button" aria-label="Next background photo">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      <div class="hero-dots" id="heroDots"></div>
     </header>
   </section>
 
@@ -302,8 +328,14 @@
                 </div>
                 <div class="col-12"><label class="form-label">Summary</label><input type="text" class="form-control" id="eSummary" placeholder="One-line teaser shown on the card" /></div>
                 <div class="col-12"><label class="form-label">Description *</label><textarea class="form-control" id="eDesc" rows="2" required></textarea></div>
-                <div class="col-md-6"><label class="form-label">Image URL *</label><input type="url" class="form-control" id="eImage" placeholder="Paste a Cloudinary image URL (https://res.cloudinary.com/...)" /></div>
+                <div class="col-md-6"><label class="form-label">Cover Image URL *</label><input type="url" class="form-control" id="eImage" placeholder="Paste a Cloudinary image URL (https://res.cloudinary.com/...)" /></div>
                 <div class="col-md-6"><label class="form-label">Video preview (optional)</label><input type="url" class="form-control" id="eVideo" placeholder="Paste a Cloudinary video URL" /></div>
+                <div class="col-12">
+                  <label class="form-label">More photos (optional)</label>
+                  <p class="small text-muted mb-2">Visitors swipe through these on the event card. The cover image above is always shown first.</p>
+                  <div id="photosHost"></div>
+                  <button type="button" class="btn btn-sm btn-j-outline on-light" id="addPhotoRow"><i class="fas fa-plus me-1"></i>Add photo</button>
+                </div>
                 <div class="col-12"><label class="form-label">Refund Policy</label><textarea class="form-control" id="eRefund" rows="2" placeholder="e.g. Full refund up to 48h before the event."></textarea></div>
                 <div class="col-12"><label class="form-label">Guidelines (one per line) *</label><textarea class="form-control" id="eGuide" rows="3" required placeholder="e.g.&#10;Bring your own snacks&#10;Arrive 15 minutes early"></textarea></div>
 
@@ -346,7 +378,7 @@
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-users me-2" style="color:var(--j-sun);"></i>Guest Bookings (Names &amp; Phones)</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Type</th><th>Name</th><th>Phone</th><th>Booked For</th><th>Tier</th><th>Seats</th><th>Total</th><th>Booked At</th></tr></thead>
+              <thead><tr><th>Type</th><th>Name</th><th>Phone</th><th>Booked For</th><th>Tier</th><th>Seats</th><th>Total</th><th>Payment Proof</th><th>Booked At</th></tr></thead>
               <tbody id="bookingsTable"></tbody>
             </table></div>
           </div>
@@ -410,6 +442,28 @@
             <div id="cbMsg" class="mt-3"></div>
           </div>
         </section>
+      </div>
+
+      <!-- Proof viewer: shows the InstaPay screenshot a guest uploaded -->
+      <div class="modal fade" id="proofModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content rounded-4">
+            <div class="modal-header" style="background:linear-gradient(90deg,var(--j-primary),var(--j-accent));color:#fff;">
+              <h5 class="modal-title"><i class="fas fa-receipt me-2"></i>Payment Proof</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+              <p class="text-muted small mb-2" id="proofWho"></p>
+              <div id="proofBody"><div class="spinner-border text-secondary" role="status"></div></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+              <a href="#" id="proofOpen" target="_blank" rel="noopener" class="btn btn-j-outline on-light btn-sm">
+                <i class="fas fa-up-right-from-square me-1"></i>Open full size
+              </a>
+              <button type="button" class="btn btn-j btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -485,15 +539,56 @@
         return b;
       }
 
+      /* Cover photo first, then the gallery - de-duplicated. */
+      function eventPhotos(item) {
+        const list = [];
+        const push = (u) => {
+          const s = String(u == null ? "" : u).trim();
+          if (s && !list.includes(s)) list.push(s);
+        };
+        push(item.image);
+        (Array.isArray(item.images) ? item.images : []).forEach(push);
+        return list.length ? list : [PLACEHOLDER_IMG];
+      }
+
+      /* One photo -> plain image. Several -> slider (wired up by
+         window.JourneyaUI.initSliders after the grid renders). */
+      function photosHtml(photos, alt, boxStyle) {
+        const style = boxStyle ? ' style="' + boxStyle + '"' : "";
+        if (!photos.length) return "";
+        if (photos.length === 1) {
+          return (
+            '<img src="' + esc(photos[0]) + '" class="card-img-top" loading="lazy" decoding="async" alt="' +
+            esc(alt) + '"' + style + ">"
+          );
+        }
+        return (
+          '<div class="card-slider" data-photos="' + esc(JSON.stringify(photos)) + '"' + style + ">" +
+          '<div class="card-slides">' +
+          photos
+            .map(
+              (p, i) =>
+                '<img class="card-slide' + (i === 0 ? " is-active" : "") + '" src="' + esc(p) + '"' +
+                (i === 0 ? "" : ' loading="lazy"') +
+                ' decoding="async" alt="' + esc(alt) + " - photo " + (i + 1) + " of " + photos.length + '">'
+            )
+            .join("") +
+          "</div>" +
+          '<button type="button" class="card-slider-nav card-slider-prev" aria-label="Previous photo"><i class="fas fa-chevron-left"></i></button>' +
+          '<button type="button" class="card-slider-nav card-slider-next" aria-label="Next photo"><i class="fas fa-chevron-right"></i></button>' +
+          '<div class="card-slider-dots"></div>' +
+          "</div>"
+        );
+      }
+
       function cardHtml(item, opts) {
         const tiers = (opts && opts.tiers) || [];
         const payload = Object.assign({}, item, { _tiers: tiers });
-        const img = item.image || PLACEHOLDER_IMG;
         const price = priceLine(item, tiers);
         const text = item.summary || item.description || "";
         return (
           '<div class="card card-j h-100">' +
-          '<img src="' + esc(img) + '" class="card-img-top" loading="lazy" decoding="async" alt="' + esc(item.title) + '">' +
+          photosHtml(eventPhotos(item), item.title) +
           '<div class="card-body d-flex flex-column">' +
           '<div class="mb-2 d-flex flex-wrap gap-2">' + itemChips(item) + "</div>" +
           '<div class="d-flex justify-content-between align-items-start flex-wrap mb-1">' +
@@ -542,6 +637,7 @@
           host.innerHTML = '<div class="col-12 text-center text-danger py-5">Could not load events.</div>';
           console.error(e);
         }
+        if (window.JourneyaUI && window.JourneyaUI.initSliders) window.JourneyaUI.initSliders(host);
         window.JourneyaApp.setupReveal();
       }
 
@@ -623,6 +719,7 @@
             }
           }
           host.innerHTML = '<div class="col-lg-8 reveal">' + sharedCard(item, { tiers }) + "</div>";
+          if (window.JourneyaUI && window.JourneyaUI.initSliders) window.JourneyaUI.initSliders(host);
           window.JourneyaApp.setupReveal();
         } catch (e) {
           host.innerHTML =
@@ -643,7 +740,7 @@
             : "";
         return (
           '<div class="card card-j">' +
-          '<img src="' + esc(item.image || PLACEHOLDER_IMG) + '" class="card-img-top" alt="' + esc(item.title) + '" style="height:340px;">' +
+          photosHtml(eventPhotos(item), item.title, "height:340px") +
           '<div class="card-body p-4">' +
           '<div class="mb-2">' + typeBadge(item) + "</div>" +
           '<div class="d-flex justify-content-between align-items-start flex-wrap mb-2">' +
@@ -804,6 +901,48 @@
       /* --- Event tiers + custom fields editors --- */
       let tiersDraft = [];
       let customDraft = [];
+      let photosDraft = [];
+
+      /* --- Gallery photos editor --- */
+      function photoRowHtml(url, i) {
+        return (
+          '<div class="photo-row input-group mb-2">' +
+          '<span class="input-group-text p-1"><img class="photo-row-thumb" src="' + esc(url || "") + '" alt="" onerror="this.style.visibility=\'hidden\'"></span>' +
+          '<input type="url" class="form-control photo-url" value="' + esc(url || "") + '" placeholder="Paste an image URL (https://res.cloudinary.com/...)" />' +
+          '<button type="button" class="btn btn-outline-danger photo-remove" data-i="' + i + '" aria-label="Remove photo"><i class="fas fa-times"></i></button>' +
+          "</div>"
+        );
+      }
+      function renderPhotosEditor(rows) {
+        if (rows) photosDraft = rows;
+        const host = document.getElementById("photosHost");
+        if (!host) return;
+        if (!Array.isArray(photosDraft)) photosDraft = [];
+        host.innerHTML = photosDraft.map(photoRowHtml).join("") || '<p class="small text-muted">No extra photos yet - the card shows the cover image only.</p>';
+        host.querySelectorAll(".photo-row").forEach((row, i) => {
+          const input = row.querySelector(".photo-url");
+          const thumb = row.querySelector(".photo-row-thumb");
+          input.addEventListener("input", () => {
+            photosDraft[i] = input.value.trim();
+            if (thumb) {
+              thumb.src = input.value.trim();
+              thumb.style.visibility = input.value.trim() ? "visible" : "hidden";
+            }
+          });
+        });
+        host.querySelectorAll(".photo-remove").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            photosDraft.splice(Number(btn.dataset.i), 1);
+            renderPhotosEditor();
+          });
+        });
+      }
+      function collectPhotos() {
+        const seen = {};
+        return Array.from(document.querySelectorAll("#photosHost .photo-row"))
+          .map((r) => r.querySelector(".photo-url").value.trim())
+          .filter((u) => u && !seen[u] && (seen[u] = true));
+      }
 
       function tierRowHtml(t, i) {
         return (
@@ -916,6 +1055,7 @@
         document.getElementById("ePrivate").checked = !!(ev && ev.is_private);
         tiersDraft = [];
         renderTiersEditor([]);
+        renderPhotosEditor((ev && Array.isArray(ev.images)) ? ev.images.filter(Boolean) : []);
         renderCustomFieldsEditor(
           (ev && Array.isArray(ev.custom_fields))
             ? ev.custom_fields.map((f) => ({ label: f.label || "", required: !!f.required }))
@@ -989,6 +1129,7 @@
           time: document.getElementById("eTime").value || null,
           price: isProf ? null : (document.getElementById("ePrice").value === "" ? null : Number(document.getElementById("ePrice").value)),
           image: document.getElementById("eImage").value.trim() || null,
+          images: collectPhotos(),
           video: document.getElementById("eVideo").value.trim() || null,
           seats: document.getElementById("eSeats").value === "" ? null : Number(document.getElementById("eSeats").value),
           refund_policy: document.getElementById("eRefund").value.trim() || null,
@@ -1166,6 +1307,74 @@
       }
 
       /* --- Admin: bookings --- */
+      function proofCell(b) {
+        if (!b.payment_proof_url) {
+          return '<td><span class="text-muted small"><i class="fas fa-minus me-1"></i>No proof</span></td>';
+        }
+        /* The screenshot itself is shown inline; the signed URL is fetched
+           right after render (see loadProofThumbs). */
+        return (
+          '<td><button type="button" class="proof-btn" title="Click to enlarge" data-proof="' +
+          esc(b.payment_proof_url) +
+          '" data-who="' +
+          esc((b.name || "") + " — " + (b.item_title || "Item #" + b.item_id)) +
+          '"><span class="proof-thumb-box"><i class="fas fa-spinner fa-spin text-muted"></i></span></button></td>'
+        );
+      }
+
+      /* Paint the real screenshot into each proof cell (signed URLs, or the
+         inline data URL in demo mode). Failures keep a clickable receipt box. */
+      async function loadProofThumbs() {
+        const btns = Array.prototype.slice.call(document.querySelectorAll("#bookingsTable .proof-btn"));
+        await Promise.all(
+          btns.map(async (btn) => {
+            try {
+              const url = await api.getPaymentProofUrl(btn.dataset.proof);
+              if (!url) throw new Error("no url");
+              if (!document.contains(btn)) return; // table was re-rendered
+              btn.innerHTML =
+                '<img class="proof-thumb-sm" src="' + esc(url) + '" alt="Payment proof">';
+            } catch (err) {
+              if (!document.contains(btn)) return;
+              btn.innerHTML =
+                '<span class="proof-thumb-box"><i class="fas fa-receipt"></i></span>';
+              console.error(err);
+            }
+          })
+        );
+      }
+
+      async function openProof(path, who) {
+        const modalEl = document.getElementById("proofModal");
+        if (!modalEl) return;
+        const body = document.getElementById("proofBody");
+        const openLink = document.getElementById("proofOpen");
+        const whoEl = document.getElementById("proofWho");
+        if (whoEl) whoEl.textContent = who || "";
+        if (body) body.innerHTML = '<div class="spinner-border text-secondary" role="status"></div>';
+        if (openLink) openLink.style.display = "none";
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+
+        try {
+          const url = await api.getPaymentProofUrl(path);
+          if (!url) throw new Error("No image returned.");
+          if (body)
+            body.innerHTML =
+              '<img src="' + esc(url) + '" alt="Payment proof" class="img-fluid rounded-3 proof-img">';
+          if (openLink) {
+            openLink.href = url;
+            openLink.style.display = "";
+          }
+        } catch (err) {
+          if (body)
+            body.innerHTML =
+              '<div class="alert alert-danger py-2 small mb-0">Could not load this screenshot: ' +
+              esc(err.message) +
+              "</div>";
+          console.error(err);
+        }
+      }
+
       async function loadBookings() {
         const tbody = document.getElementById("bookingsTable");
         try {
@@ -1180,11 +1389,19 @@
                 "<td>" + esc(b.tier_name || "—") + "</td>" +
                 "<td>" + esc(b.seats || 1) + (Array.isArray(b.seat_numbers) && b.seat_numbers.length ? ' <span class="text-muted small">(# ' + b.seat_numbers.join(", #") + ")</span>" : "") + "</td>" +
                 "<td>" + esc(b.total != null ? money(b.total) : "") + "</td>" +
+                proofCell(b) +
                 "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td></tr>"
               ).join("")
-            : '<tr><td colspan="8" class="text-center text-muted">No bookings yet.</td></tr>';
+            : '<tr><td colspan="9" class="text-center text-muted">No bookings yet.</td></tr>';
+
+          tbody.querySelectorAll(".proof-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              openProof(btn.dataset.proof, btn.dataset.who);
+            });
+          });
+          loadProofThumbs();
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Failed to load.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Failed to load.</td></tr>';
           console.error(err);
         }
       }
@@ -1320,6 +1537,7 @@
         document.getElementById("eEventType").addEventListener("change", onEventTypeChange);
         document.getElementById("addTierRow").addEventListener("click", () => { renderTiersEditor(tiersDraft.concat([{ name: "", price: "" }])); });
         document.getElementById("addCustomFieldRow").addEventListener("click", () => { renderCustomFieldsEditor(customDraft.concat([{ label: "", required: false }])); });
+document.getElementById("addPhotoRow").addEventListener("click", () => { renderPhotosEditor(photosDraft.concat([""])); });
         document.getElementById("cbForm").addEventListener("submit", submitCreateBooking);
         document.getElementById("cbEvent").addEventListener("change", onCreateEventChange);
         document.getElementById("cbSeats").addEventListener("input", recalcCbTotal);

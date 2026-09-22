@@ -94,13 +94,128 @@ body {
 /* ---------- Hero ---------- */
 .hero {
   position: relative;
-  background:
-    linear-gradient(135deg, rgba(110, 22, 22, 0.9), rgba(176, 59, 59, 0.82)),
-    url("https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=60")
-      center/cover no-repeat;
-  background-size: cover;
+  overflow: hidden;
+  /* Fallback tint: keeps the text readable even before/if photos load */
+  background: linear-gradient(135deg, #6e1616, #b03b3b);
   color: #fff;
   padding: 100px 0;
+}
+
+/* Background image slider (photos live in the HTML as .hero-slide divs) */
+.hero-slider {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 1.4s ease;
+  will-change: opacity, transform;
+}
+.hero-slide.is-active {
+  opacity: 1;
+  animation: heroKenBurns 8s linear both;
+}
+@keyframes heroKenBurns {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.14);
+  }
+}
+
+/* Red tint + bottom fade so the hero blends into the next section */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(43, 20, 20, 0.35) 0%, rgba(43, 20, 20, 0) 35%, rgba(255, 255, 255, 0) 78%, rgba(255, 255, 255, 0.4) 100%),
+    linear-gradient(135deg, rgba(110, 22, 22, 0.88), rgba(176, 59, 59, 0.78));
+}
+
+.hero > .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* Slider controls */
+.hero-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hero-nav:hover {
+  background: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 6px 18px rgba(43, 20, 20, 0.28);
+}
+.hero-nav:focus-visible {
+  outline: 3px solid var(--j-sun);
+  outline-offset: 3px;
+}
+.hero-nav-prev {
+  left: 18px;
+}
+.hero-nav-next {
+  right: 18px;
+}
+
+.hero-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+.hero-dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 1px 4px rgba(43, 20, 20, 0.45);
+  cursor: pointer;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.hero-dot:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+.hero-dot:focus-visible {
+  outline: 2px solid var(--j-sun);
+  outline-offset: 3px;
+}
+.hero-dot.is-active {
+  width: 28px;
+  background: var(--j-sun);
 }
 .hero-badge {
   background: rgba(255, 255, 255, 0.22);
@@ -179,6 +294,18 @@ body {
   color: #fff;
   transform: translateY(-2px);
 }
+/* The base outline button is white-on-dark (hero, dark modals). On white
+   cards/modals it needs this variant or its label is invisible. */
+.btn-j-outline.on-light {
+  border-color: var(--j-primary);
+  color: var(--j-primary);
+}
+.btn-j-outline.on-light:hover,
+.btn-j-outline.on-light:focus-visible {
+  background: var(--j-primary);
+  border-color: var(--j-primary);
+  color: #fff;
+}
 .btn-sun {
   background: var(--j-sun);
   color: var(--j-dark);
@@ -234,6 +361,210 @@ body {
 .card-j .card-img-top {
   height: 220px;
   object-fit: cover;
+}
+
+/* ---------- Event card photo slider ---------- */
+.card-slider {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: #f3e4e0;
+  cursor: zoom-in;
+}
+.card-slides {
+  position: absolute;
+  inset: 0;
+}
+.card-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.card-slide.is-active {
+  opacity: 1;
+}
+/* The generic card hover zoom would fight the crossfade - keep it subtle */
+.card-j:hover .card-slide {
+  transform: none;
+}
+.card-j:hover .card-slide.is-active {
+  transform: scale(1.04);
+}
+
+.card-slider-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--j-dark);
+  background: rgba(255, 255, 255, 0.85);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.card-slider:hover .card-slider-nav,
+.card-slider-nav:focus-visible {
+  opacity: 1;
+}
+.card-slider-nav:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.08);
+}
+.card-slider-nav:focus-visible {
+  outline: 3px solid var(--j-sun);
+  outline-offset: 2px;
+}
+.card-slider-prev {
+  left: 10px;
+}
+.card-slider-next {
+  right: 10px;
+}
+/* Touch devices have no hover: keep the arrows visible so the slider
+   is usable without swiping. */
+@media (hover: none) {
+  .card-slider-nav {
+    opacity: 1;
+  }
+}
+
+.card-slider-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+.card-slider-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 1px 3px rgba(43, 20, 20, 0.5);
+  cursor: pointer;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+.card-slider-dot.is-active {
+  width: 20px;
+  background: var(--j-sun);
+}
+
+/* ---------- Photo lightbox ---------- */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(43, 20, 20, 0.92);
+  animation: lbFade 0.2s ease both;
+}
+.photo-lightbox[hidden] {
+  display: none;
+}
+@keyframes lbFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.photo-lightbox-img {
+  max-width: 100%;
+  max-height: 88vh;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.photo-lightbox-nav,
+.photo-lightbox-close {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.photo-lightbox-nav:hover,
+.photo-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.34);
+  transform: scale(1.06);
+}
+.photo-lightbox-nav:focus-visible,
+.photo-lightbox-close:focus-visible {
+  outline: 3px solid var(--j-sun);
+  outline-offset: 3px;
+}
+.photo-lightbox-nav {
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+}
+.photo-lightbox-nav:hover {
+  transform: translateY(-50%) scale(1.06);
+}
+.photo-lightbox-prev {
+  left: 18px;
+}
+.photo-lightbox-next {
+  right: 18px;
+}
+.photo-lightbox-close {
+  top: 18px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.1rem;
+}
+.photo-lightbox-count {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  text-align: center;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+body.lb-open {
+  overflow: hidden;
+}
+
+/* Admin: gallery photo rows */
+.photo-row-thumb {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
 }
 
 .chip {
@@ -315,6 +646,94 @@ body {
 }
 .pay-card:hover i {
   transform: translateY(-3px) scale(1.15);
+}
+
+/* ---------- Booking payment block (InstaPay) ---------- */
+.pay-box {
+  border: 1px solid #ecd9d2;
+  border-radius: 14px;
+  padding: 16px;
+  background: linear-gradient(180deg, #fff, #fdf3f1);
+}
+.pay-total {
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--j-primary);
+  line-height: 1.1;
+}
+.pay-number-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pay-number {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--j-primary);
+  background: #fff;
+  color: var(--j-dark);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  word-break: break-all;
+}
+.btn-copied {
+  color: #1e7e34 !important;
+  border-color: #1e7e34 !important;
+}
+.proof-thumb {
+  max-width: 160px;
+  max-height: 160px;
+  border-radius: 10px;
+  border: 1px solid #ecd9d2;
+  display: block;
+}
+.proof-img {
+  max-height: 70vh;
+  border: 1px solid #ecd9d2;
+}
+
+/* Admin guest list: the uploaded screenshot shown inline */
+.proof-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  line-height: 0;
+  cursor: pointer;
+  border-radius: 10px;
+}
+.proof-btn:focus-visible {
+  outline: 3px solid var(--j-sun);
+  outline-offset: 2px;
+}
+.proof-thumb-sm {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #ecd9d2;
+  display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.proof-btn:hover .proof-thumb-sm {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(139, 38, 38, 0.28);
+}
+.proof-thumb-box {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px dashed #ecd9d2;
+  background: #fff;
+  color: var(--j-primary);
+  font-size: 0.95rem;
 }
 
 /* ---------- FAQ (accordion) ---------- */
@@ -747,7 +1166,7 @@ body {
 
   /* Hero: cut the tall fixed padding */
   .hero {
-    padding: 60px 0;
+    padding: 60px 0 76px;
   }
   .hero h1 {
     font-size: 1.9rem;
@@ -760,6 +1179,13 @@ body {
     font-size: 0.92rem;
     width: 100%;
     max-width: 280px;
+  }
+  /* Slider: dots only on phones, arrows would cover the text */
+  .hero-nav {
+    display: none;
+  }
+  .hero-dots {
+    bottom: 14px;
   }
 
   /* Sections: tighten vertical rhythm */
@@ -784,8 +1210,22 @@ body {
   }
 
   /* Compact cards & forms */
-  .card-j .card-img-top {
+  .card-j .card-img-top,
+  .card-slider {
     height: 180px;
+  }
+  .photo-lightbox {
+    padding: 12px;
+  }
+  .photo-lightbox-nav {
+    width: 40px;
+    height: 40px;
+  }
+  .photo-lightbox-prev {
+    left: 8px;
+  }
+  .photo-lightbox-next {
+    right: 8px;
   }
   .pay-card {
     padding: 18px 14px;
@@ -821,7 +1261,7 @@ body {
 /* ---------- Larger phones / small tablets (576-767px) ---------- */
 @media (min-width: 576px) and (max-width: 767.98px) {
   .hero {
-    padding: 80px 0;
+    padding: 80px 0 92px;
   }
   .page-section.py-5 {
     padding-top: 3rem;

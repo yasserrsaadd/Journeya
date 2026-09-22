@@ -42,6 +42,11 @@ alter table public.events add column if not exists refund_policy text;
 alter table public.events add column if not exists is_private    boolean default false;
 alter table public.events add column if not exists share_token   text;
 alter table public.events add column if not exists custom_fields jsonb default '[]';
+-- Extra gallery photos shown in the card slider (cover photo stays in
+-- "image", so existing events keep working without any migration).
+alter table public.events add column if not exists images        jsonb default '[]';
+
+update public.events set images = '[]'::jsonb where images is null;
 
 -- Unique share tokens (runs AFTER the migration above, so the column
 -- exists whether the table is brand-new or pre-existing)
@@ -92,6 +97,9 @@ alter table public.bookings add column if not exists seats       int default 1;
 alter table public.bookings add column if not exists total       numeric;
 alter table public.bookings add column if not exists seat_numbers int[];
 alter table public.bookings add column if not exists event_date  date;
+-- Screenshot of the InstaPay transfer the guest uploaded (path inside the
+-- private "payment-proofs" bucket, or an inline data URL in demo mode).
+alter table public.bookings add column if not exists payment_proof_url text;
 
 -- One-time backfill: bookings made before the snapshot existed fall back
 -- to the event's current date (only fills rows that are still null).
@@ -140,11 +148,16 @@ $$;
 --  token link can fetch them. These helpers let the public read a
 --  private event ONLY when they hold the correct token.
 -- ============================================================
-create or replace function public.get_shared_event(p_token text)
+-- Postgres refuses "create or replace" when the return type changes,
+-- so the gallery-aware version replaces the old one explicitly.
+drop function if exists public.get_shared_event(text);
+
+create function public.get_shared_event(p_token text)
 returns table (
   id bigint, title text, event_type text, category text, summary text,
   description text, "date" date, "time" text, location text, image text, video text,
-  price numeric, seats bigint, refund_policy text, guidelines text, custom_fields jsonb
+  price numeric, seats bigint, refund_policy text, guidelines text,
+  custom_fields jsonb, images jsonb
 )
 language sql
 security definer
@@ -152,7 +165,8 @@ set search_path = public
 stable
 as $$
   select id, title, event_type, category, summary, description, date, time, location,
-         image, video, price, seats, refund_policy, guidelines, custom_fields
+         image, video, price, seats, refund_policy, guidelines, custom_fields,
+         coalesce(images, '[]'::jsonb)
   from public.events
   where share_token = p_token
 $$;
@@ -192,7 +206,8 @@ create or replace function public.create_booking(
   p_tier_price  numeric default null,
   p_custom_data jsonb   default '{}',
   p_seats       int     default 1,
-  p_total       numeric default null
+  p_total       numeric default null,
+  p_payment_proof_url text default null
 )
 returns public.bookings
 language plpgsql
@@ -243,17 +258,46 @@ begin
 
   insert into public.bookings (
     type, item_id, item_title, event_date, name, phone, email,
-    tier_id, tier_name, tier_price, custom_data, seats, total, seat_numbers
+    tier_id, tier_name, tier_price, custom_data, seats, total, seat_numbers,
+    payment_proof_url
   ) values (
     p_type, p_item_id, p_item_title, v_event_date, p_name, p_phone, p_email,
     p_tier_id, p_tier_name, p_tier_price,
-    coalesce(p_custom_data, '{}'), p_seats, p_total, v_seat_numbers
+    coalesce(p_custom_data, '{}'), p_seats, p_total, v_seat_numbers,
+    p_payment_proof_url
   )
   returning * into v_booking;
 
   return v_booking;
 end;
 $$;
+
+-- ============================================================
+--  PAYMENT PROOFS (InstaPay transfer screenshots)
+--  Guests upload straight from the booking form; only admins can
+--  read the images. The admin page mints a short-lived signed URL
+--  on demand, so the screenshots are never publicly reachable.
+--
+--  If a booking fails after the upload (e.g. the event sold out),
+--  the file simply stays in the bucket unused - harmless.
+-- ============================================================
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('payment-proofs', 'payment-proofs', false, 5242880)
+on conflict (id) do update set public = false, file_size_limit = 5242880;
+
+-- If your project refuses inserts into storage.buckets, create the bucket
+-- by hand instead (Storage -> New bucket -> name: "payment-proofs",
+-- Public: OFF) and then run only the two policies below.
+
+drop policy if exists "guests upload payment proofs" on storage.objects;
+create policy "guests upload payment proofs" on storage.objects
+  for insert to anon, authenticated
+  with check (bucket_id = 'payment-proofs');
+
+drop policy if exists "admin read payment proofs" on storage.objects;
+create policy "admin read payment proofs" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'payment-proofs' and public.is_admin());
 
 -- ============================================================
 --  ROW LEVEL SECURITY

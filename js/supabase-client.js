@@ -211,6 +211,58 @@
       writeDemo("ticket_tiers", all);
     },
 
+    /* --- Payment proofs (InstaPay transfer screenshots) ---
+       Guests upload to a PRIVATE bucket, so only admins can read the
+       images (signed URLs are minted on demand in the admin page). */
+    async uploadPaymentProof(file) {
+      if (!file) throw new Error("No file selected.");
+      if (!/^image\//.test(file.type || "")) {
+        throw new Error("Please upload an image (JPG, PNG or WEBP).");
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("That screenshot is too large (max 5MB).");
+      }
+
+      const ext = ((file.name || "").split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path =
+        "proofs/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+
+      if (supabase) {
+        const bucket = (CFG.STORAGE && CFG.STORAGE.paymentProofsBucket) || "payment-proofs";
+        const { error } = await supabase.storage
+          .from(bucket)
+          .upload(path, file, { contentType: file.type, cacheControl: "3600", upsert: false });
+        if (error) throw error;
+        return path;
+      }
+
+      /* Demo mode: no bucket, so keep the image inline as a data URL.
+         (localStorage is small, so very large shots are refused here -
+         with Supabase connected they upload normally.) */
+      if (file.size > 1.5 * 1024 * 1024) {
+        throw new Error("Demo mode (no Supabase): please use a screenshot under 1.5MB.");
+      }
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Could not read that image."));
+        reader.readAsDataURL(file);
+      });
+    },
+
+    /* Turns a stored path (or demo data URL) into something viewable. */
+    async getPaymentProofUrl(path) {
+      if (!path) return null;
+      if (/^data:/i.test(path) || /^https?:/i.test(path)) return path;
+      if (supabase) {
+        const bucket = (CFG.STORAGE && CFG.STORAGE.paymentProofsBucket) || "payment-proofs";
+        const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
+        if (error) throw error;
+        return (data && data.signedUrl) || null;
+      }
+      return path;
+    },
+
     /* --- Bookings (instant guest checkout) --- */
     async createBooking(booking) {
       if (supabase) {
@@ -227,6 +279,7 @@
           p_custom_data: booking.custom_data || {},
           p_seats: Math.max(1, Number(booking.seats) || 1),
           p_total: booking.total != null ? Number(booking.total) : null,
+          p_payment_proof_url: booking.payment_proof_url || null,
         });
         if (error) throw error;
         return Array.isArray(data) ? data[0] : data;

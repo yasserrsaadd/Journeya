@@ -54,6 +54,13 @@ window.JOURNEYA_CONFIG = {
   /* In demo mode (Supabase not configured) login is always bypassed. */
   ADMIN_EMAILS: [],
 
+  /* ---- Payment proofs (InstaPay transfer screenshots) ----
+     Guests upload a screenshot of their transfer; admins view the
+     images from the "Guest Bookings" tab in the admin dashboard. */
+  STORAGE: {
+    paymentProofsBucket: "payment-proofs", // private bucket, created by supabase/schema.sql
+  },
+
   /* ---- Site contact details ---- */
   CONTACT: {
     email: "hello@journeya.com",
@@ -62,5 +69,10 @@ window.JOURNEYA_CONFIG = {
     instagram: "https://instagram.com/journeya",
     facebook: "https://facebook.com/journeya",
     tiktok: "https://tiktok.com/@journeya",
+
+    /* >>> EDIT ME: your InstaPay address shown in the booking form. <<<
+       Can be a username (journeya@instapay) or a phone number. */
+    instapay: "journeya@instapay",
+    instapay_name: "Journeya",
   },
 };
