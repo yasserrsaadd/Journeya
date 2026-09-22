@@ -422,6 +422,82 @@
       return readDemo("bookings");
     },
 
+    /* --- Admin: cancel/remove a booking ---
+       Seats are derived from the bookings (capacity - taken), so removing
+       the row frees exactly the seats it held: the next booking simply
+       takes the lowest free numbers again. The payment screenshot is
+       dropped from the private bucket too, but a storage failure must
+       never leave the booking behind. */
+    async deleteBooking(id) {
+      requireBackend();
+      if (id == null || id === "") throw new Error("Missing booking id.");
+
+      if (supabase) {
+        /* Read the screenshot reference first - it is gone with the row. */
+        let proof = null;
+        try {
+          const { data } = await supabase
+            .from(CFG.TABLES.bookings)
+            .select("payment_proof_url")
+            .eq("id", id);
+          proof = (data && data[0] && data[0].payment_proof_url) || null;
+        } catch (e) {
+          /* Non-fatal: worst case the file stays in the bucket. */
+          console.error(e);
+        }
+
+        const { error } = await supabase
+          .from(CFG.TABLES.bookings)
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+
+        if (proof && !/^data:/i.test(proof) && !/^https?:/i.test(proof)) {
+          try {
+            const bucket = (CFG.STORAGE && CFG.STORAGE.paymentProofsBucket) || "payment-proofs";
+            const { error: rmErr } = await supabase.storage.from(bucket).remove([proof]);
+            if (rmErr) console.error("Could not remove the payment proof file: " + rmErr.message);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        return;
+      }
+
+      writeDemo(
+        "bookings",
+        readDemo("bookings").filter((b) => String(b.id) !== String(id))
+      );
+    },
+
+    /* --- Seats still free for one event ---
+       The event only stores its capacity; what is left is computed from
+       the bookings, so creating or deleting a booking changes this at
+       once. Returns null when the event has no capacity (unlimited). */
+    async eventSeatsLeft(eventId) {
+      requireBackend();
+      if (eventId == null || eventId === "") return null;
+      if (supabase) {
+        try {
+          const { data, error } = await supabase
+            .rpc("event_seats_left", { p_event_id: eventId });
+          if (error) return null;
+          const n = Number(data);
+          return isNaN(n) ? null : n;
+        } catch (e) {
+          /* Old schema (RPC not created yet): fall back to "unknown". */
+          return null;
+        }
+      }
+      const ev = readDemo("events").find((e) => String(e.id) === String(eventId));
+      if (!ev || ev.seats == null) return null;
+      const cap = Number(ev.seats) || 0;
+      const used = readDemo("bookings")
+        .filter((b) => b.type === "event" && String(b.item_id) === String(ev.id))
+        .reduce((s, b) => s + (Number(b.seats) || 1), 0);
+      return Math.max(0, cap - used);
+    },
+
     /* --- Private share links --- */
     async getSharedEvent(token) {
       requireBackend();

@@ -378,7 +378,7 @@
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-users me-2" style="color:var(--j-sun);"></i>Guest Bookings (Names &amp; Phones)</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Type</th><th>Name</th><th>Phone</th><th>Booked For</th><th>Tier</th><th>Seats</th><th>Total</th><th>Payment Proof</th><th>Booked At</th></tr></thead>
+              <thead><tr><th>Type</th><th>Name</th><th>Phone</th><th>Booked For</th><th>Tier</th><th>Seats</th><th>Total</th><th>Payment Proof</th><th>Booked At</th><th>Actions</th></tr></thead>
               <tbody id="bookingsTable"></tbody>
             </table></div>
           </div>
@@ -426,7 +426,7 @@
             <form id="cbForm" novalidate>
               <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">Event *</label><select class="form-select" id="cbEvent" required></select></div>
-                <div class="col-md-3"><label class="form-label">Number of Seats *</label><input type="number" class="form-control" id="cbSeats" value="1" min="1" step="1" required /></div>
+                <div class="col-md-3"><label class="form-label">Number of Seats *</label><input type="number" class="form-control" id="cbSeats" value="1" min="1" step="1" required /><div class="form-text" id="cbSeatsHint"></div></div>
                 <div class="col-md-3"><label class="form-label">Total (EGP)</label><input type="number" class="form-control" id="cbTotal" min="0" step="0.01" placeholder="Auto-calculated" readonly title="Computed by the database from the event price or tier price x seats" /></div>
                 <div class="col-md-4"><label class="form-label">Full Name *</label><input type="text" class="form-control" id="cbName" required placeholder="Guest's name" /></div>
                 <div class="col-md-4"><label class="form-label">Phone *</label><input type="tel" class="form-control" id="cbPhone" required placeholder="e.g. 0100 000 0000" /></div>
@@ -499,9 +499,23 @@
       const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60";
 
       /* ================= SHARED CARD HELPERS ================= */
+      /* "2026-10-01" -> "Saturday" ("" when the date is missing/invalid).
+         Parsed at local midnight so the weekday never shifts by timezone. */
+      function weekdayOf(d) {
+        if (!d) return "";
+        const dt = new Date(String(d).slice(0, 10) + "T00:00:00");
+        if (isNaN(dt.getTime())) return "";
+        return dt.toLocaleDateString("en-US", { weekday: "long" });
+      }
+
       function itemChips(item) {
         let chips = "";
-        if (item.date) chips += '<span class="chip"><i class="fas fa-calendar-day"></i>' + esc(item.date) + "</span>";
+        if (item.date) {
+          const wd = weekdayOf(item.date);
+          chips += '<span class="chip"><i class="fas fa-calendar-day"></i>' +
+            (wd ? esc(wd) + ' <span class="text-muted">&middot;</span> ' : "") +
+            esc(item.date) + "</span>";
+        }
         if (item.time) chips += '<span class="chip"><i class="fas fa-clock"></i>' + esc(item.time) + "</span>";
         if (item.location) chips += '<span class="chip"><i class="fas fa-map-marker-alt"></i>' + esc(item.location) + "</span>";
         return chips;
@@ -1134,7 +1148,9 @@
                   "<tr>" +
                   "<td>" + esc(ev.title) + "</td>" +
                   "<td><span class=\"badge rounded-pill " + (isProf ? "text-bg-primary" : "text-bg-secondary") + "\">" + esc(isProf ? "Professional" : "Regular") + "</span></td>" +
-                  "<td>" + esc(ev.date || "") + "</td>" +
+                  "<td>" + esc(ev.date || "") +
+                  (weekdayOf(ev.date) ? ' <span class="text-muted small">' + esc(weekdayOf(ev.date)) + "</span>" : "") +
+                  "</td>" +
                   "<td>" + (isProf ? '<span class="text-muted">Tiers</span>' : esc(price)) + "</td>" +
                   "<td>" + (ev.is_private
                     ? '<span class="badge text-bg-warning"><i class="fas fa-eye-slash me-1"></i>Private</span>'
@@ -1220,6 +1236,40 @@
         try { await api.deleteEvent(id); api.notifyChanged(); loadEventsTable(); } catch (err) { alert("Delete failed: " + err.message); }
       }
 
+      /* Removing a booking frees the seats it held: the event only stores
+         its capacity, so "seats left" is recomputed from the remaining
+         bookings (see public.event_seats_left in supabase/schema.sql). */
+      async function deleteBooking(id) {
+        let b = null;
+        try {
+          const all = await api.fetchBookings();
+          b = all.find((x) => String(x.id) === String(id)) || null;
+        } catch (err) {
+          console.error(err);
+        }
+        const who = b && b.name ? b.name : "this guest";
+        const what = b && b.item_title ? " for " + b.item_title : "";
+        const seats = b ? Number(b.seats) || 1 : null;
+        const seatLine = seats
+          ? "\n\n" + seats + (seats === 1 ? " seat will" : " seats will") + " be freed" + what + "."
+          : "";
+        if (
+          !confirm(
+            "Delete the booking by " + who + what + "?" + seatLine +
+            "\n\nTheir payment screenshot is removed as well. This cannot be undone."
+          )
+        ) return;
+        try {
+          await api.deleteBooking(id);
+          api.notifyChanged();
+          loadBookings();
+          if (adminSection === "create") loadCreateBooking();
+        } catch (err) {
+          alert("Delete failed: " + err.message);
+          console.error(err);
+        }
+      }
+
       /* --- Admin: manual booking creation --- */
       let cbEvents = [];
       let cbTiers = [];
@@ -1256,7 +1306,7 @@
         const ev = cbEvents.find((e) => String(e.id) === String(sel.value)) || null;
         tiersBox.innerHTML = "";
         fieldsBox.innerHTML = "";
-        if (!ev) { recalcCbTotal(); return; }
+        if (!ev) { recalcCbTotal(); refreshCbSeats(null); return; }
 
         cbFields = (Array.isArray(ev.custom_fields) ? ev.custom_fields : []).filter((f) => (f.label || "").trim());
         fieldsBox.innerHTML = cbFields.length
@@ -1280,6 +1330,32 @@
         const tierSel = tiersBox.querySelector(".cb-tier-select");
         if (tierSel) tierSel.addEventListener("change", recalcCbTotal);
         recalcCbTotal();
+        await refreshCbSeats(ev);
+      }
+
+      /* "Seats left" is capacity minus what is already booked, so it moves
+         as soon as a booking is created or deleted (no stored counter). */
+      async function refreshCbSeats(ev) {
+        const seatsInp = document.getElementById("cbSeats");
+        const hint = document.getElementById("cbSeatsHint");
+        if (!seatsInp) return;
+        let left = null;
+        if (ev && ev.seats != null) {
+          try { left = await api.eventSeatsLeft(ev.id); } catch (err) { left = null; console.error(err); }
+        }
+        if (left == null) {
+          seatsInp.removeAttribute("max");
+          if (hint) hint.textContent = ev && ev.seats != null ? "" : "No seat limit on this event.";
+          return;
+        }
+        seatsInp.max = String(left);
+        if (Number(seatsInp.value) > left) seatsInp.value = String(Math.max(left, 1));
+        if (hint) {
+          hint.textContent =
+            left > 0
+              ? left + " of " + ev.seats + " seat" + (ev.seats === 1 ? "" : "s") + " left"
+              : "Sold out - every seat is taken.";
+        }
       }
 
       function recalcCbTotal() {
@@ -1314,7 +1390,14 @@
           const inp = form.querySelector('.cb-custom[data-i="' + i + '"]');
           customData[f.label] = inp ? inp.value.trim() : "";
         });
-        const seats = Math.max(1, Number(form.querySelector("#cbSeats").value) || 1);
+        const seatsInp = form.querySelector("#cbSeats");
+        const seats = Math.max(1, Number(seatsInp.value) || 1);
+        /* Never ask for more seats than the event has left (the database
+           refuses it too - this is just a friendlier stop). */
+        if (seatsInp.max !== "" && seats > Number(seatsInp.max)) {
+          msg.innerHTML = '<div class="alert alert-warning py-2">Only ' + esc(seatsInp.max) + " seat(s) are left for this event.</div>";
+          return;
+        }
         /* Price/total/title are computed by the RPC from the database. */
         const booking = {
           type: "event",
@@ -1441,9 +1524,10 @@
                 "<td>" + esc(b.seats || 1) + (Array.isArray(b.seat_numbers) && b.seat_numbers.length ? ' <span class="text-muted small">(# ' + b.seat_numbers.join(", #") + ")</span>" : "") + "</td>" +
                 "<td>" + esc(b.total != null ? money(b.total) : "") + "</td>" +
                 proofCell(b) +
-                "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td></tr>"
+                 "<td>" + esc(b.created_at ? new Date(b.created_at).toLocaleString() : "") + "</td>" +
+                 '<td class="text-nowrap"><button class="btn btn-sm btn-outline-danger" title="Delete booking" onclick="window.JourneyaAdmin.deleteBooking(' + b.id + ')"><i class="fas fa-trash"></i></button></td></tr>'
               ).join("")
-            : '<tr><td colspan="9" class="text-center text-muted">No bookings yet.</td></tr>';
+            : '<tr><td colspan="10" class="text-center text-muted">No bookings yet.</td></tr>';
 
           tbody.querySelectorAll(".proof-btn").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -1452,7 +1536,7 @@
           });
           loadProofThumbs();
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Failed to load.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Failed to load.</td></tr>';
           console.error(err);
         }
       }
@@ -1551,11 +1635,7 @@
         const totals = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday: 0 };
         let counted = 0;
         bs.forEach((b) => {
-          const d = b.event_date || item.date;
-          if (!d) return;
-          const dt = new Date(String(d).slice(0, 10) + "T00:00:00");
-          if (isNaN(dt)) return;
-          const day = dt.toLocaleDateString("en-US", { weekday: "long" });
+          const day = weekdayOf(b.event_date || item.date);
           if (totals[day] === undefined) return;
           totals[day] += Number(b.seats) || 1;
           counted++;
@@ -1634,6 +1714,7 @@ document.getElementById("addPhotoRow").addEventListener("click", () => { renderP
         logout,
         editEvent,
         deleteEvent,
+        deleteBooking,
         copyShare(url) {
           copyText(url)
             .then(() => { alert("Share link copied to clipboard."); })

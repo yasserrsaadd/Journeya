@@ -290,6 +290,51 @@
     });
   }
 
+  /* ---- Seats still free for an event: capacity - seats already booked.
+     Guests cannot read the booking list (RLS), so the number comes from
+     the database. When nothing is left the form is disabled instead of
+     letting a guest pay for a seat that does not exist. ---- */
+  async function applySeatsLeft(host, item, seatsCap, recalc) {
+    let left = null;
+    try {
+      if (window.JourneyaAPI && window.JourneyaAPI.eventSeatsLeft) {
+        left = await window.JourneyaAPI.eventSeatsLeft(item.id);
+      }
+    } catch (e) {
+      left = null;
+    }
+
+    const input = host.querySelector("#bkSeats");
+    if (!input || !document.contains(input)) return;
+    if (left == null || left > seatsCap) left = seatsCap;
+
+    const label = host.querySelector("#bkSeatsLeft");
+    if (label) {
+      label.textContent =
+        left > 0
+          ? "(" + left + (left === 1 ? " seat left)" : " seats left)")
+          : "(fully booked)";
+    }
+
+    input.max = String(Math.max(left, 1));
+    if (Number(input.value) > left) {
+      input.value = String(Math.max(left, 1));
+      if (typeof recalc === "function") recalc();
+    }
+
+    if (left < 1) {
+      input.disabled = true;
+      const submit = host.querySelector("#bkSubmit");
+      if (submit) submit.disabled = true;
+      const errBox = host.querySelector("#bkError");
+      if (errBox) {
+        errBox.innerHTML =
+          '<div class="alert alert-warning py-2 small mb-3"><i class="fas fa-circle-exclamation me-1"></i>' +
+          "Sorry - this event is fully booked.</div>";
+      }
+    }
+  }
+
   /* ---- Guest booking modal (events & professional events) ---- */
   window.JourneyaUI = {
     openBooking(type, item) {
@@ -360,10 +405,13 @@
         )
         .join("");
 
-      /* Optional seats (limited-capacity items) */
+      /* Optional seats (limited-capacity items). The real limit is the
+         number of seats still free (capacity - already booked); it is
+         filled in as soon as the count arrives (see applySeatsLeft). */
       const seatsCap = item.seats ? Number(item.seats) : 0;
       const seatsHtml = seatsCap
-        ? '<div class="mb-3"><label class="form-label">Number of Seats *</label>' +
+        ? '<div class="mb-3"><label class="form-label">Number of Seats * ' +
+          '<span class="small text-muted" id="bkSeatsLeft"></span></label>' +
           '<input type="number" class="form-control" id="bkSeats" value="1" min="1" max="' +
           seatsCap +
           '" required></div>'
@@ -479,6 +527,9 @@
       form0.querySelectorAll(".tier-radio").forEach((r) => r.addEventListener("change", recalcTotal));
       const seatsEl0 = form0.querySelector("#bkSeats");
       if (seatsEl0) seatsEl0.addEventListener("input", recalcTotal);
+
+      /* ---- Seats still free (computed by the database) ---- */
+      if (seatsCap && !offline) applySeatsLeft(host, item, seatsCap, recalcTotal);
 
       /* ---- Copy the InstaPay address ---- */
       const copyBtn = host.querySelector("#bkCopyInstapay");
