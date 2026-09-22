@@ -70,6 +70,29 @@ The RPC also stores `event_date` - a snapshot of the event's date **at the time 
 booking**. If you later reschedule an event, sales made before the change stay counted
 on the original weekday in the reports instead of moving to the new date.
 
+### Deleting a booking (admin only)
+
+Every row in **Guest Lists** has a trash button. Deleting a booking:
+
+- frees exactly the seats it held - availability is **derived** (capacity minus the
+  seats of the remaining bookings), never stored as a counter, so the guest form's
+  seat limit and the reports update on their own;
+- the freed seat numbers go back into the pool and the next booking takes the lowest
+  free ones;
+- removes the guest's InstaPay screenshot from the private `payment-proofs` bucket.
+
+Creating a booking (guest checkout or the admin **Create Booking** form) works the
+same way in reverse: the seats are taken and the "seats left" count drops at once.
+
+Both forms cap the seat input at the number of seats actually left (and refuse when
+the event is sold out) instead of letting someone ask for more than exists. The count
+comes from the `public.event_seats_left()` database function, because bookings are
+admin-only (RLS) and cannot be counted from the browser.
+
+> Requires the latest `supabase/schema.sql` (it adds the `admin delete bookings`
+> policy, the `admin delete payment proofs` storage policy and `event_seats_left`).
+> Re-run the file in the SQL editor - it is safe to re-run.
+
 ### Public / Private events & unique share links
 
 Private events never appear in the public catalog. Save (or edit) an event with
@@ -106,7 +129,10 @@ built-in forms to **Add / Edit / Delete** events. From there you can also:
 - Create **Professional** events with multiple ticket tiers and custom booking fields
   (e.g. Instagram account, job title) collected at checkout.
 - Toggle events **Public / Private** and copy their unique share links.
-- View **Guest Lists** (names, phones, tier, seats &amp; seat numbers, totals).
+- View **Guest Lists** (names, phones, tier, seats &amp; seat numbers, totals) and
+  **delete** any booking (frees its seats and removes its payment screenshot).
+- Register a booking by hand with **Create Booking** (cash / in-person sign-ups) -
+  it shows how many seats are left and refuses to overbook.
 - Open **Reports & Analytics**:
   - **Overview** - what is selling and what isn't (tickets / capacity, revenue, status).
   - **Day-of-the-Week Sales** breakdown per item (ticket volume by weekday of the event

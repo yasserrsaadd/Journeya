@@ -385,6 +385,43 @@ end;
 $$;
 
 -- ============================================================
+--  SEATS LEFT (capacity - seats already booked)
+--
+--  Seats are never stored as a counter: an event keeps its total
+--  capacity (events.seats) and availability is derived from the
+--  bookings, so deleting a booking frees its seats immediately and
+--  creating one takes them.
+--
+--  Bookings are admin-only (RLS), so a guest cannot count them. This
+--  definer function exposes just the number of free seats:
+--    * NULL  -> the event has no capacity (unlimited)
+--    * n     -> n seats still free (never below 0)
+-- ============================================================
+create or replace function public.event_seats_left(p_event_id bigint)
+returns int
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select greatest(
+           e.seats::int
+           - coalesce((
+               select sum(b.seats)::int
+               from public.bookings b
+               where b.type = 'event'
+                 and b.item_id = e.id
+             ), 0),
+           0)
+  from public.events e
+  where e.id = p_event_id
+    and e.seats is not null;
+$$;
+
+-- Explicit grants in case execute was revoked from anon/authenticated.
+grant execute on function public.event_seats_left(bigint) to anon, authenticated;
+
+-- ============================================================
 --  PAYMENT PROOFS (InstaPay transfer screenshots)
 --  Guests upload straight from the booking form; only admins can
 --  read the images. The admin page mints a short-lived signed URL
@@ -409,6 +446,12 @@ create policy "guests upload payment proofs" on storage.objects
 drop policy if exists "admin read payment proofs" on storage.objects;
 create policy "admin read payment proofs" on storage.objects
   for select to authenticated
+  using (bucket_id = 'payment-proofs' and public.is_admin());
+
+-- Admins may remove a screenshot when they delete the booking it belongs to.
+drop policy if exists "admin delete payment proofs" on storage.objects;
+create policy "admin delete payment proofs" on storage.objects
+  for delete to authenticated
   using (bucket_id = 'payment-proofs' and public.is_admin());
 
 -- ============================================================
@@ -497,12 +540,17 @@ create policy "admin delete tiers" on public.ticket_tiers for delete using (publ
 
 -- --- bookings: guests book through the create_booking RPC only
 --     (no direct inserts, so seat availability is always enforced
---     server-side); only admins can read guest lists ---
+--     server-side); only admins can read or delete guest lists ---
 drop policy if exists "public insert bookings" on public.bookings;
 
 drop policy if exists "admin read bookings"  on public.bookings;
 drop policy if exists "public read bookings" on public.bookings;
 create policy "admin read bookings" on public.bookings for select using (public.is_admin());
+
+-- Deleting a booking frees the seats it held (they are derived from the
+-- bookings, never stored on the event) - no extra bookkeeping needed.
+drop policy if exists "admin delete bookings" on public.bookings;
+create policy "admin delete bookings" on public.bookings for delete using (public.is_admin());
 
 -- --- admin_emails ---
 drop policy if exists "admin read admin_emails" on public.admin_emails;
