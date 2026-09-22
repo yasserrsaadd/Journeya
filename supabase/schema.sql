@@ -169,9 +169,17 @@ as $$
          coalesce(images, '[]'::jsonb)
   from public.events
   where share_token = p_token
+    -- Only PRIVATE events are reachable by token. Without this, an event
+    -- made public later would still leak through its old share link, and
+    -- a token guess could expose data of a public event.
+    and is_private = true
+    and p_token is not null
+    and p_token <> ''
 $$;
 
 -- Ticket tiers for a private professional event, readable only by its token.
+-- Postgres refuses "create or replace" only when the return type changes,
+-- so this one can simply be replaced.
 create or replace function public.get_shared_event_tiers(p_token text)
 returns table (id bigint, name text, price numeric)
 language sql
@@ -183,10 +191,21 @@ as $$
   from public.ticket_tiers tt
   join public.events e on e.id = tt.event_id
   where e.share_token = p_token
+    and e.is_private = true
+    and p_token is not null
+    and p_token <> ''
 $$;
 
 -- ============================================================
 --  CREATE BOOKING (guest checkout with seat-number assignment)
+--
+--  SECURITY: every value that matters is derived server-side. The
+--  caller may only choose: which event, which tier of that event,
+--  how many seats, and their own contact details. Title, tier name,
+--  tier price and total are read from the database - a guest cannot
+--  forge revenue, use another event's tier, or book a private event
+--  without its share token.
+--
 --  For events that have a capacity (events.seats set by the admin),
 --  this assigns the next available seat numbers (1..capacity,
 --  lowest free first) and refuses to overbook. It is a single
@@ -194,20 +213,33 @@ $$;
 --  Being security definer, it can read existing bookings (RLS -
 --  admins only) and return the row to the guest who just booked.
 -- ============================================================
-create or replace function public.create_booking(
+-- Older versions trusted caller-supplied title/price/total, and an
+-- "create or replace" with a different signature would only ADD an
+-- overload, leaving the weak one callable. Drop them all first.
+do $$
+declare f record;
+begin
+  for f in
+    select p.oid::regprocedure as sig
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'create_booking'
+  loop
+    execute format('drop function %s', f.sig);
+  end loop;
+end $$;
+
+create function public.create_booking(
   p_item_id     bigint,
   p_name        text,
   p_phone       text,
   p_email       text,
   p_type        text   default 'event',
-  p_item_title  text   default null,
   p_tier_id     bigint  default null,
-  p_tier_name   text    default null,
-  p_tier_price  numeric default null,
   p_custom_data jsonb   default '{}',
   p_seats       int     default 1,
-  p_total       numeric default null,
-  p_payment_proof_url text default null
+  p_payment_proof_url text default null,
+  p_share_token text    default null
 )
 returns public.bookings
 language plpgsql
@@ -215,24 +247,93 @@ security definer
 set search_path = public
 as $$
 declare
+  v_event        public.events;
+  v_tier_id      bigint;
+  v_tier_name    text;
+  v_tier_price   numeric;
   v_capacity     bigint;
-  v_event_date   date;
+  v_seats        int;
   v_used         int[] := '{}';
   v_free         int[] := '{}';
   v_seat_numbers int[];
+  v_unit         numeric;
+  v_total        numeric;
+  v_custom       jsonb;
   v_booking      public.bookings;
 begin
-  -- Lock the event row so concurrent bookings for the same event
-  -- are serialized and cannot compute the same seat numbers.
-  -- The event's date is snapshotted here too, so this booking keeps
-  -- reporting against the date the guest actually booked it for.
-  select e.seats, e.date into v_capacity, v_event_date
+  /* ---- 1. Contact details & quantity ---- */
+  if coalesce(p_type, 'event') <> 'event' then
+    raise exception 'Unsupported booking type.';
+  end if;
+  if p_name is null or length(btrim(p_name)) < 2 or length(btrim(p_name)) > 120 then
+    raise exception 'Please enter your full name.';
+  end if;
+  if p_phone is null
+     or length(regexp_replace(p_phone, '[^0-9]', '', 'g')) not between 7 and 20 then
+    raise exception 'Please enter a valid phone number.';
+  end if;
+  if p_email is null
+     or length(p_email) > 160
+     or btrim(p_email) !~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$' then
+    raise exception 'Please enter a valid email address.';
+  end if;
+
+  v_seats := coalesce(p_seats, 1);
+  if v_seats < 1 or v_seats > 50 then
+    raise exception 'Number of seats must be between 1 and 50.';
+  end if;
+
+  /* ---- 2. The event must exist (row lock: serialises seat maths) ---- */
+  if p_item_id is null then
+    raise exception 'This event is no longer available.';
+  end if;
+
+  select * into v_event
   from public.events e
   where e.id = p_item_id
   for update;
 
+  if not found then
+    raise exception 'This event is no longer available.';
+  end if;
+
+  /* ---- 3. Private events need the matching share token ---- */
+  if v_event.is_private then
+    if p_share_token is null
+       or v_event.share_token is null
+       or p_share_token <> v_event.share_token then
+      raise exception 'This event is private - open it through its share link to book.';
+    end if;
+  end if;
+
+  /* ---- 4. Tier must belong to THIS event, price comes from the DB ---- */
+  if p_tier_id is not null then
+    select tt.id, tt.name, tt.price into v_tier_id, v_tier_name, v_tier_price
+    from public.ticket_tiers tt
+    where tt.id = p_tier_id and tt.event_id = v_event.id;
+
+    if v_tier_id is null then
+      raise exception 'That ticket tier does not belong to this event.';
+    end if;
+    v_unit := v_tier_price;
+  else
+    v_unit := v_event.price;
+  end if;
+
+  if v_unit is not null and v_unit < 0 then
+    raise exception 'Invalid price for this event.';
+  end if;
+
+  /* Total is always computed here - never taken from the caller. */
+  v_total := case when v_unit is null then null else round(v_unit * v_seats, 2) end;
+
+  /* ---- 5. Capacity + seat numbers ---- */
+  v_capacity := v_event.seats;
   if v_capacity is not null then
-    -- Every already-assigned number for this event.
+    if v_seats > v_capacity then
+      raise exception 'Only % seats exist for this event.', v_capacity;
+    end if;
+
     select coalesce(array_agg(s), '{}') into v_used
     from (
       select unnest(b.seat_numbers) as s
@@ -242,18 +343,28 @@ begin
         and b.seat_numbers is not null
     ) u;
 
-    -- Free numbers = 1..capacity minus whatever is taken.
     select array_agg(n::int order by n) into v_free
-    from generate_series(1, v_capacity) n
+    from generate_series(1, v_capacity::int) n
     where not (n = any(v_used));
 
-    if coalesce(cardinality(v_free), 0) < p_seats then
+    if coalesce(cardinality(v_free), 0) < v_seats then
       raise exception 'Not enough seats available for this event (only % of % left).',
         coalesce(cardinality(v_free), 0), v_capacity;
     end if;
 
-    -- Hand out the lowest available numbers first.
-    v_seat_numbers := v_free[1:p_seats];
+    v_seat_numbers := v_free[1:v_seats];
+  end if;
+
+  /* ---- 6. Custom answers: object only, professional events only ---- */
+  v_custom := coalesce(p_custom_data, '{}'::jsonb);
+  if jsonb_typeof(v_custom) <> 'object' or v_event.event_type <> 'professional' then
+    v_custom := '{}'::jsonb;
+  end if;
+
+  /* ---- 7. Payment proof: only files inside our own uploads folder ---- */
+  if p_payment_proof_url is not null
+     and p_payment_proof_url !~ '^proofs/[A-Za-z0-9._/-]{1,180}$' then
+    raise exception 'Invalid payment proof reference.';
   end if;
 
   insert into public.bookings (
@@ -261,9 +372,10 @@ begin
     tier_id, tier_name, tier_price, custom_data, seats, total, seat_numbers,
     payment_proof_url
   ) values (
-    p_type, p_item_id, p_item_title, v_event_date, p_name, p_phone, p_email,
-    p_tier_id, p_tier_name, p_tier_price,
-    coalesce(p_custom_data, '{}'), p_seats, p_total, v_seat_numbers,
+    'event', p_item_id, v_event.title, v_event.date,
+    btrim(p_name), btrim(p_phone), btrim(p_email),
+    v_tier_id, v_tier_name, v_tier_price,
+    v_custom, v_seats, v_total, v_seat_numbers,
     p_payment_proof_url
   )
   returning * into v_booking;

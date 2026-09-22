@@ -187,3 +187,60 @@ short-lived signed URL and opens the screenshot, so nothing is public.
 After changing `supabase/schema.sql`, re-run it in the SQL editor (it is
 safe to re-run) so the `payment_proof_url` column, the updated
 `create_booking` RPC and the storage bucket + policies are created.
+
+## Admin access: local preview vs production
+
+| | Local preview (no Supabase) | Production |
+| --- | --- | --- |
+| How | `DEMO_MODE: true` in `js/config.js` **and** the page opened from `file://`, `localhost` or `127.0.0.1` | `DEMO_MODE: false` (default) + real `SUPABASE_URL` / `SUPABASE_ANON_KEY` |
+| Sign-in | Skipped, you land straight in the dashboard | Real Supabase Auth login (email + password) |
+| Data | `localStorage` in your browser | Supabase tables |
+| URL | `index.html#/admin` or `http://localhost:8000/#/admin` | `yourdomain.com/#/admin` |
+
+Production checklist:
+
+1. Add your admin email to `ADMIN_EMAILS` in `js/config.js` (an empty list
+   allows **nobody** - the check fails closed).
+2. Create that user in Supabase → Authentication → Users → Add user.
+3. `supabase/schema.sql` keeps the same email in the `admin_emails` table
+   (RLS uses it for data access).
+4. Add your domain to Supabase → Auth → URL Configuration (Site URL +
+   Redirect URLs) so "Forgot password?" works.
+
+### Demo mode never runs in production
+
+`DEMO_MODE` is ignored unless the page is served from a local origin, so a
+deployed site can **never** fall back to `localStorage`. If Supabase is
+missing, unreachable, or `createClient` throws, the site fails closed:
+
+- the admin login screen shows "backend is not connected" and the form is
+  disabled - the dashboard never opens, with or without credentials;
+- `signIn()` throws instead of faking a signed-in user;
+- the events grid shows "Events are temporarily unavailable";
+- bookings are disabled instead of letting a guest fill a doomed form.
+
+## Security: what the database decides
+
+The browser only ever sends **choices**, never money. `create_booking` is a
+`security definer` RPC that validates everything and derives the rest from
+the tables:
+
+| Guest sends | Database decides |
+| --- | --- |
+| event id | event exists, is bookable, `item_title`, `event_date` |
+| tier id (optional) | tier belongs to **that** event → `tier_name`, `tier_price` |
+| number of seats (1–50) | capacity / seat numbers, `total = unit price x seats` |
+| name, phone, email | format + length validation |
+| payment proof path | must match `proofs/...` (our own uploads folder) |
+| share token (optional) | required for **private** events, must equal `events.share_token` |
+
+Consequences: a forged `total`, `tier_price`, `item_title`, a tier from another
+event, negative/invalid quantities, or a booking for a private event without its
+share link are all rejected server-side.
+
+Share links (`get_shared_event`, `get_shared_event_tiers`) only return
+**private** events, so a link stops working the moment an event is made public,
+and a token can never expose a public event's data.
+
+The demo/localStorage mode mirrors the same rules in
+`js/supabase-client.js` so previews behave like production.

@@ -427,7 +427,7 @@
               <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">Event *</label><select class="form-select" id="cbEvent" required></select></div>
                 <div class="col-md-3"><label class="form-label">Number of Seats *</label><input type="number" class="form-control" id="cbSeats" value="1" min="1" step="1" required /></div>
-                <div class="col-md-3"><label class="form-label">Total (EGP)</label><input type="number" class="form-control" id="cbTotal" min="0" step="0.01" placeholder="Auto-calculated" /></div>
+                <div class="col-md-3"><label class="form-label">Total (EGP)</label><input type="number" class="form-control" id="cbTotal" min="0" step="0.01" placeholder="Auto-calculated" readonly title="Computed by the database from the event price or tier price x seats" /></div>
                 <div class="col-md-4"><label class="form-label">Full Name *</label><input type="text" class="form-control" id="cbName" required placeholder="Guest's name" /></div>
                 <div class="col-md-4"><label class="form-label">Phone *</label><input type="tel" class="form-control" id="cbPhone" required placeholder="e.g. 0100 000 0000" /></div>
                 <div class="col-md-4"><label class="form-label">Email *</label><input type="email" class="form-control" id="cbEmail" required placeholder="you@example.com" /></div>
@@ -634,7 +634,15 @@
               (f ? "No events on this date - try another day!" : "No events right now - check back soon!") +
               "</p></div>";
         } catch (e) {
-          host.innerHTML = '<div class="col-12 text-center text-danger py-5">Could not load events.</div>';
+          const down = window.JourneyaAPI && window.JourneyaAPI.backendStatus && !window.JourneyaAPI.backendStatus().ok;
+          host.innerHTML =
+            '<div class="col-12 text-center text-muted py-5">' +
+            '<i class="fas fa-plug-circle-xmark fa-2x mb-3"></i>' +
+            "<p class=\"mb-0\">" +
+            (down
+              ? "Events are temporarily unavailable - please check back soon."
+              : "Could not load events.") +
+            "</p></div>";
           console.error(e);
         }
         if (window.JourneyaUI && window.JourneyaUI.initSliders) window.JourneyaUI.initSliders(host);
@@ -718,7 +726,7 @@
               try { tiers = await api.fetchTiers(item.id); } catch (e) {}
             }
           }
-          host.innerHTML = '<div class="col-lg-8 reveal">' + sharedCard(item, { tiers }) + "</div>";
+          host.innerHTML = '<div class="col-lg-8 reveal">' + sharedCard(item, { tiers, token }) + "</div>";
           if (window.JourneyaUI && window.JourneyaUI.initSliders) window.JourneyaUI.initSliders(host);
           window.JourneyaApp.setupReveal();
         } catch (e) {
@@ -731,7 +739,10 @@
 
       function sharedCard(item, opts) {
         const tiers = (opts && opts.tiers) || [];
-        const payload = Object.assign({}, item, { _tiers: tiers });
+        const payload = Object.assign({}, item, {
+          _tiers: tiers,
+          _share_token: (opts && opts.token) || null,
+        });
         const price = priceLine(item, tiers);
         const video = item.video || "";
         const iframe =
@@ -760,16 +771,46 @@
       }
 
       /* ================= ADMIN ================= */
-      const SESSION_KEY = "journeya_admin_auth"; // demo-mode only
+      const SESSION_KEY = "journeya_admin_auth"; // local demo mode only
       let adminWired = false;
       let adminSection = "events";
+      let adminAuthed = false; // set only after a real sign-in (or local demo)
 
+      /* Fails closed: outside local demo mode the signed-in email MUST be
+         listed in ADMIN_EMAILS. An empty list allows nobody. */
       function isAllowedAdmin(email) {
+        if (api.isDemoMode()) return true;
         const list = (CFG.ADMIN_EMAILS || [])
           .map((e) => String(e).trim().toLowerCase())
           .filter(Boolean);
-        if (!list.length) return true;
+        if (!list.length) return false;
         return list.includes(String(email || "").trim().toLowerCase());
+      }
+
+      /* No backend (and no local demo): never open the dashboard. */
+      function backendDown() {
+        const st = api.backendStatus ? api.backendStatus() : { ok: true, message: "" };
+        return !st.ok;
+      }
+      function showBackendDown() {
+        const msg = document.getElementById("loginMsg");
+        const form = document.getElementById("loginForm");
+        const st = api.backendStatus ? api.backendStatus() : { message: "" };
+        if (msg) {
+          msg.innerHTML =
+            '<div class="alert alert-danger py-2 small">' +
+            '<i class="fas fa-triangle-exclamation me-1"></i>' +
+            "The admin dashboard is unavailable because the site backend is not connected.<br>" +
+            '<span class="text-muted">' + esc(st.message || "Supabase is not configured.") + "</span><br>" +
+            "<strong>To fix:</strong> paste your Supabase URL and anon key into <code>js/config.js</code>, " +
+            "add your email to <code>ADMIN_EMAILS</code>, then reload." +
+            "</div>";
+        }
+        if (form) {
+          form.querySelectorAll("input, button").forEach((el) => {
+            el.disabled = true;
+          });
+        }
       }
 
       async function tryRestore() {
@@ -793,6 +834,12 @@
         const pass = document.getElementById("adminPass").value;
         const msg = document.getElementById("loginMsg");
 
+        if (backendDown()) {
+          showBackendDown();
+          return;
+        }
+
+        /* Local preview only - never on a deployed site. */
         if (api.isDemoMode()) {
           setDemoSession();
           enterDashboard();
@@ -806,7 +853,10 @@
           const user = await api.signIn(email, pass);
           if (!isAllowedAdmin(user.email)) {
             await api.signOut();
-            msg.innerHTML = '<div class="alert alert-danger py-2">This account is not authorized to access the admin dashboard.</div>';
+            msg.innerHTML =
+              '<div class="alert alert-danger py-2">This account is not authorized. Add <strong>' +
+              esc(user.email || "your email") +
+              "</strong> to <code>ADMIN_EMAILS</code> in <code>js/config.js</code> (and to the <code>admin_emails</code> table).</div>";
             return;
           }
           msg.innerHTML = "";
@@ -824,6 +874,7 @@
       }
 
       function enterDashboard() {
+        adminAuthed = true;
         if (api.isDemoMode()) setDemoSession();
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("dashboard").style.display = "";
@@ -839,6 +890,7 @@
       }
 
       function logout() {
+        adminAuthed = false;
         if (api.isDemoMode()) {
           try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
         } else {
@@ -1263,20 +1315,17 @@
           customData[f.label] = inp ? inp.value.trim() : "";
         });
         const seats = Math.max(1, Number(form.querySelector("#cbSeats").value) || 1);
-        const totalStr = form.querySelector("#cbTotal").value;
+        /* Price/total/title are computed by the RPC from the database. */
         const booking = {
           type: "event",
           item_id: ev ? ev.id : null,
-          item_title: ev ? ev.title : "",
           name: form.querySelector("#cbName").value.trim(),
           phone: form.querySelector("#cbPhone").value.trim(),
           email: form.querySelector("#cbEmail").value.trim(),
           tier_id: tier ? tier.id : null,
-          tier_name: tier ? tier.name : null,
-          tier_price: tier ? Number(tier.price) : null,
           custom_data: customData,
           seats: seats,
-          total: totalStr === "" ? null : Number(totalStr),
+          share_token: ev && ev.is_private ? ev.share_token || null : null,
         };
         try {
           const created = await api.createBooking(booking);
@@ -1286,7 +1335,9 @@
               ? created.seat_numbers.map(Number)
               : null;
           const seatLine = assigned && assigned.length ? " &mdash; seat(s) #" + assigned.join(", #") : "";
-          msg.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check me-1"></i>Booking created for <strong>' + esc(booking.name) + "</strong> (" + esc(booking.item_title) + ")" + seatLine + ".</div>";
+          const totalLine = created && created.total != null ? " &mdash; " + money(created.total) : "";
+          const bookedFor = (created && created.item_title) || (ev ? ev.title : "");
+          msg.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check me-1"></i>Booking created for <strong>' + esc(booking.name) + "</strong> (" + esc(bookedFor) + ")" + seatLine + totalLine + ".</div>";
           form.reset();
           form.classList.remove("was-validated");
           document.getElementById("cbSeats").value = 1;
@@ -1564,12 +1615,18 @@ document.getElementById("addPhotoRow").addEventListener("click", () => { renderP
               console.error(err);
             }
           });
-          forgot.style.display = api.isDemoMode() ? "none" : "";
+          forgot.style.display = api.isDemoMode() || backendDown() ? "none" : "";
         }
       }
 
       function initAdmin() {
         wireAdmin();
+        /* Fail closed: with no backend (and no local demo) the dashboard
+           must never open, with or without credentials. */
+        if (backendDown()) {
+          showBackendDown();
+          return;
+        }
         tryRestore();
       }
 
@@ -1600,7 +1657,7 @@ document.getElementById("addPhotoRow").addEventListener("click", () => { renderP
         window.addEventListener("journeya:changed", () => {
           const v = window.JourneyaApp.current();
           if (v === "admin") {
-            if (sessionStorage.getItem(SESSION_KEY)) {
+            if (adminAuthed || (api.isDemoMode() && sessionStorage.getItem(SESSION_KEY))) {
               if (adminSection === "events") loadEventsTable();
               if (adminSection === "bookings") loadBookings();
               if (adminSection === "reports") loadReports();

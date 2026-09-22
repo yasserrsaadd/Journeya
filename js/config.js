@@ -28,6 +28,16 @@ window.JOURNEYA_CONFIG = {
   SUPABASE_URL: "https://yzndxfzitoliixwrzfzm.supabase.co", // e.g. "https://xxxxx.supabase.co"
   SUPABASE_ANON_KEY: "sb_publishable_SQ8sexvH3dmUzt4Eo74LdQ_VjIEWDB1", // your anon/public key
 
+  /* ---- Local preview ("demo") mode -------------------------------
+     When true AND the page is opened locally (file://, localhost or
+     127.0.0.1), the site runs without Supabase and keeps events and
+     bookings in localStorage so you can design offline.
+
+     On a real domain this flag is IGNORED: if Supabase is missing or
+     unreachable the site fails closed (no fake data, no admin access)
+     instead of silently falling back to the browser. */
+  DEMO_MODE: false,
+
   /* ---- Supabase table names (match schema.sql) ---- */
   TABLES: {
     events: "events",
@@ -49,10 +59,12 @@ window.JOURNEYA_CONFIG = {
   },
 
   /* ---- Admin portal sign-in ---- */
-  /* Emails allowed to access the admin dashboard (Supabase Auth). */
-  /* Leave empty to let the DB (admin_emails table) be the only gate. */
-  /* In demo mode (Supabase not configured) login is always bypassed. */
-  ADMIN_EMAILS: [],
+  /* Emails allowed to access the admin dashboard (Supabase Auth).
+     >>> Add your own admin email here, otherwise nobody can sign in
+     on the live site (the check fails closed). <<<
+     Keep it in sync with the `admin_emails` table in supabase/schema.sql.
+     In local demo mode login is bypassed, so this is not used there. */
+  ADMIN_EMAILS: ["journeya006@gmail.com"],
 
   /* ---- Payment proofs (InstaPay transfer screenshots) ----
      Guests upload a screenshot of their transfer; admins view the

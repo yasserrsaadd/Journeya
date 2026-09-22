@@ -301,9 +301,21 @@
       }
       const tiers = Array.isArray(item._tiers) ? item._tiers : [];
       delete item._tiers;
+      /* Private events are only bookable with their share link token -
+         the RPC refuses the booking without it. */
+      const shareToken = item._share_token || null;
+      delete item._share_token;
 
       const title = item.title || (item.location || "Journeya experience");
       const isProf = type === "event" && item.event_type === "professional";
+
+      /* No backend (and not a local demo): do not let a guest fill in a
+         form that can only fail. */
+      const status =
+        window.JourneyaAPI && window.JourneyaAPI.backendStatus
+          ? window.JourneyaAPI.backendStatus()
+          : { ok: true };
+      const offline = !status.ok;
 
       /* Multi-tier selection for professional events */
       const tiersHtml =
@@ -407,8 +419,14 @@
         fieldsHtml +
         seatsHtml +
         payHtml +
+        (offline
+          ? '<div class="alert alert-warning py-2 small mb-3"><i class="fas fa-plug-circle-xmark me-1"></i>' +
+            "Booking is temporarily unavailable - please try again later.</div>"
+          : "") +
         '<div id="bkError"></div>' +
-        '<button type="submit" class="btn btn-j w-100" id="bkSubmit">Confirm Booking</button>' +
+        '<button type="submit" class="btn btn-j w-100" id="bkSubmit"' +
+        (offline ? " disabled" : "") +
+        ">Confirm Booking</button>" +
         "</form></div></div></div></div>";
 
       host.innerHTML +=
@@ -505,6 +523,7 @@
       host.querySelector("#bookingForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const form = e.target;
+        if (offline) return;
         const errBox = host.querySelector("#bkError");
         const submitBtn = host.querySelector("#bkSubmit");
         const proofEl = form.querySelector("#bkProof");
@@ -540,19 +559,18 @@
           customData[f.label] = inp ? inp.value.trim() : "";
         });
 
+        /* Only the guest's own choices are sent; the server derives the
+           title, tier details and the total from the database. */
         const booking = {
           type: type,
           item_id: item.id,
-          item_title: title,
           name: form.querySelector("#bkName").value.trim(),
           phone: form.querySelector("#bkPhone").value.trim(),
           email: form.querySelector("#bkEmail").value.trim(),
           tier_id: tier ? tier.id : null,
-          tier_name: tier ? tier.name : null,
-          tier_price: tier ? Number(tier.price) : null,
           custom_data: customData,
           seats: seats,
-          total: total,
+          share_token: shareToken,
         };
 
         if (submitBtn) {
@@ -571,9 +589,10 @@
               ? created.seat_numbers.map(Number)
               : null;
           const paidTotal = host.querySelector("#bkPaidTotal");
+          const confirmedTotal = created && created.total != null ? Number(created.total) : total;
           if (paidTotal) {
-            if (total != null) {
-              paidTotal.textContent = "Total transferred: " + money(total);
+            if (confirmedTotal != null && !isNaN(confirmedTotal)) {
+              paidTotal.textContent = "Total transferred: " + money(confirmedTotal);
               paidTotal.style.display = "";
             } else {
               paidTotal.style.display = "none";
