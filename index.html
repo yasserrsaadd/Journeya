@@ -72,16 +72,29 @@
       <div class="text-center mb-4">
         <h2 class="section-title">Events</h2>
         <p class="section-sub mx-auto" style="max-width:640px;">
-          Game nights &amp; social gatherings. Filter by date and grab a spot before they fill up.
+          Game nights &amp; social gatherings. Filter by category or date and grab a spot before they fill up.
         </p>
       </div>
       <div class="catalog-filter mb-4">
+        <!-- Two renderings of the same control: pills on tablet/desktop, a
+             dropdown below the Bootstrap md breakpoint (see styles.css). Only
+             one is ever visible, so the duplicate id/aria is not exposed. -->
+        <div class="mb-3 cat-filter-row">
+          <div class="d-flex flex-wrap gap-2 justify-content-center"
+               id="eventsCategoryFilter" role="group" aria-label="Filter events by category"></div>
+          <div class="input-group input-group-sm cat-filter-dropdown" style="max-width:320px;margin:0 auto;">
+            <span class="input-group-text"><i class="fas fa-tags"></i></span>
+            <select class="form-select" id="eventsCategorySelect" aria-label="Filter events by category">
+              <option value="">All categories</option>
+            </select>
+          </div>
+        </div>
         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
           <div class="input-group input-group-sm" style="max-width:300px;">
             <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
             <input type="date" class="form-control" id="eventsFilterDate" aria-label="Filter events by date" />
           </div>
-          <button type="button" class="btn btn-j-outline btn-sm" id="eventsFilterClear" style="border-color:var(--j-primary);color:var(--j-primary);"><i class="fas fa-times me-1"></i>All dates</button>
+          <button type="button" class="btn btn-j-outline btn-sm" id="eventsFilterClear" style="border-color:var(--j-primary);color:var(--j-primary);"><i class="fas fa-times me-1"></i>Clear filters</button>
         </div>
       </div>
       <div class="row g-4" id="eventsGrid"></div>
@@ -314,7 +327,7 @@
                     <option value="professional">Professional</option>
                   </select>
                 </div>
-                <div class="col-md-3"><label class="form-label">Category</label><input type="text" class="form-control" id="eCategory" placeholder="e.g. Game Night" /></div>
+                <div class="col-md-3"><label class="form-label">Category</label><select class="form-select" id="eCategory"><option value="">None</option></select></div>
                 <div class="col-md-6"><label class="form-label">Location *</label><input type="text" class="form-control" id="eLoc" required /></div>
                 <div class="col-md-3"><label class="form-label">Date *</label><input type="date" class="form-control" id="eDate" required /></div>
                 <div class="col-md-3"><label class="form-label">Time</label><input type="time" class="form-control" id="eTime" /></div>
@@ -368,7 +381,7 @@
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-accent);"></i>Events</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Title</th><th>Type</th><th>Date</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Date</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="eventsTable"></tbody>
             </table></div>
           </div>
@@ -499,6 +512,21 @@
 
       const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1517089596392-fb9a9033e05b?auto=format&fit=crop&w=900&q=60";
 
+      /* ================= CATEGORY HELPERS ================= */
+      /* Everywhere categories are compared, do it through normCat(): the
+         column is free text, so "Sports", "sports " and "SPORTS" must all
+         collapse to the same key or the filter silently misses rows. */
+      function eventCategories() {
+        const cfg = window.JOURNEYA_CONFIG || {};
+        return Array.isArray(cfg.EVENT_CATEGORIES) ? cfg.EVENT_CATEGORIES : [];
+      }
+      function normCat(v) {
+        return String(v == null ? "" : v).trim().toLowerCase();
+      }
+
+      /* Public catalog filter state: "" == All categories */
+      let currentCategory = "";
+
       /* ================= SHARED CARD HELPERS ================= */
       /* "2026-10-01" -> "Saturday" ("" when the date is missing/invalid).
          Parsed at local midnight so the weekday never shifts by timezone. */
@@ -623,12 +651,83 @@
       }
 
       /* ================= EVENTS CATALOG ================= */
+      /* Counts are taken from the full visible catalog (date filter aside)
+         so a pill never disappears because of an active date choice.
+         Feeds BOTH the desktop pill row and the mobile dropdown. */
+      function renderCategoryPills(counts) {
+        const host = document.getElementById("eventsCategoryFilter");
+        const sel = document.getElementById("eventsCategorySelect");
+        const opts = eventCategories();
+        if (!opts.length) return;
+
+        const pill = (id, icon, label, count, isAll) => {
+          const active = normCat(currentCategory) === normCat(id);
+          return (
+            '<button type="button" class="btn btn-j-outline btn-sm cat-pill' + (active ? " active" : "") + '"' +
+            ' data-cat="' + esc(id) + '"' + (isAll ? ' aria-pressed="' + (active ? "true" : "false") + '"' : "") + ">" +
+            (icon ? '<i class="fas ' + esc(icon) + ' me-1"></i>' : "") +
+            esc(label) +
+            (count != null ? ' <span class="cat-pill-count">' + count + "</span>" : "") +
+            "</button>"
+          );
+        };
+
+        /* Shared list of what is actually offered, so the two controls can
+           never disagree about which categories exist. */
+        const available = [];
+        opts.forEach(function (c) {
+          const id = String(c && c.id != null ? c.id : "").trim();
+          if (!id) return;
+          const n = counts[normCat(id)] || 0;
+          if (!n) return; /* hide categories with no (visible) events */
+          available.push({ id, icon: c.icon, n });
+        });
+
+        let html = pill("", "fa-border-all", "All", counts.__all, true);
+        available.forEach(function (c) { html += pill(c.id, c.icon, c.id, c.n, false); });
+        if (host) host.innerHTML = html;
+
+        if (sel) {
+          sel.innerHTML =
+            '<option value="">All categories' + (counts.__all ? " (" + counts.__all + ")" : "") + "</option>" +
+            available.map(function (c) {
+              return '<option value="' + esc(c.id) + '">' + esc(c.id) + " (" + c.n + ")</option>";
+            }).join("");
+          sel.value = currentCategory;
+          if (sel.value !== currentCategory) sel.value = ""; /* stale selection no longer offered */
+        }
+      }
+
+      /* Single place that decides which pill looks pressed - used by the pill
+         click handler, the mobile dropdown and the clear button. */
+      function syncPillActive() {
+        const catBar = document.getElementById("eventsCategoryFilter");
+        if (!catBar) return;
+        catBar.querySelectorAll(".cat-pill").forEach(function (b) {
+          b.classList.toggle("active", normCat(b.getAttribute("data-cat") || "") === normCat(currentCategory));
+        });
+      }
+
       async function loadEvents() {
         const host = document.getElementById("eventsGrid");
         if (!host) return;
         host.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading...</div>';
         try {
-          let events = (await api.fetchEvents(false)).filter((e) => !e.is_private);
+          const all = (await api.fetchEvents(false)).filter((e) => !e.is_private);
+
+          /* Category counts are computed on the whole public catalog so the
+             pill row stays stable while the date filter is in play. */
+          const counts = { __all: all.length };
+          all.forEach(function (e) {
+            const k = normCat(e.category);
+            if (k) counts[k] = (counts[k] || 0) + 1;
+          });
+          renderCategoryPills(counts);
+
+          let events = all;
+          const cat = normCat(currentCategory);
+          if (cat) events = events.filter((e) => normCat(e.category) === cat);
+
           const dateInp = document.getElementById("eventsFilterDate");
           const f = dateInp ? dateInp.value : "";
           if (f) events = events.filter((e) => e.date === f);
@@ -643,13 +742,27 @@
             })
           );
 
+          /* Label shown in the empty-state message. For a legacy value that
+             is not in the config list, reuse the spelling on the first event
+             that matched it. */
+          const catLabel = cat
+            ? (all.filter((e) => normCat(e.category) === cat).map((e) => String(e.category).trim())[0] || currentCategory)
+            : "";
+          let emptyMsg = "No events right now - check back soon!";
+          if (f && catLabel) emptyMsg = "No " + catLabel + " events on this date - try another day!";
+          else if (f) emptyMsg = "No events on this date - try another day!";
+          else if (catLabel) emptyMsg = "No " + catLabel + " events right now - check back soon!";
+
           host.innerHTML = enriched.length
             ? enriched.map((r) =>
                 '<div class="col-md-6 col-lg-4 reveal">' + cardHtml(r.item, { tiers: r.tiers }) + "</div>"
               ).join("")
             : '<div class="col-12 events-empty text-center text-muted py-5"><i class="fas fa-inbox fa-2x mb-3"></i><p class="mb-0">' +
-              (f ? "No events on this date - try another day!" : "No events right now - check back soon!") +
-              "</p></div>";
+              esc(emptyMsg) +
+              "</p>" +
+              '<button type="button" class="btn btn-j-outline btn-sm mt-3" id="eventsEmptyClear">' +
+              '<i class="fas fa-times me-1"></i>Clear filters</button>' +
+              "</div>";
         } catch (e) {
           const down = window.JourneyaAPI && window.JourneyaAPI.backendStatus && !window.JourneyaAPI.backendStatus().ok;
           host.innerHTML =
@@ -666,11 +779,54 @@
         window.JourneyaApp.setupReveal();
       }
 
+      function clearEventFilters() {
+        currentCategory = "";
+        const inp = document.getElementById("eventsFilterDate");
+        if (inp) inp.value = "";
+        const sel = document.getElementById("eventsCategorySelect");
+        if (sel) sel.value = "";
+        /* Instant feedback - loadEvents() redraws the controls with real
+           counts once the fetch lands, but the highlight should not wait. */
+        syncPillActive();
+        loadEvents();
+      }
+
       function wireFilters() {
         const inp = document.getElementById("eventsFilterDate");
         const clr = document.getElementById("eventsFilterClear");
+        const catBar = document.getElementById("eventsCategoryFilter");
+        const catSel = document.getElementById("eventsCategorySelect");
         if (inp) inp.addEventListener("change", loadEvents);
-        if (clr) clr.addEventListener("click", () => { if (inp) inp.value = ""; loadEvents(); });
+        if (clr) clr.addEventListener("click", clearEventFilters);
+        if (catBar) {
+          catBar.addEventListener("click", function (ev) {
+            const btn = ev.target.closest(".cat-pill");
+            if (!btn) return;
+            const next = btn.getAttribute("data-cat") || "";
+            /* clicking the already-active pill toggles back to "All" */
+            currentCategory = normCat(currentCategory) === normCat(next) ? "" : next;
+            if (catSel) catSel.value = currentCategory;
+            syncPillActive();
+            loadEvents();
+          });
+        }
+        /* Same control, mobile presentation: hidden below md, but kept in sync
+           so resizing across the breakpoint never leaves it stale. */
+        if (catSel) {
+          catSel.addEventListener("change", function () {
+            currentCategory = catSel.value || "";
+            syncPillActive();
+            loadEvents();
+          });
+        }
+        /* Clear button rendered inside the empty state (survives re-renders
+           because it is delegated from the persistent grid host). */
+        const grid = document.getElementById("eventsGrid");
+        if (grid) {
+          grid.addEventListener("click", function (ev) {
+            if (ev.target.closest("#eventsEmptyClear")) clearEventFilters();
+          });
+        }
       }
 
       /* ================= CONTACT ================= */
@@ -1159,6 +1315,22 @@
           "</div>";
       }
 
+      /* Rebuilds the admin Category dropdown from JOURNEYA_CONFIG.
+         Called on every wireAdmin() so a config edit with new categories is
+         picked up even though wireAdmin itself only runs once. */
+      function fillCategorySelect() {
+        const sel = document.getElementById("eCategory");
+        if (!sel) return;
+        const keep = sel.value;
+        sel.innerHTML = '<option value="">None</option>' +
+          eventCategories().map(function (c) {
+            const id = String(c && c.id != null ? c.id : "").trim();
+            if (!id) return "";
+            return '<option value="' + esc(id) + '">' + esc(id) + "</option>";
+          }).join("");
+        if (keep) sel.value = keep;
+      }
+
       /* --- Admin: events --- */
       function fillEventForm(ev) {
         document.getElementById("eventId").value = ev && ev.id ? ev.id : "";
@@ -1168,7 +1340,25 @@
         document.getElementById("eDate").value = (ev && ev.date) || "";
         document.getElementById("eTime").value = (ev && ev.time) || "";
         document.getElementById("eDesc").value = (ev && ev.description) || "";
-        document.getElementById("eCategory").value = (ev && ev.category) || "";
+        /* Category is a <select> driven by config.EVENT_CATEGORIES. An event
+           saved earlier with a value outside that list gets a temporary
+           "(legacy)" option so simply opening the form can never silently
+           wipe it - the admin can then pick a canonical value. */
+        const catSel = document.getElementById("eCategory");
+        const legacy = catSel ? catSel.querySelector('option[data-legacy="1"]') : null;
+        if (legacy) legacy.remove();
+        const catVal = String((ev && ev.category) || "").trim();
+        if (catSel) {
+          catSel.value = catVal;
+          if (catVal && catSel.value !== catVal) {
+            const opt = document.createElement("option");
+            opt.value = catVal;
+            opt.textContent = catVal + " (legacy)";
+            opt.setAttribute("data-legacy", "1");
+            catSel.appendChild(opt);
+            catSel.value = catVal;
+          }
+        }
         document.getElementById("eSummary").value = (ev && ev.summary) || "";
         document.getElementById("eImage").value = (ev && ev.image) || "";
         document.getElementById("eVideo").value = (ev && ev.video) || "";
@@ -1203,9 +1393,12 @@
                 const isProf = ev.event_type === "professional";
                 const price = isProf ? "" : (ev.price != null ? money(ev.price) : "");
                 return (
-                  "<tr>" +
-                  "<td>" + esc(ev.title) + "</td>" +
-                  "<td><span class=\"badge rounded-pill " + (isProf ? "text-bg-primary" : "text-bg-secondary") + "\">" + esc(isProf ? "Professional" : "Regular") + "</span></td>" +
+                   "<tr>" +
+                   "<td>" + esc(ev.title) + "</td>" +
+                   "<td>" + (ev.category
+                     ? '<span class="badge rounded-pill text-bg-light border">' + esc(ev.category) + "</span>"
+                     : '<span class="text-muted">&mdash;</span>') + "</td>" +
+                   "<td><span class=\"badge rounded-pill " + (isProf ? "text-bg-primary" : "text-bg-secondary") + "\">" + esc(isProf ? "Professional" : "Regular") + "</span></td>" +
                   "<td>" + esc(ev.date || "") +
                   (weekdayOf(ev.date) ? ' <span class="text-muted small">' + esc(weekdayOf(ev.date)) + "</span>" : "") +
                   "</td>" +
@@ -1220,9 +1413,9 @@
                   "</tr>"
                 );
               }).join("")
-            : '<tr><td colspan="6" class="text-center text-muted">No events yet.</td></tr>';
+            : '<tr><td colspan="7" class="text-center text-muted">No events yet.</td></tr>';
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load.</td></tr>';
           console.error(err);
         }
       }
@@ -1509,7 +1702,7 @@
           '<td><button type="button" class="proof-btn" title="Click to enlarge" data-proof="' +
           esc(b.payment_proof_url) +
           '" data-who="' +
-          esc((b.name || "") + " — " + (b.item_title || "Item #" + b.item_id)) +
+          esc((b.name || "") + " â€” " + (b.item_title || "Item #" + b.item_id)) +
           '"><span class="proof-thumb-box"><i class="fas fa-spinner fa-spin text-muted"></i></span></button></td>'
         );
       }
@@ -1578,7 +1771,7 @@
                 "<td><i class=\"fas fa-user me-1 text-muted\"></i>" + esc(b.name) + "</td>" +
                 '<td><a class="link-dark" href="tel:' + esc(b.phone) + '">' + esc(b.phone) + "</a></td>" +
                 "<td>" + esc(b.item_title || "Item #" + b.item_id) + "</td>" +
-                "<td>" + esc(b.tier_name || "—") + "</td>" +
+                "<td>" + esc(b.tier_name || "â€”") + "</td>" +
                 "<td>" + esc(b.seats || 1) + (Array.isArray(b.seat_numbers) && b.seat_numbers.length ? ' <span class="text-muted small">(# ' + b.seat_numbers.join(", #") + ")</span>" : "") + "</td>" +
                 "<td>" + esc(b.total != null ? money(b.total) : "") + "</td>" +
                 proofCell(b) +
@@ -1720,6 +1913,7 @@
       function wireAdmin() {
         if (adminWired) return;
         adminWired = true;
+        fillCategorySelect();
         document.getElementById("loginForm").addEventListener("submit", handleLogin);
         document.getElementById("eventForm").addEventListener("submit", saveEvent);
         document.getElementById("eventReset").addEventListener("click", () => { fillEventForm(null); showShareBox(document.getElementById("eventShareBox"), "event", false, null); });

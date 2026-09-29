@@ -31,11 +31,38 @@ That's it - the site now reads/writes your real tables.
 > Guests book **without logging in** - booking forms are public, no account required.
 > There are no customer accounts or passwords on the public site.
 
+### Event categories
+
+Guests can filter the public Events grid by category using a row of pill buttons
+above the date picker. The category list lives in **one place**:
+`EVENT_CATEGORIES` in `js/config.js`. It feeds both the pills and the Category
+dropdown in the admin form, so filters never fracture into "Sports" / "sports"
+variants.
+
+```js
+EVENT_CATEGORIES: [
+  { id: "Sports", icon: "fa-futbol" }, // icon = any Font Awesome 6 class
+  ...
+],
+```
+
+To change the categories, edit that list - nothing else needs touching. Empty
+categories are hidden automatically, and events saved with a value outside the
+list are shown only under "All" (the admin form surfaces them as
+`value (legacy)` so you can remap them).
+
+The same control renders two ways: **pill buttons on md+ screens** and a
+**dropdown below the 768px breakpoint**, since eight pills wrap into a wall of
+chips on a phone. Both are fed by one function (`renderCategoryPills`) and stay
+in sync, so resizing across the breakpoint never loses the selection.
+
 ### Data model
 
 - **events** - game nights / social gatherings. Both **Regular** (flat price) and
   **Professional** (multi-tier tickets + custom booking fields) events.
-  Fields: title, event type, category, summary, description, date, time, location,
+  Fields: title, event type, category (choose one of `EVENT_CATEGORIES` in
+  `js/config.js`; powers the public filter), summary, description, date, time, location,
+  image (Cloudinary URL, used as the cover photo), video (optional Cloudinary preview),
   image (Cloudinary URL, used as the cover photo), video (optional Cloudinary preview),
   price, optional seats, refund policy, guidelines (one per line), private toggle +
   share token, custom fields, and **images** (extra gallery photos).

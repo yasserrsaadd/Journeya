@@ -45,6 +45,30 @@ window.JOURNEYA_CONFIG = {
     bookings: "bookings",
   },
 
+  /* ---- Event categories -------------------------------------------
+     The canonical list used by BOTH the public category filter pills
+     and the Category dropdown in the admin event form - keeping one
+     list here is what stops the filter from fracturing into
+     "Sports" / "sports" / "Sport" variants.
+
+     >>> EDIT ME: add, remove or reorder categories freely. <<<
+     `id`  is the value stored in events.category
+     `icon` is a Font Awesome 6 class shown on the pill
+
+     Events already saved with a category outside this list are
+     simply never shown by a pill (they still appear under "All"),
+     so map any legacy values to ids below before going live. */
+  EVENT_CATEGORIES: [
+    { id: "Socializing", icon: "fa-comments" },
+    { id: "Sports", icon: "fa-futbol" },
+    { id: "Games", icon: "fa-dice" },
+    { id: "Food & Drinks", icon: "fa-utensils" },
+    { id: "Arts & Culture", icon: "fa-palette" },
+    { id: "Workshops", icon: "fa-chalkboard-user" },
+    { id: "Wellness", icon: "fa-spa" },
+    { id: "Outdoors", icon: "fa-mountain-sun" },
+  ],
+
   /* ---- Cloudinary (optional) ----
      The site stores media URLs (photos / video previews) directly in the
      image/video fields. Paste the Cloudinary "Secure URL" of an uploaded
