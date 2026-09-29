@@ -329,6 +329,18 @@
                 </div>
                 <div class="col-md-3"><label class="form-label">Category</label><select class="form-select" id="eCategory"><option value="">None</option></select></div>
                 <div class="col-md-6"><label class="form-label">Location *</label><input type="text" class="form-control" id="eLoc" required /></div>
+                <!-- Map coordinates: paste a Google Maps link and they fill in.
+                     Optional - without them the event still links by address. -->
+                <div class="col-md-6"><label class="form-label">Map link (optional)</label>
+                  <input type="url" class="form-control" id="eMapLink" placeholder="Paste a Google Maps link to auto-fill coordinates" />
+                </div>
+                <div class="col-12"><label class="form-label">Map coordinates <span class="small text-muted">optional - used for the map preview and directions in More details</span></label>
+                  <div class="row g-2 align-items-center">
+                    <div class="col-6 col-sm-3"><input type="number" class="form-control" id="eLat" step="any" min="-90" max="90" placeholder="Latitude" /></div>
+                    <div class="col-6 col-sm-3"><input type="number" class="form-control" id="eLng" step="any" min="-180" max="180" placeholder="Longitude" /></div>
+                    <div class="col-12 col-sm-6"><span class="map-status" id="eMapStatus"></span></div>
+                  </div>
+                </div>
                 <div class="col-md-3"><label class="form-label">Date *</label><input type="date" class="form-control" id="eDate" required /></div>
                 <div class="col-md-3"><label class="form-label">Time</label><input type="time" class="form-control" id="eTime" /></div>
                 <div class="col-md-6" id="ePriceWrap"><label class="form-label">Price (EGP) * <span class="small text-muted">Regular events</span></label><input type="number" class="form-control" id="ePrice" min="0" step="0.01" /></div>
@@ -381,7 +393,7 @@
           <div class="card card-j p-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-list me-2" style="color:var(--j-accent);"></i>Events</h5>
             <div class="table-responsive"><table class="table table-j align-middle">
-              <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Date</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Date</th><th>Location</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="eventsTable"></tbody>
             </table></div>
           </div>
@@ -487,6 +499,9 @@
 
   <!-- Booking modal host -->
   <div id="bookingModalHost"></div>
+
+  <!-- Event details modal host -->
+  <div id="detailsModalHost"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -626,28 +641,262 @@
         );
       }
 
+      /* The public card is deliberately a teaser: photos, date + time, title,
+         price, location and two actions. Everything else (badges, summary,
+         description, guidelines, refund policy, ticket tiers, video) moved to
+         the details modal opened by "More details" - see openEventDetails().
+         The full event row still travels in both button payloads via
+         safeJson(), so the modal needs no extra fetch. */
       function cardHtml(item, opts) {
         const tiers = (opts && opts.tiers) || [];
         const payload = Object.assign({}, item, { _tiers: tiers });
         const price = priceLine(item, tiers);
-        const text = item.summary || item.description || "";
         return (
           '<div class="card card-j h-100">' +
           photosHtml(eventPhotos(item), item.title) +
           '<div class="card-body d-flex flex-column">' +
           '<div class="mb-2 d-flex flex-wrap gap-2">' + itemChips(item) + "</div>" +
-          '<div class="d-flex justify-content-between align-items-start flex-wrap mb-1">' +
+          '<div class="d-flex justify-content-between align-items-start flex-wrap mb-3">' +
           '<h5 class="card-title fw-bold mb-0">' + esc(item.title) + "</h5>" +
           (price ? '<span class="lead fw-bold" style="color:var(--j-primary);">' + esc(price) + "</span>" : "") +
           "</div>" +
-          '<div class="mb-2">' + typeBadge(item) + "</div>" +
-          '<p class="text-muted">' + esc(text) + "</p>" +
-          guidelinesHtml(item.guidelines) +
-          refundHtml(item.refund_policy) +
-          '<button class="btn btn-j btn-sm mt-auto" onclick="window.JourneyaUI.openBooking(\'event\',' + safeJson(payload) + ')">' +
-          '<i class="fas fa-ticket-alt me-2"></i>Book Now</button>' +
+          '<div class="d-flex gap-2 mt-auto">' +
+          /* btn-j-outline is white-on-white by design, so on-light is required
+             for this to be readable on the card. */
+          '<button type="button" class="btn btn-j-outline on-light btn-sm flex-fill" onclick="window.JourneyaUI.openDetails(\'event\',' + safeJson(payload) + ')">' +
+          '<i class="fas fa-circle-info me-1"></i>More details</button>' +
+          '<button type="button" class="btn btn-j btn-sm flex-fill" onclick="window.JourneyaUI.openBooking(\'event\',' + safeJson(payload) + ')">' +
+          '<i class="fas fa-ticket-alt me-1"></i>Book Now</button>' +
+          "</div>" +
           "</div></div>"
         );
+      }
+
+      /* ================= MAPS ================= */
+      /* Coordinates are optional. Everything degrades gracefully: with a
+         valid lat/lng you get an embedded preview + exact directions, and
+         with only the address text you still get a Google search link, so
+         events added before the map columns existed keep working. */
+      function validLatLng(item) {
+        const rawLat = item ? item.lat : null;
+        const rawLng = item ? item.lng : null;
+        /* Must be genuinely present: Number(null), Number("") and undefined
+           all coerce to 0, which is a real coordinate (off West Africa). */
+        const missing = (v) => v === null || v === undefined || String(v).trim() === "";
+        if (missing(rawLat) || missing(rawLng)) return null;
+        const lat = Number(rawLat);
+        const lng = Number(rawLng);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+        return { lat, lng };
+      }
+
+      /* The cross-platform Maps URL: opens the app on phones, the site on
+         desktop. Returns "" when there is nothing to point at. */
+      function mapsLink(item) {
+        const pos = validLatLng(item);
+        if (pos) return "https://www.google.com/maps/dir/?api=1&destination=" + pos.lat + "," + pos.lng;
+        const q = String((item && item.location) || "").trim();
+        if (!q) return "";
+        return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+      }
+
+      function mapsButtonHtml(item) {
+        const href = mapsLink(item);
+        if (!href) return "";
+        return (
+          '<a class="btn btn-j-outline on-light btn-sm" href="' + esc(href) + '" target="_blank" rel="noopener">' +
+          '<i class="fas fa-map-location-dot me-1"></i>View on Google Maps</a>'
+        );
+      }
+
+      /* Embedded preview, only when we have real coordinates - a text-only
+         address cannot be pinned reliably. No loading="lazy": the modal is
+         built while hidden and lazy iframes are unreliable once revealed. */
+      function mapEmbedHtml(item) {
+        const pos = validLatLng(item);
+        if (!pos) return "";
+        const src = "https://maps.google.com/maps?q=" + pos.lat + "," + pos.lng + "&z=15&output=embed";
+        return (
+          '<div class="details-block map-block">' +
+          '<h6 class="details-title"><i class="fas fa-map-location-dot me-2" style="color:var(--j-accent);"></i>Where you\'ll meet</h6>' +
+          '<div class="ratio ratio-16x9 rounded-3 overflow-hidden border">' +
+          '<iframe src="' + esc(src) + '" class="rounded-3 border-0" title="Map showing the event location" ' +
+          'referrerpolicy="no-referrer-when-downgrade" allowfullscreen loading="eager"></iframe>' +
+          "</div>" +
+          '<div class="mt-2">' + mapsButtonHtml(item) + "</div>" +
+          "</div>"
+        );
+      }
+
+      /* Pulls latitude/longitude out of anything Google Maps puts in your
+         clipboard. Tried in order because the URL formats disagree. */
+      function parseLatLng(text) {
+        const raw = String(text == null ? "" : text);
+        if (!raw) return null;
+        let s;
+        try {
+          s = decodeURIComponent(raw);
+        } catch (e) {
+          s = raw;
+        }
+        const patterns = [
+          /@\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/,
+          /[?&](?:q|destination|ll|origin|saddr|daddr)=(-?\d+(?:\.\d+)?)[,%2C\s]+(-?\d+(?:\.\d+)?)/i,
+          /!3d(-?\d+(?:\.\d+)?)(?:!4d(-?\d+(?:\.\d+)?))?/,
+          /^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/,
+        ];
+        for (let i = 0; i < patterns.length; i++) {
+          const m = patterns[i].exec(s);
+          if (!m) continue;
+          const cand = { lat: Number(m[1]), lng: Number(m[2]) };
+          if (validLatLng(cand)) return cand;
+        }
+        /* Last resort: any "lat, lng" pair anywhere in the string. */
+        const any = /(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/.exec(s);
+        if (any) {
+          const cand = { lat: Number(any[1]), lng: Number(any[2]) };
+          if (validLatLng(cand)) return cand;
+        }
+        return null;
+      }
+
+      /* Small helper shared by the admin form: shows whether the coordinates
+         currently typed will actually produce a map. */
+      function updateMapStatus() {
+        const el = document.getElementById("eMapStatus");
+        if (!el) return;
+        const lat = document.getElementById("eLat");
+        const lng = document.getElementById("eLng");
+        const pos = validLatLng({ lat: lat ? lat.value : "", lng: lng ? lng.value : "" });
+        if (pos) {
+          el.className = "map-status ok";
+          el.innerHTML = '<i class="fas fa-circle-check me-1"></i>Map preview + directions will show (' +
+            pos.lat.toFixed(5) + ", " + pos.lng.toFixed(5) + ")";
+        } else {
+          el.className = "map-status";
+          el.innerHTML = '<i class="fas fa-circle-info me-1"></i>No coordinates - events link by address instead.';
+        }
+      }
+
+      /* ================= EVENT DETAILS MODAL ================= */
+      /* Built here rather than in js/main.js because every helper it needs
+         (itemChips, typeBadge, priceLine, eventPhotos, photosHtml,
+         guidelinesHtml, refundHtml, safeJson) is private to this IIFE -
+         main.js only has its own esc()/money(). */
+      function tiersTableHtml(tiers) {
+        const rows = (tiers || []).filter(Boolean);
+        if (!rows.length) return "";
+        return (
+          '<div class="details-block">' +
+          '<h6 class="details-title"><i class="fas fa-layer-group me-2" style="color:var(--j-accent);"></i>Ticket Tiers</h6>' +
+          '<div class="table-responsive"><table class="table table-j align-middle mb-0">' +
+          '<thead><tr><th>Tier</th><th class="text-end">Price</th></tr></thead><tbody>' +
+          rows.map(function (t) {
+            return "<tr><td>" + esc(t.name) + '</td><td class="text-end fw-bold">' + esc(money(t.price)) + "</td></tr>";
+          }).join("") +
+          "</tbody></table></div></div>"
+        );
+      }
+
+      function videoHtml(video) {
+        if (!video || !/^https?:\/\//i.test(String(video))) return "";
+        return (
+          '<div class="ratio ratio-16x9 rounded-3 overflow-hidden mb-3">' +
+          '<video src="' + esc(video) + '" controls preload="metadata" playsinline class="w-100 h-100" style="object-fit:cover;"></video>' +
+          "</div>"
+        );
+      }
+
+      /* Label/value rows used for the event meta (date, time, location, ...).
+         Empty values are dropped so the modal never shows blank rows. */
+      function detailsRowsHtml(rows) {
+        const body = rows
+          .filter(function (r) { return r && r.value != null && String(r.value).trim() !== ""; })
+          .map(function (r) {
+            return (
+              '<div class="details-row"><dt>' +
+              '<i class="fas ' + esc(r.icon) + ' me-2" style="color:var(--j-primary);"></i>' + esc(r.label) +
+              "</dt><dd>" + esc(r.value) + "</dd></div>"
+            );
+          })
+          .join("");
+        return body ? '<div class="details-list">' + body + "</div>" : "";
+      }
+
+      function detailsHtml(item, opts) {
+        const tiers = (opts && opts.tiers) || [];
+        const isProf = item.event_type === "professional";
+        const payload = Object.assign({}, item, { _tiers: tiers });
+        const price = priceLine(item, tiers);
+        /* Values are escaped once, by detailsRowsHtml - do not pre-escape. */
+        const dateLabel = item.date
+          ? (weekdayOf(item.date) ? weekdayOf(item.date) + " · " : "") + item.date
+          : "";
+
+        return (
+          '<div class="card card-j border-0">' +
+          photosHtml(eventPhotos(item), item.title, "card-slider-lg") +
+          '<div class="card-body pt-3">' +
+          '<div class="mb-2 d-flex flex-wrap gap-2">' + typeBadge(item) + "</div>" +
+          '<h5 class="fw-bold mb-1">' + esc(item.title) + "</h5>" +
+          (price ? '<div class="lead fw-bold mb-3" style="color:var(--j-primary);">' + esc(price) + "</div>" : '<div class="mb-3"></div>') +
+          detailsRowsHtml([
+            { icon: "fa-calendar-day", label: "Date", value: dateLabel },
+            { icon: "fa-clock", label: "Time", value: item.time },
+            { icon: "fa-location-dot", label: "Location", value: item.location },
+            { icon: "fa-users", label: "Seats", value: item.seats ? item.seats + " available" : "" },
+          ]) +
+          (isProf ? tiersTableHtml(tiers) : "") +
+          videoHtml(item.video) +
+          mapEmbedHtml(item) +
+          /* No embedded preview without coordinates, but the "View on Google
+             Maps" button still earns its place from the address text alone. */
+          (validLatLng(item) ? "" : (mapsButtonHtml(item) ? '<div class="details-block mb-3">' + mapsButtonHtml(item) + "</div>" : "")) +
+          (item.summary ? '<p class="text-muted">' + esc(item.summary) + "</p>" : "") +
+          (item.description ? '<p class="text-muted mb-0">' + esc(item.description) + "</p>" : "") +
+          guidelinesHtml(item.guidelines) +
+          refundHtml(item.refund_policy) +
+          "</div></div>"
+        );
+      }
+
+      function openEventDetails(type, raw) {
+        let item = raw;
+        if (typeof item === "string") {
+          try { item = JSON.parse(item); } catch (e) { item = {}; }
+        }
+        if (!item || typeof item !== "object") item = {};
+        const tiers = Array.isArray(item._tiers) ? item._tiers : [];
+
+        const host = document.getElementById("detailsModalHost");
+        if (!host) return;
+        const titleId = "detailsTitle" + Date.now();
+
+        host.innerHTML =
+          '<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true" aria-labelledby="' + titleId + '">' +
+          '<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">' +
+          '<div class="modal-content rounded-4">' +
+          '<div class="modal-header" style="background:linear-gradient(90deg,var(--j-primary),var(--j-accent));color:#fff;">' +
+          '<h5 class="modal-title" id="' + titleId + '"><i class="fas fa-circle-info me-2"></i>Event Details</h5>' +
+          '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>' +
+          "</div>" +
+          '<div class="modal-body">' + detailsHtml(item, { tiers: tiers }) + "</div>" +
+          '<div class="modal-footer justify-content-between">' +
+          '<button type="button" class="btn btn-j-outline on-light btn-sm" data-bs-dismiss="modal">' +
+          '<i class="fas fa-times me-1"></i>Close</button>' +
+          '<button type="button" class="btn btn-j btn-sm" onclick="window.JourneyaUI.openBooking(\'event\',' + safeJson(item) + ')">' +
+          '<i class="fas fa-ticket-alt me-1"></i>Book Now</button>' +
+          "</div>" +
+          "</div></div></div>";
+
+        const el = host.querySelector("#detailsModal");
+        /* The gallery inside the modal needs the same slider behaviour as the
+           cards. NOTE: never add .reveal in here - setupReveal() relies on
+           IntersectionObserver, which never fires inside a hidden modal, so
+           the content would stay at opacity:0 forever. */
+        if (window.JourneyaUI && window.JourneyaUI.initSliders) window.JourneyaUI.initSliders(el);
+        new bootstrap.Modal(el).show();
       }
 
       /* ================= EVENTS CATALOG ================= */
@@ -1337,6 +1586,10 @@
         document.getElementById("eTitle").value = (ev && ev.title) || "";
         document.getElementById("eEventType").value = (ev && ev.event_type) || "regular";
         document.getElementById("eLoc").value = (ev && ev.location) || "";
+        document.getElementById("eLat").value = (ev && ev.lat != null && ev.lat !== "") ? ev.lat : "";
+        document.getElementById("eLng").value = (ev && ev.lng != null && ev.lng !== "") ? ev.lng : "";
+        document.getElementById("eMapLink").value = "";
+        updateMapStatus();
         document.getElementById("eDate").value = (ev && ev.date) || "";
         document.getElementById("eTime").value = (ev && ev.time) || "";
         document.getElementById("eDesc").value = (ev && ev.description) || "";
@@ -1401,8 +1654,13 @@
                    "<td><span class=\"badge rounded-pill " + (isProf ? "text-bg-primary" : "text-bg-secondary") + "\">" + esc(isProf ? "Professional" : "Regular") + "</span></td>" +
                   "<td>" + esc(ev.date || "") +
                   (weekdayOf(ev.date) ? ' <span class="text-muted small">' + esc(weekdayOf(ev.date)) + "</span>" : "") +
-                  "</td>" +
-                  "<td>" + (isProf ? '<span class="text-muted">Tiers</span>' : esc(price)) + "</td>" +
+                   "</td>" +
+                   '<td class="small">' + esc(ev.location || "—") +
+                   (validLatLng(ev)
+                     ? ' <a class="badge text-bg-light border text-decoration-none" href="' + esc(mapsLink(ev)) + '" target="_blank" rel="noopener" title="Open in Google Maps"><i class="fas fa-map-location-dot me-1"></i>Map</a>'
+                     : ' <span class="badge text-bg-secondary" title="No coordinates set - falls back to an address search"><i class="fas fa-circle-question me-1"></i>No pin</span>') +
+                   "</td>" +
+                   "<td>" + (isProf ? '<span class="text-muted">Tiers</span>' : esc(price)) + "</td>" +
                   "<td>" + (ev.is_private
                     ? '<span class="badge text-bg-warning"><i class="fas fa-eye-slash me-1"></i>Private</span>'
                     : '<span class="badge text-bg-success">Public</span>') + "</td>" +
@@ -1413,9 +1671,9 @@
                   "</tr>"
                 );
               }).join("")
-            : '<tr><td colspan="7" class="text-center text-muted">No events yet.</td></tr>';
+            : '<tr><td colspan="8" class="text-center text-muted">No events yet.</td></tr>';
         } catch (err) {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Failed to load.</td></tr>';
           console.error(err);
         }
       }
@@ -1444,6 +1702,8 @@
           category: document.getElementById("eCategory").value.trim() || null,
           summary: document.getElementById("eSummary").value.trim() || null,
           location: document.getElementById("eLoc").value.trim(),
+          lat: document.getElementById("eLat").value === "" ? null : Number(document.getElementById("eLat").value),
+          lng: document.getElementById("eLng").value === "" ? null : Number(document.getElementById("eLng").value),
           date: document.getElementById("eDate").value || null,
           time: document.getElementById("eTime").value || null,
           price: isProf ? null : (document.getElementById("ePrice").value === "" ? null : Number(document.getElementById("ePrice").value)),
@@ -1910,6 +2170,36 @@
       }
 
       /* --- Admin wiring --- */
+      /* Pastes of Google Maps links (or bare "lat, lng") fill the coordinate
+         inputs; the link itself is discarded so it never gets saved. */
+      function bindMapInputs() {
+        const link = document.getElementById("eMapLink");
+        const lat = document.getElementById("eLat");
+        const lng = document.getElementById("eLng");
+        if (!link || !lat || !lng) return;
+
+        const setFrom = (text) => {
+          const pos = parseLatLng(text);
+          if (!pos) return false;
+          lat.value = pos.lat;
+          lng.value = pos.lng;
+          return true;
+        };
+
+        link.addEventListener("paste", (ev) => {
+          const text = (ev.clipboardData || window.clipboardData || {}).getData
+            ? (ev.clipboardData || window.clipboardData).getData("text")
+            : "";
+          if (setFrom(text)) ev.preventDefault();
+        });
+        link.addEventListener("input", () => {
+          if (setFrom(link.value)) link.value = "";
+          updateMapStatus();
+        });
+        [lat, lng].forEach((i) => i.addEventListener("input", updateMapStatus));
+        updateMapStatus();
+      }
+
       function wireAdmin() {
         if (adminWired) return;
         adminWired = true;
@@ -1926,6 +2216,7 @@
         document.getElementById("cbEvent").addEventListener("change", onCreateEventChange);
         document.getElementById("cbSeats").addEventListener("input", recalcCbTotal);
         document.getElementById("cbReset").addEventListener("click", resetCreateBooking);
+        bindMapInputs();
         onEventTypeChange();
         document.querySelectorAll("#view-admin .adm-tab").forEach((b) => {
           b.addEventListener("click", () => showAdminSection(b.dataset.sec));
@@ -1962,6 +2253,11 @@
         }
         tryRestore();
       }
+
+      /* js/main.js owns window.JourneyaUI but loads before this script, so the
+         details viewer can be attached alongside openBooking/initSliders. It
+         lives here rather than in main.js to reuse this file's card helpers. */
+      if (window.JourneyaUI) window.JourneyaUI.openDetails = openEventDetails;
 
       window.JourneyaAdmin = {
         logout,

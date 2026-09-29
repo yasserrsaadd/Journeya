@@ -887,6 +887,79 @@ body.lb-open {
   animation: pop 0.6s ease both;
 }
 
+.map-status {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--j-primary-dark);
+}
+.map-status.ok {
+  color: #1f7a3d;
+}
+.map-block iframe {
+  background: var(--j-light);
+}
+
+/* ---------- Event details modal ---------- */
+/* The card is now a teaser; everything below lives in the details modal
+   opened by "More details". */
+.details-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin: 0 0 1rem;
+}
+.details-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--j-light);
+  border: 1px solid #ecd9d2;
+}
+.details-row dt {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--j-primary-dark);
+  white-space: nowrap;
+}
+.details-row dd {
+  margin: 0 0 0 auto;
+  font-weight: 600;
+  text-align: right;
+}
+.details-block {
+  margin-bottom: 1rem;
+}
+.details-title {
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--j-primary);
+  margin-bottom: 0.5rem;
+}
+/* The in-modal gallery gets more room than the 220px default. */
+#detailsModal .card-slider-lg {
+  --slider-h: 300px;
+}
+@media (max-width: 575px) {
+  .details-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .details-row dd {
+    margin-left: 0;
+    text-align: left;
+  }
+  #detailsModal .card-slider-lg {
+    --slider-h: 220px;
+  }
+}
+
 /* ---------- Scroll reveal ---------- */
 .reveal {
   opacity: 0;
