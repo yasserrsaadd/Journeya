@@ -967,6 +967,77 @@ body.lb-open {
   border-color: var(--j-primary);
 }
 
+/* ---------- Category filter pills ---------- */
+/* The pills live on the white .catalog-filter card, and .btn-j-outline is
+   white-text-on-dark by default (hero, dark modals), so the light variant
+   has to be applied here or every inactive pill is invisible. */
+/* Scoped under .catalog-filter so these rules out-specify Bootstrap's own
+   `.btn:hover` / `.btn.active` (0,2,0) without needing !important. */
+.catalog-filter .cat-pill {
+  border-radius: 50px;
+  padding: 7px 16px;
+  white-space: nowrap;
+  background: #fff;
+  border: 2px solid #ecd9d2;
+  color: var(--j-primary);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.catalog-filter .cat-pill:hover,
+.catalog-filter .cat-pill:focus-visible {
+  background: rgba(139, 38, 38, 0.08);
+  border-color: var(--j-primary);
+  color: var(--j-primary);
+  transform: translateY(-1px);
+}
+.catalog-filter .cat-pill.active,
+.catalog-filter .cat-pill.active:hover,
+.catalog-filter .cat-pill.active:focus-visible {
+  background: var(--j-primary);
+  border-color: var(--j-primary);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(139, 38, 38, 0.22); /* matches --j-primary */
+}
+.cat-pill-count {
+  display: inline-block;
+  min-width: 20px;
+  padding: 0 6px;
+  margin-left: 4px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(70, 30, 30, 0.1);
+  color: inherit;
+}
+.cat-pill.active .cat-pill-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+/* Two presentations of the same category control: pill row on md+ screens,
+   compact dropdown below (a row of 8 pills wraps into a wall of chips on a
+   phone). Hidden nodes are inert, so there is no duplicated a11y tree. */
+.cat-filter-dropdown {
+  display: none;
+}
+/* Styled to match the date picker row beside it - leaving Bootstrap's
+   input-group geometry alone avoids fighting its negative-margin rules. */
+.cat-filter-dropdown .form-select {
+  border-color: var(--j-primary);
+  color: var(--j-primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+.cat-filter-dropdown .form-select:focus {
+  border-color: var(--j-primary);
+  box-shadow: 0 0 0 3px rgba(139, 38, 38, 0.12); /* matches --j-primary */
+}
+@media (max-width: 767.98px) {
+  #eventsCategoryFilter {
+    display: none !important;
+  }
+  .cat-filter-dropdown {
+    display: flex;
+  }
+}
+
 /* ---------- Empty state spans the full catalog grid ---------- */
 .events-empty {
   width: 100%;
