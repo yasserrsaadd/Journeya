@@ -19,7 +19,9 @@ create table if not exists public.events (
   description text,
   date        date,
   time        text,
-  location    text,
+  location    text,                              -- human-readable address / venue name
+  lat         double precision,                  -- optional: maps below fall back to
+  lng         double precision,                  -- a text search when these are null
   image       text,
   video       text,
   price       numeric,
@@ -45,6 +47,10 @@ alter table public.events add column if not exists custom_fields jsonb default '
 -- Extra gallery photos shown in the card slider (cover photo stays in
 -- "image", so existing events keep working without any migration).
 alter table public.events add column if not exists images        jsonb default '[]';
+-- Map coordinates ("Get directions" + embedded preview). Null is fine: every
+-- event without coordinates still links via a text search of `location`.
+alter table public.events add column if not exists lat           double precision;
+alter table public.events add column if not exists lng           double precision;
 
 update public.events set images = '[]'::jsonb where images is null;
 
@@ -155,7 +161,8 @@ drop function if exists public.get_shared_event(text);
 create function public.get_shared_event(p_token text)
 returns table (
   id bigint, title text, event_type text, category text, summary text,
-  description text, "date" date, "time" text, location text, image text, video text,
+  description text, "date" date, "time" text, location text, lat double precision,
+  lng double precision, image text, video text,
   price numeric, seats bigint, refund_policy text, guidelines text,
   custom_fields jsonb, images jsonb
 )
@@ -165,6 +172,7 @@ set search_path = public
 stable
 as $$
   select id, title, event_type, category, summary, description, date, time, location,
+         lat, lng,
          image, video, price, seats, refund_policy, guidelines, custom_fields,
          coalesce(images, '[]'::jsonb)
   from public.events
