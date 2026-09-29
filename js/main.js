@@ -692,18 +692,79 @@
      Markup is produced by the card templates; this only adds the
      behaviour (arrows, dots, swipe, click-to-enlarge).
      ============================================================ */
+  /* ---- Card photo gallery (arrows, dots, drag/swipe, click-to-zoom) ----
+     Everything lives on the root element:
+       data-index  active slide, "--i" drives the CSS transform
+       data-ready  init guard so re-renders never double-bind listeners
+     Dragging is done with Pointer Events, so a mouse drag on a laptop and a
+     swipe on a phone run through exactly the same code path.                */
+  const SWIPE_MIN = 40; /* px of horizontal travel before the slide changes */
+  const AXIS_LOCK = 8; /* px before we decide swipe vs. page scroll         */
+
+  /* Slides that actually loaded (their URL may be broken). */
+  function liveSlides(slider) {
+    return Array.prototype.slice.call(slider.querySelectorAll(".card-slide:not([data-broken])"));
+  }
+
+  function buildDots(slider) {
+    const host = slider.querySelector(".card-slider-dots");
+    if (!host) return;
+    host.innerHTML = "";
+    liveSlides(slider).forEach((slide, i) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "card-slider-dot";
+      dot.dataset.index = String(i);
+      dot.setAttribute("aria-label", "Show photo " + (i + 1));
+      host.appendChild(dot);
+    });
+  }
+
+  /* A dead URL must never break the gallery: drop the slide, rebuild the
+     dots and, if fewer than two survive, fall back to a plain cover photo. */
+  function repairSlider(slider) {
+    const survivors = liveSlides(slider);
+    slider.dataset.photos = JSON.stringify(survivors.map((s) => s.getAttribute("src") || ""));
+    slider.classList.toggle("is-single", survivors.length < 2);
+    buildDots(slider);
+    if (survivors.length) {
+      slider.style.removeProperty("--dx");
+      sliderGo(slider, Math.min(Number(slider.dataset.index || 0), survivors.length - 1));
+    }
+  }
+
+  function watchSliderImages(slider) {
+    slider.querySelectorAll(".card-slide").forEach((img) => {
+      const failed = () => {
+        if (img.dataset.broken === "1") return;
+        img.dataset.broken = "1";
+        repairSlider(slider);
+      };
+      if (img.complete && img.naturalWidth === 0) failed();
+      else img.addEventListener("error", failed);
+    });
+  }
+
   function sliderGo(slider, index) {
-    const slides = slider.querySelectorAll(".card-slide");
+    const slides = liveSlides(slider);
     if (!slides.length) return;
     const i = (index + slides.length) % slides.length;
     slider.dataset.index = String(i);
-    slides.forEach((s, n) => s.classList.toggle("is-active", n === i));
+    slider.style.setProperty("--i", i);
+    slides.forEach((s, n) => {
+      const active = n === i;
+      s.classList.toggle("is-active", active);
+      if (active) s.removeAttribute("aria-hidden");
+      else s.setAttribute("aria-hidden", "true");
+    });
     slider.querySelectorAll(".card-slider-dot").forEach((d, n) => {
       const active = n === i;
       d.classList.toggle("is-active", active);
       if (active) d.setAttribute("aria-current", "true");
       else d.removeAttribute("aria-current");
     });
+    const live = slider.querySelector(".card-slider-live");
+    if (live) live.textContent = "Photo " + (i + 1) + " of " + slides.length;
   }
 
   function initSliders(scope) {
@@ -712,73 +773,147 @@
       if (slider.dataset.ready === "1") return;
       slider.dataset.ready = "1";
 
-      const slides = slider.querySelectorAll(".card-slide");
-      if (slides.length < 2) return;
+      const live = () => liveSlides(slider).length;
+      if (!live()) return;
+      slider.classList.toggle("is-single", live() < 2);
 
       const dotsHost = slider.querySelector(".card-slider-dots");
-      slides.forEach((slide, i) => {
-        const dot = document.createElement("button");
-        dot.type = "button";
-        dot.className = "card-slider-dot";
-        dot.setAttribute("aria-label", "Show photo " + (i + 1));
-        dot.addEventListener("click", (e) => {
+      if (dotsHost) {
+        buildDots(slider);
+        dotsHost.addEventListener("click", (e) => {
+          const dot = e.target && e.target.closest ? e.target.closest(".card-slider-dot") : null;
+          if (!dot) return;
+          e.preventDefault();
           e.stopPropagation();
-          sliderGo(slider, i);
+          sliderGo(slider, Number(dot.dataset.index || 0));
         });
-        if (dotsHost) dotsHost.appendChild(dot);
-      });
+      }
 
       const move = (step) => sliderGo(slider, Number(slider.dataset.index || 0) + step);
       const prev = slider.querySelector(".card-slider-prev");
       const next = slider.querySelector(".card-slider-next");
-      if (prev)
-        prev.addEventListener("click", (e) => {
+      const nav = (btn, step) => {
+        if (!btn) return;
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          move(-1);
+          if (live() > 1) move(step);
         });
-      if (next)
-        next.addEventListener("click", (e) => {
-          e.stopPropagation();
-          move(1);
+      };
+      nav(prev, -1);
+      nav(next, 1);
+
+      if (live() > 0) {
+        slider.setAttribute("tabindex", "0");
+        slider.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            move(-1);
+          } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            move(1);
+          }
         });
 
-      /* Swipe on touch devices (horizontal only, so page scroll still works) */
-      let startX = 0;
-      let startY = 0;
-      let tracking = false;
-      slider.addEventListener(
-        "touchstart",
-        (e) => {
-          const t = e.touches && e.touches[0];
-          if (!t) return;
-          startX = t.clientX;
-          startY = t.clientY;
-          tracking = true;
-        },
-        { passive: true }
-      );
-      slider.addEventListener("touchend", (e) => {
-        if (!tracking) return;
-        tracking = false;
-        const t = e.changedTouches && e.changedTouches[0];
-        if (!t) return;
-        const dx = t.clientX - startX;
-        const dy = t.clientY - startY;
-        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) move(dx < 0 ? 1 : -1);
-      });
+        /* ---- Drag / swipe (pointer = mouse, pen and touch alike) ---- */
+        let pointerId = null;
+        let axis = null;
+        let dragging = false;
+        let startX = 0;
+        let startY = 0;
+        let travelled = 0;
+        let suppressClick = false;
 
-      /* Click a photo (not the controls) to enlarge it */
-      slider.addEventListener("click", (e) => {
-        if (e.target && e.target.closest && e.target.closest(".card-slider-nav, .card-slider-dot")) return;
-        let photos = [];
-        try {
-          photos = JSON.parse(slider.dataset.photos || "[]");
-        } catch (err) {
-          photos = [];
-        }
-        if (photos.length) openLightbox(photos, Number(slider.dataset.index || 0));
-      });
+        const reset = () => {
+          pointerId = null;
+          axis = null;
+          dragging = false;
+          travelled = 0;
+          slider.classList.remove("is-dragging");
+          slider.style.removeProperty("--dx");
+        };
 
+        slider.addEventListener("pointerdown", (e) => {
+          if (pointerId !== null) return;
+          if (e.target && e.target.closest && e.target.closest(".card-slider-nav, .card-slider-dot")) return;
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          pointerId = e.pointerId;
+          axis = null;
+          dragging = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          travelled = 0;
+        });
+
+        slider.addEventListener("pointermove", (e) => {
+          if (pointerId === null || e.pointerId !== pointerId) return;
+          const mx = e.clientX - startX;
+          const my = e.clientY - startY;
+
+          if (axis === null) {
+            if (Math.abs(mx) < AXIS_LOCK && Math.abs(my) < AXIS_LOCK) return;
+            /* Vertical first? It is a page scroll - release the gesture. */
+            if (Math.abs(my) >= Math.abs(mx)) {
+              reset();
+              return;
+            }
+            axis = "x";
+            slider.classList.add("is-dragging");
+            dragging = true;
+            if (slider.setPointerCapture) {
+              try {
+                slider.setPointerCapture(e.pointerId);
+              } catch (err) {}
+            }
+          }
+          if (e.cancelable) e.preventDefault();
+
+          /* Resistance past the first/last slide so the ends feel physical */
+          const i = Number(slider.dataset.index || 0);
+          const atEdge = (i === 0 && mx > 0) || (i === live() - 1 && mx < 0);
+          slider.style.setProperty("--dx", (atEdge ? mx * 0.3 : mx) + "px");
+          travelled = mx;
+        });
+
+        const finish = () => {
+          if (pointerId === null) return;
+          const wasDragging = dragging;
+          const dx = travelled;
+          reset();
+          if (wasDragging && Math.abs(dx) > SWIPE_MIN) {
+            move(dx < 0 ? 1 : -1);
+            /* The gesture ends with a synthetic click - swallow it so a swipe
+               does not also pop the lightbox open. */
+            suppressClick = true;
+            window.setTimeout(() => {
+              suppressClick = false;
+            }, 400);
+          }
+        };
+
+        slider.addEventListener("pointerup", finish);
+        slider.addEventListener("pointercancel", finish);
+        slider.addEventListener("lostpointercapture", finish);
+
+        slider.addEventListener("click", (e) => {
+          if (suppressClick) {
+            suppressClick = false;
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          if (e.target && e.target.closest && e.target.closest(".card-slider-nav, .card-slider-dot, .card-slider-dots")) return;
+          let photos = [];
+          try {
+            photos = JSON.parse(slider.dataset.photos || "[]");
+          } catch (err) {
+            photos = [];
+          }
+          if (photos.length) openLightbox(photos, Number(slider.dataset.index || 0));
+        });
+      }
+
+      watchSliderImages(slider);
       sliderGo(slider, 0);
     });
   }

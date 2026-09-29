@@ -332,9 +332,10 @@
                 <div class="col-md-6"><label class="form-label">Video preview (optional)</label><input type="url" class="form-control" id="eVideo" placeholder="Paste a Cloudinary video URL" /></div>
                 <div class="col-12">
                   <label class="form-label">More photos (optional)</label>
-                  <p class="small text-muted mb-2">Visitors swipe through these on the event card. The cover image above is always shown first.</p>
+                  <p class="small text-muted mb-2">Visitors swipe through these on the event card. The cover image above is always shown first - add at least one different photo to get a slider. You can paste several links at once (one per line or separated by commas).</p>
                   <div id="photosHost"></div>
                   <button type="button" class="btn btn-sm btn-j-outline on-light" id="addPhotoRow"><i class="fas fa-plus me-1"></i>Add photo</button>
+                  <div id="photosStatus" class="small mt-2"></div>
                 </div>
                 <div class="col-12"><label class="form-label">Refund Policy</label><textarea class="form-control" id="eRefund" rows="2" placeholder="e.g. Full refund up to 48h before the event."></textarea></div>
                 <div class="col-12"><label class="form-label">Guidelines (one per line) *</label><textarea class="form-control" id="eGuide" rows="3" required placeholder="e.g.&#10;Bring your own snacks&#10;Arrive 15 minutes early"></textarea></div>
@@ -553,44 +554,46 @@
         return b;
       }
 
-      /* Cover photo first, then the gallery - de-duplicated. */
+      /* Cover photo first, then the gallery - de-duplicated, and anything
+         that is not a usable URL is dropped so one bad paste cannot break
+         the gallery. Empty events fall back to a stock photo. */
       function eventPhotos(item) {
         const list = [];
         const push = (u) => {
           const s = String(u == null ? "" : u).trim();
-          if (s && !list.includes(s)) list.push(s);
+          if (!/^https?:\/\/\S+$/i.test(s)) return;
+          if (!list.includes(s)) list.push(s);
         };
         push(item.image);
         (Array.isArray(item.images) ? item.images : []).forEach(push);
         return list.length ? list : [PLACEHOLDER_IMG];
       }
 
-      /* One photo -> plain image. Several -> slider (wired up by
-         window.JourneyaUI.initSliders after the grid renders). */
-      function photosHtml(photos, alt, boxStyle) {
-        const style = boxStyle ? ' style="' + boxStyle + '"' : "";
-        if (!photos.length) return "";
-        if (photos.length === 1) {
-          return (
-            '<img src="' + esc(photos[0]) + '" class="card-img-top" loading="lazy" decoding="async" alt="' +
-            esc(alt) + '"' + style + ">"
-          );
-        }
+      /* Every card gets the same gallery box. With one photo it stays a plain
+         (but tappable) cover; with several it becomes a swipeable slider with
+         arrows + dots. Behaviour comes from window.JourneyaUI.initSliders,
+         which runs right after the grid renders. */
+      function photosHtml(photos, alt, extraClass) {
+        const list = (photos || []).filter(Boolean);
+        if (!list.length) return "";
         return (
-          '<div class="card-slider" data-photos="' + esc(JSON.stringify(photos)) + '"' + style + ">" +
+          '<div class="card-slider' + (extraClass ? " " + extraClass : "") + '" data-photos="' +
+          esc(JSON.stringify(list)) + '" role="group" aria-roledescription="carousel" aria-label="' +
+          esc(alt) + ' photos">' +
           '<div class="card-slides">' +
-          photos
+          list
             .map(
               (p, i) =>
                 '<img class="card-slide' + (i === 0 ? " is-active" : "") + '" src="' + esc(p) + '"' +
-                (i === 0 ? "" : ' loading="lazy"') +
-                ' decoding="async" alt="' + esc(alt) + " - photo " + (i + 1) + " of " + photos.length + '">'
+                (i < 2 ? "" : ' loading="lazy"') +
+                ' decoding="async" draggable="false" alt="' + esc(alt) + " - photo " + (i + 1) + " of " + list.length + '">'
             )
             .join("") +
           "</div>" +
-          '<button type="button" class="card-slider-nav card-slider-prev" aria-label="Previous photo"><i class="fas fa-chevron-left"></i></button>' +
-          '<button type="button" class="card-slider-nav card-slider-next" aria-label="Next photo"><i class="fas fa-chevron-right"></i></button>' +
+          '<button type="button" class="card-slider-nav card-slider-prev" aria-label="Previous photo"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>' +
+          '<button type="button" class="card-slider-nav card-slider-next" aria-label="Next photo"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>' +
           '<div class="card-slider-dots"></div>' +
+          '<span class="card-slider-live visually-hidden" aria-live="polite"></span>' +
           "</div>"
         );
       }
@@ -765,7 +768,7 @@
             : "";
         return (
           '<div class="card card-j">' +
-          photosHtml(eventPhotos(item), item.title, "height:340px") +
+          photosHtml(eventPhotos(item), item.title, "card-slider-lg") +
           '<div class="card-body p-4">' +
           '<div class="mb-2">' + typeBadge(item) + "</div>" +
           '<div class="d-flex justify-content-between align-items-start flex-wrap mb-2">' +
@@ -969,12 +972,47 @@
       let customDraft = [];
       let photosDraft = [];
 
-      /* --- Gallery photos editor --- */
+      /* Gallery photos arrive as anything from a single Cloudinary link to a
+         whole block of links pasted at once, so every value is split on
+         newlines, commas, semicolons or spaces and each piece validated. */
+      function splitUrls(value) {
+        return String(value == null ? "" : value)
+          .split(/[\s,;]+/)
+          .map((u) => u.trim())
+          .filter(Boolean);
+      }
+      function normalizePhotos(list) {
+        const out = [];
+        (list || []).forEach((v) =>
+          splitUrls(v).forEach((u) => {
+            if (/^https?:\/\/\S+$/i.test(u) && !out.includes(u)) out.push(u);
+          })
+        );
+        return out;
+      }
+      function photosStatus() {
+        const box = document.getElementById("photosStatus");
+        if (!box) return;
+        const cover = (document.getElementById("eImage").value || "").trim();
+        const filled = normalizePhotos(photosDraft);
+        if (!filled.length) {
+          box.innerHTML = '<i class="fas fa-image me-1"></i><span class="text-muted">Cover image only - the card shows a single photo.</span>';
+          return;
+        }
+        const slides = filled.length + (cover && !filled.includes(cover) ? 1 : 0);
+        const ok = slides > 1;
+        box.innerHTML =
+          '<i class="fas fa-' + (ok ? "circle-check" : "triangle-exclamation") + ' me-1 ' + (ok ? "text-success" : "text-danger") + '"></i>' +
+          '<span class="' + (ok ? "text-success" : "text-danger") + '">' +
+          filled.length + " extra photo" + (filled.length === 1 ? "" : "s") +
+          (ok ? " - the card will swipe through " + slides + " photos." : " - add one more photo (different from the cover) to get a slider.") +
+          "</span>";
+      }
       function photoRowHtml(url, i) {
         return (
           '<div class="photo-row input-group mb-2">' +
           '<span class="input-group-text p-1"><img class="photo-row-thumb" src="' + esc(url || "") + '" alt="" onerror="this.style.visibility=\'hidden\'"></span>' +
-          '<input type="url" class="form-control photo-url" value="' + esc(url || "") + '" placeholder="Paste an image URL (https://res.cloudinary.com/...)" />' +
+          '<input type="text" class="form-control photo-url" value="' + esc(url || "") + '" placeholder="Paste an image URL (https://res.cloudinary.com/...)" />' +
           '<button type="button" class="btn btn-outline-danger photo-remove" data-i="' + i + '" aria-label="Remove photo"><i class="fas fa-times"></i></button>' +
           "</div>"
         );
@@ -988,11 +1026,30 @@
         host.querySelectorAll(".photo-row").forEach((row, i) => {
           const input = row.querySelector(".photo-url");
           const thumb = row.querySelector(".photo-row-thumb");
-          input.addEventListener("input", () => {
-            photosDraft[i] = input.value.trim();
+          const paint = () => {
+            const v = input.value.trim();
+            photosDraft[i] = v;
             if (thumb) {
-              thumb.src = input.value.trim();
-              thumb.style.visibility = input.value.trim() ? "visible" : "hidden";
+              thumb.src = v;
+              thumb.style.visibility = /^https?:\/\/\S+$/i.test(v) ? "visible" : "hidden";
+            }
+            photosStatus();
+          };
+          input.addEventListener("input", paint);
+          /* Several links pasted at once become rows of their own */
+          input.addEventListener("paste", (e) => {
+            const cd = e.clipboardData || window.clipboardData;
+            const urls = normalizePhotos([cd ? cd.getData("text") : ""]);
+            if (urls.length < 2) return;
+            e.preventDefault();
+            photosDraft = normalizePhotos(photosDraft.slice(0, i).concat(urls, photosDraft.slice(i + 1)));
+            renderPhotosEditor();
+          });
+          input.addEventListener("change", () => {
+            const urls = normalizePhotos([input.value]);
+            if (urls.length > 1) {
+              photosDraft = normalizePhotos(photosDraft.slice(0, i).concat(urls, photosDraft.slice(i + 1)));
+              renderPhotosEditor();
             }
           });
         });
@@ -1002,12 +1059,13 @@
             renderPhotosEditor();
           });
         });
+        photosStatus();
       }
       function collectPhotos() {
-        const seen = {};
-        return Array.from(document.querySelectorAll("#photosHost .photo-row"))
-          .map((r) => r.querySelector(".photo-url").value.trim())
-          .filter((u) => u && !seen[u] && (seen[u] = true));
+        const cover = (document.getElementById("eImage").value || "").trim();
+        return normalizePhotos(
+          Array.from(document.querySelectorAll("#photosHost .photo-row")).map((r) => r.querySelector(".photo-url").value)
+        ).filter((u) => u !== cover);
       }
 
       function tierRowHtml(t, i) {
@@ -1668,7 +1726,8 @@
         document.getElementById("eEventType").addEventListener("change", onEventTypeChange);
         document.getElementById("addTierRow").addEventListener("click", () => { renderTiersEditor(tiersDraft.concat([{ name: "", price: "" }])); });
         document.getElementById("addCustomFieldRow").addEventListener("click", () => { renderCustomFieldsEditor(customDraft.concat([{ label: "", required: false }])); });
-document.getElementById("addPhotoRow").addEventListener("click", () => { renderPhotosEditor(photosDraft.concat([""])); });
+        document.getElementById("addPhotoRow").addEventListener("click", () => { renderPhotosEditor(photosDraft.concat([""])); });
+        document.getElementById("eImage").addEventListener("input", photosStatus);
         document.getElementById("cbForm").addEventListener("submit", submitCreateBooking);
         document.getElementById("cbEvent").addEventListener("change", onCreateEventChange);
         document.getElementById("cbSeats").addEventListener("input", recalcCbTotal);
